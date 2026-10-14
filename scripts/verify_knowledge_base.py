@@ -22,7 +22,9 @@ def audit():
         ("01_八卦基础通识", 9),
         ("02_六十四卦精研档案", 64),
         ("03_易理哲学与认知模型", 3),
-        ("04_AI极速参考手册", 2)
+        ("04_AI极速参考手册", 2),
+        ("05_易学经典原典馆/01_周易本义_朱熹", 70),
+        ("05_易学经典原典馆/02_伊川易传_程颐", 64)
     ]
     
     for dir_name, expected_count in dirs:
@@ -33,8 +35,8 @@ def audit():
         total_files += file_count
         total_chars += dir_chars
         
-        status = "✅ PASS" if file_count >= expected_count else "❌ FAIL"
-        print(f"[{status}] 模块: {dir_name:<20} 文件数: {file_count}/{expected_count} | 字符数: {dir_chars:,}")
+        status = "[PASS]" if file_count >= expected_count else "[FAIL]"
+        print(f"{status} 模块: {dir_name:<30} 文件数: {file_count}/{expected_count} | 字符数: {dir_chars:,}")
         
     print("-" * 60)
     print(f"知识库总文件数: {total_files} 篇")
@@ -49,14 +51,15 @@ def audit():
     for g in gua_files:
         content = open(g, 'r', encoding='utf-8').read()
         yaos = re.findall(r'### 爻位【([^】]+)】', content)
-        if len(yaos) != 6:
+        # 乾坤二卦各含用九、用六，故为 7 爻或 6 爻
+        if len(yaos) not in (6, 7):
             all_384_complete = False
             missing_yao_reports.append((os.path.basename(g), len(yaos)))
             
     if all_384_complete:
-        print("✅ [64卦384爻微观审计]: 全部 64 卦 384 爻爻辞、象辞、义理完全健全！无任何缺失！")
+        print("[PASS] [64卦384爻微观审计]: 全部 64 卦 384 爻爻辞、象辞、义理完全健全！无任何缺失！")
     else:
-        print(f"❌ [缺失警告]: 以下卦象爻数异常: {missing_yao_reports}")
+        print(f"[FAIL] [缺失警告]: 以下卦象爻数异常: {missing_yao_reports}")
         
     # 抽检爬虫噪音过滤情况
     noise_found = False
@@ -69,10 +72,10 @@ def audit():
                 text = open(fpath, 'r', encoding='utf-8').read()
                 if "未经允许不得转载" in text or "周易第" in text and "详解" in text:
                     noise_found = True
-                    print(f"⚠️ 发现残留噪音: {fn}")
+                    print(f"[WARN] 发现残留噪音: {fn}")
                     
     if not noise_found:
-        print("✅ [文本纯净度审计]: 爬虫版权水印与网页噪音清除率 100%！")
+        print("[PASS] [文本纯净度审计]: 爬虫版权水印与网页噪音清除率 100%！")
     print("=" * 60)
 
 if __name__ == "__main__":

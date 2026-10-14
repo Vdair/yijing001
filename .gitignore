@@ -25,3 +25,4 @@ venv/
 *.log
 scratch/
 .system_generated/
+data/
