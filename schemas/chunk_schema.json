@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AiChunkSchema",
+  "description": "AI 向量检索 (RAG) 与大模型 Prompt 上下文专用的切片结构规范",
+  "type": "object",
+  "required": [
+    "chunk_id",
+    "gua_id",
+    "gua_name",
+    "category",
+    "content",
+    "metadata"
+  ],
+  "properties": {
+    "chunk_id": {
+      "type": "string",
+      "description": "全局唯一ID，例如 'gua_01_guaci' 或 'gua_01_yao_2' 或 'gua_01_dim_shiye'"
+    },
+    "gua_id": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 64
+    },
+    "gua_name": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "classic_text",
+        "guaci_interpretation",
+        "yaoci_interpretation",
+        "domain_prediction",
+        "rules_logic"
+      ],
+      "description": "分块类型：经文原文、卦辞解读、逐爻断法、具体领域预测、象数推演规则"
+    },
+    "subcategory": {
+      "type": "string",
+      "description": "细分子类，例如 '事业', '婚恋', '疾病', '初九', '九五', '纳甲'"
+    },
+    "school": {
+      "type": "string",
+      "description": "学派/源流，例如 '邵雍河洛', '傅佩荣', '传统解卦', '张铭仁', '断易天机', '周易古经'"
+    },
+    "content": {
+      "type": "string",
+      "description": "高质量自包含文本，适合直接被 Embedding 模型向量化或作为 Prompt 上下文"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "检索过滤元数据",
+      "properties": {
+        "keywords": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "intent_tags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "用户算命意图标签，如 ['求职', '跳槽', '升官', '财运', '创业']"
+        },
+        "yao_position": {
+          "type": "integer",
+          "description": "爻位 (1-6)，若针对全卦则为 null"
+        }
+      }
+    }
+  }
+}

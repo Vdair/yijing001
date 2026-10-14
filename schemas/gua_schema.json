@@ -1,0 +1,181 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GuaKnowledgeSchema",
+  "description": "周易六十四卦单卦标准知识库数据结构规范",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "name_full",
+    "binary",
+    "symbol",
+    "trigram_upper",
+    "trigram_lower",
+    "palace",
+    "classic",
+    "interpretations",
+    "yaoci"
+  ],
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "文王六十四卦卦序 (1-64)",
+      "minimum": 1,
+      "maximum": 64
+    },
+    "name": {
+      "type": "string",
+      "description": "卦简称，如 '乾'"
+    },
+    "name_full": {
+      "type": "string",
+      "description": "卦全称，如 '乾为天'"
+    },
+    "binary": {
+      "type": "string",
+      "description": "六位二进制编码，由初爻到上爻（阳=1, 阴=0），如 '111111'",
+      "pattern": "^[01]{6}$"
+    },
+    "symbol": {
+      "type": "string",
+      "description": "Unicode卦象符号，如 '䷀'"
+    },
+    "nature": {
+      "type": "string",
+      "description": "卦性描述，如 '同卦相叠'、'异卦相叠'、'六冲卦' 等"
+    },
+    "trigram_upper": {
+      "type": "object",
+      "description": "上卦（外卦）信息",
+      "properties": {
+        "name": { "type": "string" },
+        "nature": { "type": "string" }
+      }
+    },
+    "trigram_lower": {
+      "type": "object",
+      "description": "下卦（内卦）信息",
+      "properties": {
+        "name": { "type": "string" },
+        "nature": { "type": "string" }
+      }
+    },
+    "palace": {
+      "type": "string",
+      "description": "所属八宫，如 '乾宫本位卦'、'离宫游魂卦'"
+    },
+    "classic": {
+      "type": "object",
+      "description": "经传古籍原文",
+      "required": ["guaci", "tuanci", "xiangci"],
+      "properties": {
+        "guaci": { "type": "string", "description": "卦辞原文" },
+        "tuanci": { "type": "string", "description": "彖辞原文" },
+        "xiangci": { "type": "string", "description": "大象辞原文" }
+      }
+    },
+    "interpretations": {
+      "type": "object",
+      "description": "卦辞多流派现代与传统断语解析",
+      "properties": {
+        "baihua": { "type": "string", "description": "白话通解" },
+        "duanyi_tianji": { "type": "string", "description": "断易天机断法" },
+        "shaoyong": {
+          "type": "object",
+          "properties": {
+            "phrase": { "type": "string" },
+            "detail": { "type": "string" }
+          }
+        },
+        "fupeirong": {
+          "type": "object",
+          "properties": {
+            "shiyun": { "type": "string" },
+            "caicun": { "type": "string" },
+            "jiazhai": { "type": "string" },
+            "shenti": { "type": "string" }
+          }
+        },
+        "chuantong": {
+          "type": "object",
+          "properties": {
+            "daxiang": { "type": "string" },
+            "yunshi": { "type": "string" },
+            "shiye": { "type": "string" },
+            "jingshang": { "type": "string" },
+            "qiuming": { "type": "string" },
+            "hunlian": { "type": "string" },
+            "juece": { "type": "string" },
+            "summary": { "type": "string" }
+          }
+        },
+        "zhangmingren": {
+          "type": "object",
+          "description": "精细拆分后的张铭仁解卦多维度断法",
+          "properties": {
+            "explanation": { "type": "string" },
+            "traits": { "type": "string" },
+            "yunshi": { "type": "string" },
+            "jiayun": { "type": "string" },
+            "jibing": { "type": "string" },
+            "taiyun": { "type": "string" },
+            "zinv": { "type": "string" },
+            "zhouzhuan": { "type": "string" },
+            "maimai": { "type": "string" },
+            "dengren": { "type": "string" },
+            "xunren": { "type": "string" },
+            "shiwu": { "type": "string" },
+            "waichu": { "type": "string" },
+            "kaoshi": { "type": "string" },
+            "susong": { "type": "string" },
+            "qiushi": { "type": "string" },
+            "gaihang": { "type": "string" },
+            "kaiye": { "type": "string" }
+          }
+        }
+      }
+    },
+    "yaoci": {
+      "type": "array",
+      "description": "六爻详细数据，按由初爻到上爻（索引 0-5）排列",
+      "minItems": 6,
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "required": ["position", "name", "original_text", "xiaoxiang"],
+        "properties": {
+          "position": { "type": "integer", "minimum": 1, "maximum": 6 },
+          "name": { "type": "string", "description": "如 '初九'、'六二'" },
+          "original_text": { "type": "string", "description": "爻辞原文" },
+          "xiaoxiang": { "type": "string", "description": "小象传原文" },
+          "baihua": { "type": "string", "description": "白话文解读" },
+          "shaoyong": {
+            "type": "object",
+            "properties": {
+              "fortune": { "type": "string", "enum": ["吉", "凶", "平"] },
+              "detail": { "type": "string" }
+            }
+          },
+          "fupeirong": {
+            "type": "object",
+            "properties": {
+              "shiyun": { "type": "string" },
+              "caicun": { "type": "string" },
+              "jiazhai": { "type": "string" },
+              "shenti": { "type": "string" }
+            }
+          },
+          "bian_gua": {
+            "type": "object",
+            "description": "该爻动爻后的变卦提示",
+            "properties": {
+              "target_gua_id": { "type": "integer" },
+              "target_gua_name": { "type": "string" },
+              "explanation": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
