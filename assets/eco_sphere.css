@@ -553,3 +553,197 @@ body, html {
   color: #fff;
   box-shadow: 0 0 10px rgba(244, 63, 94, 0.5);
 }
+
+/* Six Yao Timeline Scrubber (底部时间进度推进器) */
+.yao-timeline-bar {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(120px);
+  width: min(720px, 92vw);
+  padding: 16px 22px;
+  z-index: 15;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8), 0 0 24px rgba(212, 175, 55, 0.25);
+}
+
+.yao-timeline-bar.active {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.timeline-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tl-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--gold-light);
+  font-family: var(--font-serif);
+}
+
+.tl-icon {
+  font-size: 16px;
+}
+
+.tl-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tl-btn {
+  background: rgba(212, 175, 55, 0.15);
+  border: 1px solid var(--gold);
+  color: #fff;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s;
+}
+
+.tl-btn:hover {
+  background: var(--gold);
+  color: #0b0f19;
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.4);
+}
+
+.tl-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 2px 6px;
+  transition: color 0.2s;
+}
+
+.tl-close-btn:hover {
+  color: #fff;
+}
+
+/* Stage Info Box */
+.timeline-stage-info {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stage-tag {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.3), rgba(212, 175, 55, 0.1));
+  border: 1px solid var(--gold);
+  color: var(--gold-light);
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.stage-desc {
+  font-size: 13px;
+  color: #e2e8f0;
+  line-height: 1.5;
+  font-family: var(--font-serif);
+}
+
+/* Track & Step Buttons */
+.timeline-track-wrap {
+  position: relative;
+  margin-top: 4px;
+}
+
+.timeline-steps {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+  position: relative;
+  z-index: 2;
+}
+
+.tl-step-btn {
+  background: rgba(14, 18, 36, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  padding: 6px 4px;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  transition: all 0.25s;
+}
+
+.tl-step-btn span {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.tl-step-btn small {
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+.tl-step-btn:hover {
+  border-color: rgba(212, 175, 55, 0.5);
+  color: #fff;
+}
+
+.tl-step-btn.passed {
+  border-color: var(--gold);
+  color: var(--gold-light);
+  background: rgba(212, 175, 55, 0.12);
+}
+
+.tl-step-btn.current {
+  border-color: #fff;
+  color: #fff;
+  background: linear-gradient(135deg, var(--gold), #b89324);
+  box-shadow: 0 0 14px rgba(212, 175, 55, 0.5);
+}
+
+.tl-step-btn.current span,
+.tl-step-btn.current small {
+  color: #000;
+  font-weight: bold;
+}
+
+.timeline-progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.timeline-progress-fill {
+  width: 16.66%;
+  height: 100%;
+  background: linear-gradient(90deg, var(--cyan), var(--gold));
+  transition: width 0.35s ease;
+  box-shadow: 0 0 8px var(--gold);
+}

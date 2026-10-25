@@ -100,6 +100,40 @@
     <div class="hint-item"><span class="hint-key" id="btn-auto-rotate" style="cursor:pointer; background:rgba(212,175,55,0.2); border:1px solid var(--gold);">✨ 自动漫游</span></div>
   </div>
 
+  <!-- Six Yao Timeline Progress Scrubber -->
+  <div class="hud-panel yao-timeline-bar" id="yao-timeline-bar">
+    <div class="timeline-header">
+      <div class="tl-title">
+        <span class="tl-icon">⏳</span>
+        <b id="tl-gua-name">01. 乾为天 · 六爻时位演进</b>
+      </div>
+      <div class="tl-controls">
+        <button class="tl-btn" id="tl-btn-play" title="播放/暂停演进">▶ 自动演进</button>
+        <button class="tl-btn" id="tl-btn-reset" title="重置回初爻">↺ 初爻</button>
+        <button class="tl-close-btn" id="tl-btn-close" title="退出六爻演进">&times;</button>
+      </div>
+    </div>
+    
+    <div class="timeline-stage-info" id="tl-stage-info">
+      <span class="stage-tag" id="tl-stage-tag">初爻 · 潜伏生发</span>
+      <span class="stage-desc" id="tl-stage-desc">初爻地道之始：潜藏蓄力，未可施用。深扎根系，切忌急功近利。</span>
+    </div>
+
+    <div class="timeline-track-wrap">
+      <div class="timeline-steps" id="tl-steps-container">
+        <button class="tl-step-btn current" data-step="1"><span>初爻</span><small>基层潜伏</small></button>
+        <button class="tl-step-btn" data-step="2"><span>二爻</span><small>破土崭露</small></button>
+        <button class="tl-step-btn" data-step="3"><span>三爻</span><small>夹层危厉</small></button>
+        <button class="tl-step-btn" data-step="4"><span>四爻</span><small>审慎跃迁</small></button>
+        <button class="tl-step-btn" data-step="5"><span>五爻</span><small>至尊执中</small></button>
+        <button class="tl-step-btn" data-step="6"><span>上爻</span><small>极盛知退</small></button>
+      </div>
+      <div class="timeline-progress-bar">
+        <div class="timeline-progress-fill" id="tl-progress-fill"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- Right Detail Card (Glassmorphism Modal) -->
   <article class="hud-panel detail-card" id="detail-card">
     <button class="card-close-btn" id="card-close-btn" aria-label="关闭">&times;</button>
@@ -154,9 +188,12 @@
       </div>
     </div>
 
-    <div class="action-bar">
+        <div class="action-bar">
+      <button class="study-btn" id="btn-trigger-timeline" style="background:rgba(212,175,55,0.18); border:1px solid var(--gold); color:var(--gold-light);">
+        <span>⏳ 推进六爻时位演进</span>
+      </button>
       <a href="#" class="study-btn" id="study-btn">
-        <span>📖 进入此卦沉浸式自修课堂</span>
+        <span>📖 进入自修大课</span>
       </a>
     </div>
   </article>
