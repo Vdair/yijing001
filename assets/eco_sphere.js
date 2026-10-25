@@ -1,6 +1,7 @@
 /**
  * 易道六十四卦 3D 全息生态圈
  * Cosmic Hexagram 3D Ecosystem
+ * 特性：点击任意卦象触发【全息引力召唤排布】（错综互序卦优雅平滑移动至本卦四周，点击空白处平滑归位）
  */
 
 (function () {
@@ -18,6 +19,7 @@
   let activeNode = null;
   let currentMode = 'sphere';
   let activeRelationLines = [];
+  let summonedNodes = []; // 记录当前被召唤移动到附近的节点与原本位置
   const raycaster = new THREE.Raycaster();
   const mouse = new THREE.Vector2();
   let hoveredNode = null;
@@ -51,10 +53,10 @@
   function initScene() {
     scene = new THREE.Scene();
     scene.background = new THREE.Color(COLORS.bgSpace);
-    scene.fog = new THREE.FogExp2(COLORS.bgSpace, 0.0022);
+    scene.fog = new THREE.FogExp2(COLORS.bgSpace, 0.002);
 
     camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1500);
-    camera.position.set(0, 40, 260);
+    camera.position.set(0, 35, 250);
 
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -65,28 +67,27 @@
     controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
-    controls.minDistance = 25;
+    controls.minDistance = 20;
     controls.maxDistance = 550;
     controls.autoRotate = false;
     controls.autoRotateSpeed = 0.6;
 
     // Ambient & Directional Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
     scene.add(ambientLight);
 
-    const dirLight1 = new THREE.DirectionalLight(0xffeedd, 1.2);
+    const dirLight1 = new THREE.DirectionalLight(0xffeedd, 1.3);
     dirLight1.position.set(100, 150, 100);
     scene.add(dirLight1);
 
-    const dirLight2 = new THREE.DirectionalLight(0x88bbff, 0.8);
+    const dirLight2 = new THREE.DirectionalLight(0x88bbff, 0.9);
     dirLight2.position.set(-100, -100, -100);
     scene.add(dirLight2);
   }
 
-  // 2. Cosmic Dust & Taiji Core
+  // 2. Cosmic Background Elements
   function initBackgroundElements() {
-    // Cosmic dust particles
-    const particleCount = 1800;
+    const particleCount = 2000;
     const geometry = new THREE.BufferGeometry();
     const positions = new Float32Array(particleCount * 3);
     const colors = new Float32Array(particleCount * 3);
@@ -126,12 +127,11 @@
       color: 0x1e293b,
       wireframe: true,
       transparent: true,
-      opacity: 0.25
+      opacity: 0.22
     });
     centralTaiji = new THREE.Mesh(coreGeo, coreMat);
     scene.add(centralTaiji);
 
-    // Taiji outer aura rings
     const ringGeo = new THREE.RingGeometry(18, 18.5, 64);
     const ringMat = new THREE.MeshBasicMaterial({
       color: COLORS.gold,
@@ -144,7 +144,7 @@
     centralTaiji.add(ringMesh);
   }
 
-  // 3. Create 3D Hexagram Entities
+  // 3. Build Hexagram 3D Nodes
   function buildNodes() {
     data.forEach((item, idx) => {
       const group = new THREE.Group();
@@ -156,7 +156,6 @@
       const yaoWidth = 4.2;
       const yaoDepth = 0.5;
       const yaoGap = 0.35;
-      const totalYaoY = 6 * (yaoHeight + yaoGap);
 
       const yangMat = new THREE.MeshStandardMaterial({
         color: COLORS.gold,
@@ -199,7 +198,7 @@
       group.linesGroup = linesGroup;
 
       // Hit sphere for Raycaster & Halo
-      const hitRadius = 4.2;
+      const hitRadius = 4.5;
       const hitGeo = new THREE.SphereGeometry(hitRadius, 16, 16);
       const hitMat = new THREE.MeshBasicMaterial({
         color: item.isPiGua ? COLORS.red : COLORS.gold,
@@ -217,20 +216,27 @@
       group.add(sprite);
       group.labelSprite = sprite;
 
+      // Special Relationship Badge Sprite (initially hidden, used during summoning)
+      const relBadge = makeRelationBadgeSprite('');
+      relBadge.position.set(0, -3.8, 0);
+      relBadge.visible = false;
+      group.add(relBadge);
+      group.relBadgeSprite = relBadge;
+
       scene.add(group);
       nodes.push(group);
     });
   }
 
-  // Helper: Create Canvas Sprite Text
+  // Canvas Sprite Text Generator
   function makeTextSprite(title, symbol) {
     const canvas = document.createElement('canvas');
     canvas.width = 256;
     canvas.height = 100;
     const ctx = canvas.getContext('2d');
 
-    ctx.fillStyle = 'rgba(10, 14, 26, 0.75)';
-    ctx.strokeStyle = 'rgba(212, 175, 55, 0.6)';
+    ctx.fillStyle = 'rgba(10, 14, 26, 0.8)';
+    ctx.strokeStyle = 'rgba(212, 175, 55, 0.65)';
     ctx.lineWidth = 2;
     roundRect(ctx, 4, 4, 248, 92, 12);
     ctx.fill();
@@ -249,6 +255,37 @@
     return sprite;
   }
 
+  // Relation Badge Sprite (e.g., "错卦 · 对冲互补")
+  function makeRelationBadgeSprite(text, colorHex = '#f43f5e') {
+    const canvas = document.createElement('canvas');
+    canvas.width = 256;
+    canvas.height = 70;
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.minFilter = THREE.LinearFilter;
+    const spriteMat = new THREE.SpriteMaterial({ map: texture, transparent: true });
+    const sprite = new THREE.Sprite(spriteMat);
+    sprite.scale.set(7.0, 2.0, 1.0);
+    sprite.updateText = function (newText, newColorHex) {
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, 256, 70);
+      if (!newText) return;
+      ctx.fillStyle = 'rgba(14, 18, 36, 0.9)';
+      ctx.strokeStyle = newColorHex || '#f43f5e';
+      ctx.lineWidth = 3;
+      roundRect(ctx, 4, 4, 248, 62, 10);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.font = 'bold 28px "Noto Serif SC", serif';
+      ctx.fillStyle = newColorHex || '#f43f5e';
+      ctx.textAlign = 'center';
+      ctx.fillText(newText, 128, 44);
+      texture.needsUpdate = true;
+    };
+    if (text) sprite.updateText(text, colorHex);
+    return sprite;
+  }
+
   function roundRect(ctx, x, y, w, h, r) {
     ctx.beginPath();
     ctx.moveTo(x + r, y);
@@ -259,19 +296,17 @@
     ctx.closePath();
   }
 
-  // 4. Calculate Coordinates for Different Topologies
+  // 4. Calculate Coordinates for Topologies
   function calculatePositions() {
-    // 1) Celestial Sphere Mode (Based on Yang Count & Yin-Yang gradation)
+    // 1) Celestial Sphere Mode (Based on Yang Count)
     const R_SPHERE = 110;
-    // Group nodes by yang count (0 to 6)
     const levels = [[], [], [], [], [], [], []];
     nodes.forEach(n => {
       levels[n.userData.yangCount].push(n);
     });
 
     levels.forEach((list, levelIdx) => {
-      // Y from -R (level 0: Kun) to +R (level 6: Qian)
-      const latRatio = (levelIdx - 3) / 3; // -1 to +1
+      const latRatio = (levelIdx - 3) / 3;
       const y = latRatio * (R_SPHERE * 0.85);
       const r_ring = Math.sqrt(Math.max(0, R_SPHERE * R_SPHERE - y * y));
 
@@ -283,9 +318,9 @@
       });
     });
 
-    // 2) King Wen Spiral Ribbon Mode (DNA double helix cosmic track)
+    // 2) King Wen Spiral Ribbon Mode
     nodes.forEach((node, i) => {
-      const t = i / 63; // 0 to 1
+      const t = i / 63;
       const spiralRevs = 3.5;
       const angle = t * Math.PI * 2 * spiralRevs;
       const y = (t - 0.5) * 190;
@@ -295,10 +330,10 @@
       node.posSpiral = new THREE.Vector3(x, y, z);
     });
 
-    // 3) Eight Palaces Galaxy Mode (8 Spokes)
+    // 3) Eight Palaces Galaxy Mode
     nodes.forEach((node, i) => {
-      const palaceIdx = Math.floor(i / 8); // 0 to 7
-      const orderInPalace = i % 8; // 0 to 7
+      const palaceIdx = Math.floor(i / 8);
+      const orderInPalace = i % 8;
       const angle = (palaceIdx / 8) * Math.PI * 2;
       const dist = 40 + orderInPalace * 14;
       const y = (orderInPalace - 3.5) * 8;
@@ -308,79 +343,226 @@
     });
   }
 
-  // 5. Apply Position Transitions via TWEEN
+  // 5. Apply Mode Positions
+  function getHomePos(node, mode = currentMode) {
+    if (mode === 'sphere') return node.posSphere;
+    if (mode === 'spiral') return node.posSpiral;
+    if (mode === 'palaces') return node.posPalaces;
+    return node.posSphere;
+  }
+
   function applyPositions(mode, animate = true) {
     currentMode = mode;
+    dismissSummoned(false); // 模式切换时重置被召唤的排布
+
     nodes.forEach(node => {
-      let targetPos;
-      if (mode === 'sphere') targetPos = node.posSphere;
-      else if (mode === 'spiral') targetPos = node.posSpiral;
-      else if (mode === 'palaces') targetPos = node.posPalaces;
+      const targetPos = getHomePos(node, mode);
 
       if (!animate) {
         node.position.copy(targetPos);
         node.lookAt(0, 0, 0);
       } else {
         new TWEEN.Tween(node.position)
-          .to(targetPos, 1200)
+          .to(targetPos, 1100)
           .easing(TWEEN.Easing.Cubic.InOut)
           .start();
 
-        // Also smoothly adjust rotation to face center
         const dummy = new THREE.Object3D();
         dummy.position.copy(targetPos);
         dummy.lookAt(0, 0, 0);
         new TWEEN.Tween(node.rotation)
-          .to({ x: dummy.rotation.x, y: dummy.rotation.y, z: dummy.rotation.z }, 1200)
+          .to({ x: dummy.rotation.x, y: dummy.rotation.y, z: dummy.rotation.z }, 1100)
           .easing(TWEEN.Easing.Cubic.InOut)
           .start();
       }
     });
 
-    // Refresh active lines after movement
     if (activeNode) {
-      setTimeout(() => updateRelationLines(activeNode), animate ? 1250 : 50);
+      setTimeout(() => summonRelatedHexagrams(activeNode), animate ? 1150 : 50);
     }
   }
 
-  // 6. Draw 4D Topological Relation Lines
-  function updateRelationLines(sourceNode) {
-    clearRelationLines();
-    if (!sourceNode) return;
+  // 6. 【核心特性】全息引力召唤排布：将错卦、综卦、互卦、序卦优雅移动到本卦四周排列！
+  function summonRelatedHexagrams(centerNode) {
+    // 1) 先将之前被召唤的旧节点平滑飞回原位
+    dismissSummoned(true);
 
-    const sPos = sourceNode.position;
-    const d = sourceNode.userData;
+    if (!centerNode) return;
+    const d = centerNode.userData;
+    const cPos = centerNode.position;
 
-    const relations = [
-      { targetIdx: d.cuo.idx, color: COLORS.red, label: '错卦' },
-      { targetIdx: d.zong.idx, color: COLORS.green, label: '综卦' },
-      { targetIdx: d.hu.idx, color: COLORS.purple, label: '互卦' },
-      { targetIdx: d.next.idx, color: COLORS.cyan, label: '序卦' }
+    // 计算面向相机的基底坐标系（Right, Up, Forward），使环绕阵列完美正对观察视角！
+    const forward = new THREE.Vector3().subVectors(camera.position, cPos).normalize();
+    const up = camera.up.clone().normalize();
+    const right = new THREE.Vector3().crossVectors(up, forward).normalize();
+    const correctedUp = new THREE.Vector3().crossVectors(forward, right).normalize();
+
+    // 需召唤的四维关系定义与相对偏移
+    // 错卦在左侧，综卦在右侧，互卦在上方，序卦在下方
+    const DIST_H = 22; // 水平间距
+    const DIST_V = 16; // 垂直间距
+
+    const summonConfigs = [
+      {
+        type: 'cuo',
+        idx: d.cuo.idx,
+        label: '错卦 · 对冲互补',
+        colorHex: '#f43f5e',
+        colorVal: COLORS.red,
+        offset: right.clone().multiplyScalar(-DIST_H)
+      },
+      {
+        type: 'zong',
+        idx: d.zong.idx,
+        label: '综卦 · 换位思考',
+        colorHex: '#34d399',
+        colorVal: COLORS.green,
+        offset: right.clone().multiplyScalar(DIST_H)
+      },
+      {
+        type: 'hu',
+        idx: d.hu.idx,
+        label: '互卦 · 内生动力',
+        colorHex: '#c084fc',
+        colorVal: COLORS.purple,
+        offset: correctedUp.clone().multiplyScalar(DIST_V)
+      },
+      {
+        type: 'xu',
+        idx: d.next.idx,
+        label: '序卦 · 演进下阶',
+        colorHex: '#38bdf8',
+        colorVal: COLORS.cyan,
+        offset: correctedUp.clone().multiplyScalar(-DIST_V)
+      }
     ];
 
-    relations.forEach(rel => {
-      if (rel.targetIdx === undefined || rel.targetIdx === null) return;
-      const targetNode = nodes[rel.targetIdx];
+    // 非相关卦：透明度调暗为 0.12，突出本卦与四大关联卦的能量场
+    const activeIndices = new Set([
+      centerNode.userData.idx,
+      d.cuo.idx,
+      d.zong.idx,
+      d.hu.idx,
+      d.next.idx
+    ]);
+
+    nodes.forEach(n => {
+      const isRelated = activeIndices.has(n.userData.idx);
+      setNodeDimmed(n, !isRelated);
+    });
+
+    // 遍历执行召唤动画
+    summonConfigs.forEach(cfg => {
+      if (cfg.idx === undefined || cfg.idx === null) return;
+      const targetNode = nodes[cfg.idx];
+      // 如果目标卦与本卦相同（例如乾卦的综卦是自身），则跳过位移
+      if (!targetNode || targetNode === centerNode) return;
+
+      // 记录原本的真实宇宙家园坐标
+      const homePos = getHomePos(targetNode, currentMode).clone();
+      summonedNodes.push({
+        node: targetNode,
+        homePos: homePos,
+        relType: cfg.type
+      });
+
+      // 计算环绕目标位置：以本卦为中心加上偏移，同时向相机方向轻微浮出 3 个单位避免穿插
+      const targetPos = cPos.clone().add(cfg.offset).add(forward.clone().multiplyScalar(3));
+
+      // 1) 优雅平滑飞到位
+      new TWEEN.Tween(targetNode.position)
+        .to(targetPos, 850)
+        .easing(TWEEN.Easing.Back.Out)
+        .start();
+
+      // 2) 旋转正对相机
+      new TWEEN.Tween(targetNode.rotation)
+        .to({ x: camera.rotation.x, y: camera.rotation.y, z: camera.rotation.z }, 850)
+        .easing(TWEEN.Easing.Cubic.Out)
+        .start();
+
+      // 3) 放大发光
+      targetNode.scale.set(1.15, 1.15, 1.15);
+      targetNode.hitMesh.material.opacity = 0.35;
+      targetNode.hitMesh.material.color.setHex(cfg.colorVal);
+
+      // 4) 显示关系徽章 Sprite
+      targetNode.relBadgeSprite.updateText(cfg.label, cfg.colorHex);
+      targetNode.relBadgeSprite.visible = true;
+    });
+
+    // 绘制近距离紧凑的四维能量连线
+    setTimeout(() => {
+      updateRelationLines(centerNode, summonConfigs);
+    }, 400);
+  }
+
+  // 7. 【平滑归位】将召唤出来的相关卦放回星空，恢复全局状态
+  function dismissSummoned(keepActiveLines = false) {
+    if (!keepActiveLines) {
+      clearRelationLines();
+    }
+
+    if (summonedNodes.length > 0) {
+      summonedNodes.forEach(item => {
+        const node = item.node;
+        // 平滑飞回原始宇宙家园位置
+        new TWEEN.Tween(node.position)
+          .to(item.homePos, 700)
+          .easing(TWEEN.Easing.Cubic.Out)
+          .start();
+
+        // 旋转恢复面向中心
+        const dummy = new THREE.Object3D();
+        dummy.position.copy(item.homePos);
+        dummy.lookAt(0, 0, 0);
+        new TWEEN.Tween(node.rotation)
+          .to({ x: dummy.rotation.x, y: dummy.rotation.y, z: dummy.rotation.z }, 700)
+          .easing(TWEEN.Easing.Cubic.Out)
+          .start();
+
+        // 恢复原有尺度与材质
+        node.scale.set(1, 1, 1);
+        node.hitMesh.material.opacity = node.userData.isPiGua ? 0.18 : 0.08;
+        node.hitMesh.material.color.setHex(node.userData.isPiGua ? COLORS.red : COLORS.gold);
+        node.relBadgeSprite.visible = false;
+      });
+      summonedNodes = [];
+    }
+
+    // 恢复所有卦的亮度
+    nodes.forEach(n => setNodeDimmed(n, false));
+  }
+
+  // 8. 绘制四维能量光束
+  function updateRelationLines(sourceNode, configs) {
+    clearRelationLines();
+    if (!sourceNode || !configs) return;
+
+    const sPos = sourceNode.position;
+
+    configs.forEach(cfg => {
+      if (cfg.idx === undefined || cfg.idx === null) return;
+      const targetNode = nodes[cfg.idx];
       if (!targetNode || targetNode === sourceNode) return;
 
       const tPos = targetNode.position;
 
-      // Create an arc curve through space
+      // 弧形光束
       const mid = new THREE.Vector3().addVectors(sPos, tPos).multiplyScalar(0.5);
+      // 微妙弯曲
       const dist = sPos.distanceTo(tPos);
-      // Lift the arc slightly away from center
-      const normal = mid.clone().normalize();
-      mid.add(normal.multiplyScalar(dist * 0.25));
+      mid.y += dist * 0.12;
 
       const curve = new THREE.QuadraticBezierCurve3(sPos, mid, tPos);
-      const points = curve.getPoints(40);
+      const points = curve.getPoints(30);
       const geometry = new THREE.BufferGeometry().setFromPoints(points);
 
       const material = new THREE.LineBasicMaterial({
-        color: rel.color,
+        color: cfg.colorVal,
         transparent: true,
         opacity: 0.85,
-        linewidth: 2
+        linewidth: 2.5
       });
 
       const line = new THREE.Line(geometry, material);
@@ -398,42 +580,40 @@
     activeRelationLines = [];
   }
 
-  // 7. Focus on Selected Node
+  // 9. 选择卦象节点
   function selectNode(node, animateCamera = true) {
+    if (activeNode === node) return; // 已经是当前选中的卦
     activeNode = node;
 
-    // Reset scales
-    nodes.forEach(n => {
-      n.hitMesh.material.opacity = n.userData.isPiGua ? 0.18 : 0.08;
-      n.scale.set(1, 1, 1);
-    });
+    // 本卦高亮
+    node.scale.set(1.3, 1.3, 1.3);
+    node.hitMesh.material.opacity = 0.55;
+    node.hitMesh.material.color.setHex(COLORS.gold);
 
-    // Highlight selected
-    node.hitMesh.material.opacity = 0.5;
-    node.scale.set(1.25, 1.25, 1.25);
-
-    // Camera fly to node
+    // 相机平滑飞行推近
     if (animateCamera) {
       const targetPos = node.position;
       const dir = targetPos.clone().normalize();
-      const camTargetPos = targetPos.clone().add(dir.multiplyScalar(38));
+      // 在舒适距离观察本卦与环绕的四维星宿
+      const camTargetPos = targetPos.clone().add(dir.multiplyScalar(68));
 
       new TWEEN.Tween(camera.position)
-        .to(camTargetPos, 1000)
+        .to(camTargetPos, 900)
         .easing(TWEEN.Easing.Cubic.Out)
         .start();
 
       new TWEEN.Tween(controls.target)
-        .to(targetPos, 1000)
+        .to(targetPos, 900)
         .easing(TWEEN.Easing.Cubic.Out)
         .start();
     }
 
-    updateRelationLines(node);
+    // 触发【全息引力召唤排布】！
+    summonRelatedHexagrams(node);
     showDetailCard(node.userData);
   }
 
-  // 8. Populate & Display Detail Card
+  // 10. 全息详情卡片
   function showDetailCard(d) {
     document.getElementById('card-symbol').innerText = d.symbol;
     document.getElementById('card-title').innerText = `${d.idx + 1 < 10 ? '0' : ''}${d.idx + 1}. ${d.name}`;
@@ -454,13 +634,11 @@
 
     document.getElementById('card-motto').innerText = d.motto || '刚健笃实，辉光日新。';
 
-    // Set Relation Card Names
     document.getElementById('rel-cuo-name').innerText = d.cuo.name || '对冲卦';
     document.getElementById('rel-zong-name').innerText = d.zong.name || '颠倒卦';
     document.getElementById('rel-hu-name').innerText = d.hu.name || '内生互卦';
     document.getElementById('rel-xu-name').innerText = d.next.name || '下一阶段';
 
-    // Study Link
     const studyBtn = document.getElementById('study-btn');
     studyBtn.href = `learn.html?lesson=${encodeURIComponent(d.id)}`;
 
@@ -469,7 +647,7 @@
 
   function hideDetailCard() {
     detailCard.classList.remove('active');
-    clearRelationLines();
+    dismissSummoned(false);
     if (activeNode) {
       activeNode.scale.set(1, 1, 1);
       activeNode.hitMesh.material.opacity = activeNode.userData.isPiGua ? 0.18 : 0.08;
@@ -477,13 +655,13 @@
     }
   }
 
-  // 9. Event Listeners & UI Controls
+  // 11. 事件与交互
   function setupEvents() {
     window.addEventListener('resize', onWindowResize, false);
     renderer.domElement.addEventListener('mousemove', onMouseMove, false);
     renderer.domElement.addEventListener('click', onClick, false);
 
-    // View Mode Buttons
+    // 视图模式切换
     document.querySelectorAll('.mode-btn').forEach(btn => {
       btn.addEventListener('click', e => {
         document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
@@ -494,10 +672,10 @@
       });
     });
 
-    // Close Detail Card
+    // 关闭卡片
     document.getElementById('card-close-btn').addEventListener('click', hideDetailCard);
 
-    // Relation Nodes Click to Jump
+    // 详情卡片四维快捷跳转
     document.getElementById('rel-cuo').addEventListener('click', () => {
       if (activeNode && activeNode.userData.cuo.idx !== undefined) {
         selectNode(nodes[activeNode.userData.cuo.idx], true);
@@ -519,19 +697,31 @@
       }
     });
 
-    // Filter Selection
+    // 过滤器选择
     const filterSelect = document.getElementById('filter-select');
     filterSelect.addEventListener('change', e => {
       const val = e.target.value;
-      applyFilter(val);
+      dismissSummoned(false);
+      nodes.forEach(n => {
+        const d = n.userData;
+        let visible = true;
+        if (val === 'pi-gua') visible = d.isPiGua;
+        else if (val === 'upper-30') visible = d.idx < 30;
+        else if (val === 'lower-34') visible = d.idx >= 30;
+        else if (val.startsWith('part-')) {
+          const partIdx = parseInt(val.replace('part-', ''));
+          visible = Math.floor(d.idx / 8) + 1 === partIdx;
+        }
+        setNodeDimmed(n, !visible);
+      });
     });
 
-    // Search Input
+    // 搜索
     const searchInput = document.getElementById('search-input');
     searchInput.addEventListener('input', e => {
       const q = e.target.value.trim().toLowerCase();
       if (!q) {
-        nodes.forEach(n => setNodeDimmed(n, false));
+        dismissSummoned(false);
         return;
       }
       nodes.forEach(n => {
@@ -540,13 +730,13 @@
                       d.navTitle.toLowerCase().includes(q) ||
                       String(d.idx + 1) === q;
         setNodeDimmed(n, !match);
-        if (match && !activeNode) {
+        if (match && activeNode !== n) {
           selectNode(n, true);
         }
       });
     });
 
-    // Auto-Rotate Button
+    // 自动巡航漫游
     const autoRotateBtn = document.getElementById('btn-auto-rotate');
     autoRotateBtn.addEventListener('click', () => {
       isAutoRotating = !isAutoRotating;
@@ -555,28 +745,13 @@
     });
   }
 
-  function applyFilter(filterVal) {
-    nodes.forEach(n => {
-      const d = n.userData;
-      let visible = true;
-      if (filterVal === 'pi-gua') visible = d.isPiGua;
-      else if (filterVal === 'upper-30') visible = d.idx < 30;
-      else if (filterVal === 'lower-34') visible = d.idx >= 30;
-      else if (filterVal.startsWith('part-')) {
-        const partIdx = parseInt(filterVal.replace('part-', ''));
-        visible = Math.floor(d.idx / 8) + 1 === partIdx;
-      }
-      setNodeDimmed(n, !visible);
-    });
-  }
-
   function setNodeDimmed(node, dimmed) {
-    const opacity = dimmed ? 0.15 : 1.0;
+    const opacity = dimmed ? 0.12 : 1.0;
     node.linesGroup.children.forEach(mesh => {
       mesh.material.transparent = dimmed;
       mesh.material.opacity = opacity;
     });
-    node.labelSprite.material.opacity = dimmed ? 0.2 : 1.0;
+    node.labelSprite.material.opacity = dimmed ? 0.18 : 1.0;
     node.hitMesh.visible = !dimmed;
   }
 
@@ -599,11 +774,12 @@
       const node = hitObj.parent;
       if (hoveredNode !== node) {
         if (hoveredNode && hoveredNode !== activeNode) {
-          hoveredNode.scale.set(1, 1, 1);
+          const isSummoned = summonedNodes.some(s => s.node === hoveredNode);
+          hoveredNode.scale.set(isSummoned ? 1.15 : 1, isSummoned ? 1.15 : 1, isSummoned ? 1.15 : 1);
         }
         hoveredNode = node;
         if (node !== activeNode) {
-          node.scale.set(1.15, 1.15, 1.15);
+          node.scale.set(1.22, 1.22, 1.22);
         }
       }
       container.style.cursor = 'pointer';
@@ -613,7 +789,8 @@
       tooltip.innerText = `${node.userData.symbol} ${node.userData.idx + 1 < 10 ? '0' : ''}${node.userData.idx + 1}. ${node.userData.name}`;
     } else {
       if (hoveredNode && hoveredNode !== activeNode) {
-        hoveredNode.scale.set(1, 1, 1);
+        const isSummoned = summonedNodes.some(s => s.node === hoveredNode);
+        hoveredNode.scale.set(isSummoned ? 1.15 : 1, isSummoned ? 1.15 : 1, isSummoned ? 1.15 : 1);
       }
       hoveredNode = null;
       container.style.cursor = 'default';
@@ -622,39 +799,46 @@
   }
 
   function onClick(event) {
+    // 忽略点击在 HUD 面板上的事件
+    if (event.target.closest('.hud-panel')) return;
+
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
     raycaster.setFromCamera(mouse, camera);
     const hitMeshes = nodes.map(n => n.hitMesh);
     const intersects = raycaster.intersectObjects(hitMeshes);
 
     if (intersects.length > 0) {
+      // 命中某个卦节点
       const hitObj = intersects[0].object;
       const node = hitObj.parent;
       selectNode(node, true);
+    } else {
+      // 【点击空白星空区域】：优雅恢复原状！
+      hideDetailCard();
     }
   }
 
-  // 10. Animation Loop
+  // 12. 渲染循环
   function animate(time) {
     requestAnimationFrame(animate);
     TWEEN.update();
     controls.update();
 
-    // Cosmic background gentle rotation
     if (starfield) {
-      starfield.rotation.y += 0.0003;
+      starfield.rotation.y += 0.00025;
     }
     if (centralTaiji) {
-      centralTaiji.rotation.y -= 0.0008;
+      centralTaiji.rotation.y -= 0.0006;
     }
 
     renderer.render(scene, camera);
   }
 
-  // Initialize with Hexagram 1 (Qian) selected by default
+  // 默认启动时呈现全景，不强行召唤，用户随时点击体验引力聚合
   setTimeout(() => {
-    if (nodes.length > 0) {
-      selectNode(nodes[0], false);
-    }
-  }, 400);
+    // 平滑启动
+  }, 200);
 
 })();
