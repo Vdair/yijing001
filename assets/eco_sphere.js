@@ -23,7 +23,8 @@
   let currentMode = 'sphere';
   let activeRelationLines = [];
   let summonedNodes = [];
-  let isFocusLocked = false; // 是否处于四维拓扑研习锁定态
+  let isFocusLocked = false;
+  let focusVeilMesh; // 原生 3D 幕布，位于本卦后方遮蔽背景，保证卦在遮罩上方清晰呈现！ // 是否处于四维拓扑研习锁定态
   const raycaster = new THREE.Raycaster();
   const mouse = new THREE.Vector2();
   let hoveredNode = null;
@@ -146,6 +147,19 @@
     const ringMesh = new THREE.Mesh(ringGeo, ringMat);
     ringMesh.rotation.x = Math.PI / 2;
     centralTaiji.add(ringMesh);
+
+    // 3D Focus Veil (放置于被选卦象背后，遮蔽远处其余卦，使当前卦阵完全位于遮罩前表面清晰可见)
+    const veilGeo = new THREE.PlaneGeometry(600, 600);
+    const veilMat = new THREE.MeshBasicMaterial({
+      color: 0x050713,
+      transparent: true,
+      opacity: 0,
+      depthWrite: false,
+      side: THREE.DoubleSide
+    });
+    focusVeilMesh = new THREE.Mesh(veilGeo, veilMat);
+    focusVeilMesh.visible = false;
+    scene.add(focusVeilMesh);
   }
 
   // 3. Build Hexagram 3D Nodes
@@ -479,6 +493,17 @@
     if (focusBackdrop) {
       focusBackdrop.classList.add('active');
     }
+    // 将 3D 遮罩板精准定位到本卦的背后（背对相机方向后退 16 个单位）
+    if (focusVeilMesh) {
+      const veilPos = cPos.clone().sub(forward.clone().multiplyScalar(16));
+      focusVeilMesh.position.copy(veilPos);
+      focusVeilMesh.lookAt(camera.position);
+      focusVeilMesh.visible = true;
+      new TWEEN.Tween(focusVeilMesh.material)
+        .to({ opacity: 0.88 }, 500)
+        .easing(TWEEN.Easing.Cubic.Out)
+        .start();
+    }
   }
 
   // 7. 解除锁定，平滑归位
@@ -516,6 +541,15 @@
     isFocusLocked = false;
     if (focusBackdrop) {
       focusBackdrop.classList.remove('active');
+    }
+    if (focusVeilMesh && focusVeilMesh.visible) {
+      new TWEEN.Tween(focusVeilMesh.material)
+        .to({ opacity: 0 }, 450)
+        .easing(TWEEN.Easing.Cubic.Out)
+        .onComplete(() => {
+          focusVeilMesh.visible = false;
+        })
+        .start();
     }
   }
 
@@ -756,7 +790,7 @@
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
     raycaster.setFromCamera(mouse, camera);
-    const hitMeshes = nodes.map(n => n.hitMesh);
+    const hitMeshes = nodes.map(n => n.hitMesh).concat(focusVeilMesh ? [focusVeilMesh] : []);
     const intersects = raycaster.intersectObjects(hitMeshes);
 
     if (intersects.length > 0) {
@@ -806,12 +840,18 @@
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
     raycaster.setFromCamera(mouse, camera);
-    const hitMeshes = nodes.map(n => n.hitMesh);
+    const hitMeshes = nodes.map(n => n.hitMesh).concat(focusVeilMesh ? [focusVeilMesh] : []);
     const intersects = raycaster.intersectObjects(hitMeshes);
 
     if (intersects.length > 0) {
       const hitObj = intersects[0].object;
       const clickedNode = hitObj.parent;
+
+      // 点击了 3D 幕布，平滑恢复原状！
+      if (hitObj === focusVeilMesh) {
+        hideDetailCard();
+        return;
+      }
 
       // 如果处于【四维拓扑研习锁定态】：
       if (isFocusLocked) {
