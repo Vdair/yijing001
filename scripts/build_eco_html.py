@@ -1,0 +1,172 @@
+# -*- coding: utf-8 -*-
+import os
+
+html_content = '''<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>六十四卦 3D 全息生态圈 · 易道认知工坊</title>
+  <meta name="description" content="易经六十四卦 3D 全息交互生态圈，展现先天圆图、文王序卦螺旋与错综互四维拓扑引力场。">
+  <link rel="stylesheet" href="assets/eco_sphere.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- 3D WebGL Canvas Container -->
+  <div id="canvas-container"></div>
+
+  <!-- Floating Hover Tooltip -->
+  <div id="hover-tooltip"></div>
+
+  <!-- Header & Back Navigation -->
+  <header class="hud-panel header-bar">
+    <a href="index.html" class="nav-back-btn" title="返回课程工坊">
+      <span>←</span> 返回自修课堂
+    </a>
+    <div class="brand-title">
+      <div class="brand-icon">☯</div>
+      <div class="brand-text">
+        <h1>六十四卦 · 3D 全息生态圈</h1>
+        <p>COSMIC HEXAGRAM ECOSYSTEM · 错综互拓扑演进</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Top Center View Mode Selector -->
+  <nav class="hud-panel view-modes-bar" aria-label="演进视图模式">
+    <button class="mode-btn active" data-mode="sphere" id="btn-mode-sphere">
+      <span>🌐</span> 先天圆图天球
+    </button>
+    <button class="mode-btn" data-mode="spiral" id="btn-mode-spiral">
+      <span>🌀</span> 文王序卦螺旋
+    </button>
+    <button class="mode-btn" data-mode="palaces" id="btn-mode-palaces">
+      <span>🌌</span> 八宫同心星系
+    </button>
+  </nav>
+
+  <!-- Top Right Filters -->
+  <div class="hud-panel filter-bar">
+    <select id="filter-select" class="filter-select" title="筛选阶段">
+      <option value="all">显示全部六十四卦 (64)</option>
+      <option value="pi-gua">十二消息辟卦 (阴阳消长)</option>
+      <option value="upper-30">上经三十卦 (天道自然)</option>
+      <option value="lower-34">下经三十四卦 (人事人伦)</option>
+      <option value="part-1">第一阶 · 起步生发</option>
+      <option value="part-2">第二阶 · 积蓄谦和</option>
+      <option value="part-3">第三阶 · 破局涉险</option>
+      <option value="part-4">第四阶 · 盛极守正</option>
+      <option value="part-5">第五阶 · 逆境觉醒</option>
+      <option value="part-6">第六阶 · 损益转化</option>
+      <option value="part-7">第七阶 · 激变涅槃</option>
+      <option value="part-8">第八阶 · 周流大化</option>
+    </select>
+    <input type="text" id="search-input" class="search-input" placeholder="搜索卦名/编号...">
+  </div>
+
+  <!-- Bottom Left Legend -->
+  <aside class="hud-panel legend-panel">
+    <div class="legend-title">易理四维引力连线</div>
+    <div class="legend-item">
+      <div class="legend-line" style="background: var(--red);"></div>
+      <span>错卦 (对冲互补 / 六爻反转)</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-line" style="background: var(--green);"></div>
+      <span>综卦 (视角色变 / 旋转180°)</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-line" style="background: var(--purple);"></div>
+      <span>互卦 (深层骨架 / 二至五爻)</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-line" style="background: var(--cyan);"></div>
+      <span>序卦 (承前启后 / 演进因果)</span>
+    </div>
+  </aside>
+
+  <!-- Bottom Center Hint Controls -->
+  <div class="hud-panel hint-panel">
+    <div class="hint-item"><span class="hint-key">左键拖拽</span> 旋转星空</div>
+    <div class="hint-item"><span class="hint-key">滚轮滑动</span> 平滑缩放</div>
+    <div class="hint-item"><span class="hint-key">点击卦象</span> 聚焦与四维连线</div>
+    <div class="hint-item"><span class="hint-key" id="btn-auto-rotate" style="cursor:pointer; background:rgba(212,175,55,0.2); border:1px solid var(--gold);">✨ 自动漫游</span></div>
+  </div>
+
+  <!-- Right Detail Card (Glassmorphism Modal) -->
+  <article class="hud-panel detail-card" id="detail-card">
+    <button class="card-close-btn" id="card-close-btn" aria-label="关闭">&times;</button>
+    
+    <div class="card-header">
+      <div class="card-symbol-badge" id="card-symbol">䷀</div>
+      <div class="card-title-group">
+        <h2 id="card-title">01. 乾为天</h2>
+        <div class="card-tags" id="card-tags">
+          <span class="tag-badge" id="card-part">第一阶</span>
+          <span class="tag-badge" id="card-upper-lower">上乾下乾</span>
+          <span class="tag-badge pi-gua" id="card-pi-badge" style="display:none;">消息卦</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-section">
+      <div class="sec-label">卦德精义与心智真言</div>
+      <div class="motto-box" id="card-motto">
+        天行健，君子以自强不息。
+      </div>
+    </div>
+
+    <div class="card-section" id="card-pi-box" style="display:none;">
+      <div class="sec-label">十二辟卦时序能量</div>
+      <p style="font-size:13px; color:#fda4af;" id="card-pi-desc"></p>
+    </div>
+
+    <div class="card-section">
+      <div class="sec-label">四维拓扑互联 (点击切换视角)</div>
+      <div class="relation-matrix">
+        <div class="rel-node cuo" id="rel-cuo" title="点击定位到错卦">
+          <div class="rel-type" style="color:var(--red);">错卦 · 对抗互补</div>
+          <div class="rel-name" id="rel-cuo-name">坤为地</div>
+          <div class="rel-desc">阴阳对立 / 反思盲区</div>
+        </div>
+        <div class="rel-node zong" id="rel-zong" title="点击定位到综卦">
+          <div class="rel-type" style="color:var(--green);">综卦 · 换位思考</div>
+          <div class="rel-name" id="rel-zong-name">乾为天</div>
+          <div class="rel-desc">颠倒视界 / 对手观察</div>
+        </div>
+        <div class="rel-node hu" id="rel-hu" title="点击定位到互卦">
+          <div class="rel-type" style="color:var(--purple);">互卦 · 内生动力</div>
+          <div class="rel-name" id="rel-hu-name">乾为天</div>
+          <div class="rel-desc">二至五爻 / 深层动机</div>
+        </div>
+        <div class="rel-node xu" id="rel-xu" title="点击定位到下一卦">
+          <div class="rel-type" style="color:var(--cyan);">序卦 · 演进下阶</div>
+          <div class="rel-name" id="rel-xu-name">02. 坤为地</div>
+          <div class="rel-desc">物不可穷 / 承前启后</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-bar">
+      <a href="#" class="study-btn" id="study-btn">
+        <span>📖 进入此卦沉浸式自修课堂</span>
+      </a>
+    </div>
+  </article>
+
+  <!-- Load Scripts -->
+  <script src="assets/libs/three.min.js"></script>
+  <script src="assets/libs/OrbitControls.js"></script>
+  <script src="assets/libs/tween.umd.js"></script>
+  <script src="assets/eco_data.js"></script>
+  <script src="assets/eco_sphere.js"></script>
+</body>
+</html>
+'''
+
+with open('eco_sphere.html', 'w', encoding='utf-8') as f:
+    f.write(html_content)
+
+print("eco_sphere.html generated successfully.")
