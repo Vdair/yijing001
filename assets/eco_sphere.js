@@ -1,7 +1,10 @@
 /**
  * 易道六十四卦 3D 全息生态圈
  * Cosmic Hexagram 3D Ecosystem
- * 特性：点击任意卦象触发【全息引力召唤排布】（错综互序卦优雅平滑移动至本卦四周，点击空白处平滑归位）
+ * 特性：
+ * 1. 3D引力召唤：点击卦象将错/综/互/序卦平滑召唤至本卦四周整齐排布
+ * 2. 锁定研习态：召唤后激活全景暗光半透明蒙版，点击阵列内其他卦保持锁定不跳出，便于细致研读
+ * 3. 点击蒙版/恢复按钮：平滑倒流飞回原有宇宙轨道，恢复全景
  */
 
 (function () {
@@ -19,7 +22,8 @@
   let activeNode = null;
   let currentMode = 'sphere';
   let activeRelationLines = [];
-  let summonedNodes = []; // 记录当前被召唤移动到附近的节点与原本位置
+  let summonedNodes = [];
+  let isFocusLocked = false; // 是否处于四维拓扑研习锁定态
   const raycaster = new THREE.Raycaster();
   const mouse = new THREE.Vector2();
   let hoveredNode = null;
@@ -28,6 +32,8 @@
   const container = document.getElementById('canvas-container');
   const tooltip = document.getElementById('hover-tooltip');
   const detailCard = document.getElementById('detail-card');
+  const focusBackdrop = document.getElementById('focus-backdrop');
+  const btnRestorePill = document.getElementById('btn-restore-pill');
 
   // Materials & Colors
   const COLORS = {
@@ -72,7 +78,6 @@
     controls.autoRotate = false;
     controls.autoRotateSpeed = 0.6;
 
-    // Ambient & Directional Lights
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
     scene.add(ambientLight);
 
@@ -121,7 +126,6 @@
     starfield = new THREE.Points(geometry, material);
     scene.add(starfield);
 
-    // Center Taiji Orb
     const coreGeo = new THREE.SphereGeometry(14, 32, 32);
     const coreMat = new THREE.MeshBasicMaterial({
       color: 0x1e293b,
@@ -151,7 +155,6 @@
       group.userData = item;
       item.nodeGroup = group;
 
-      // 6 Yao Lines
       const yaoHeight = 0.55;
       const yaoWidth = 4.2;
       const yaoDepth = 0.5;
@@ -176,13 +179,11 @@
       item.lines.forEach((lineVal, lineIdx) => {
         const y = (lineIdx - 2.5) * (yaoHeight + yaoGap);
         if (lineVal === 1) {
-          // Yang (Solid)
           const geom = new THREE.BoxGeometry(yaoWidth, yaoHeight, yaoDepth);
           const mesh = new THREE.Mesh(geom, yangMat);
           mesh.position.set(0, y, 0);
           linesGroup.add(mesh);
         } else {
-          // Yin (Broken into two segments)
           const segWidth = (yaoWidth - 0.9) / 2;
           const geom1 = new THREE.BoxGeometry(segWidth, yaoHeight, yaoDepth);
           const geom2 = new THREE.BoxGeometry(segWidth, yaoHeight, yaoDepth);
@@ -197,7 +198,6 @@
       group.add(linesGroup);
       group.linesGroup = linesGroup;
 
-      // Hit sphere for Raycaster & Halo
       const hitRadius = 4.5;
       const hitGeo = new THREE.SphereGeometry(hitRadius, 16, 16);
       const hitMat = new THREE.MeshBasicMaterial({
@@ -210,13 +210,11 @@
       group.add(hitMesh);
       group.hitMesh = hitMesh;
 
-      // Sprite Label
       const sprite = makeTextSprite(`${item.idx + 1 < 10 ? '0' : ''}${item.idx + 1} ${item.name}`, item.symbol);
       sprite.position.set(0, 3.8, 0);
       group.add(sprite);
       group.labelSprite = sprite;
 
-      // Special Relationship Badge Sprite (initially hidden, used during summoning)
       const relBadge = makeRelationBadgeSprite('');
       relBadge.position.set(0, -3.8, 0);
       relBadge.visible = false;
@@ -228,7 +226,6 @@
     });
   }
 
-  // Canvas Sprite Text Generator
   function makeTextSprite(title, symbol) {
     const canvas = document.createElement('canvas');
     canvas.width = 256;
@@ -255,7 +252,6 @@
     return sprite;
   }
 
-  // Relation Badge Sprite (e.g., "错卦 · 对冲互补")
   function makeRelationBadgeSprite(text, colorHex = '#f43f5e') {
     const canvas = document.createElement('canvas');
     canvas.width = 256;
@@ -298,7 +294,6 @@
 
   // 4. Calculate Coordinates for Topologies
   function calculatePositions() {
-    // 1) Celestial Sphere Mode (Based on Yang Count)
     const R_SPHERE = 110;
     const levels = [[], [], [], [], [], [], []];
     nodes.forEach(n => {
@@ -318,7 +313,6 @@
       });
     });
 
-    // 2) King Wen Spiral Ribbon Mode
     nodes.forEach((node, i) => {
       const t = i / 63;
       const spiralRevs = 3.5;
@@ -330,7 +324,6 @@
       node.posSpiral = new THREE.Vector3(x, y, z);
     });
 
-    // 3) Eight Palaces Galaxy Mode
     nodes.forEach((node, i) => {
       const palaceIdx = Math.floor(i / 8);
       const orderInPalace = i % 8;
@@ -343,7 +336,6 @@
     });
   }
 
-  // 5. Apply Mode Positions
   function getHomePos(node, mode = currentMode) {
     if (mode === 'sphere') return node.posSphere;
     if (mode === 'spiral') return node.posSpiral;
@@ -353,7 +345,7 @@
 
   function applyPositions(mode, animate = true) {
     currentMode = mode;
-    dismissSummoned(false); // 模式切换时重置被召唤的排布
+    dismissSummoned(false);
 
     nodes.forEach(node => {
       const targetPos = getHomePos(node, mode);
@@ -382,25 +374,21 @@
     }
   }
 
-  // 6. 【核心特性】全息引力召唤排布：将错卦、综卦、互卦、序卦优雅移动到本卦四周排列！
+  // 6. 全息引力召唤排布并锁定
   function summonRelatedHexagrams(centerNode) {
-    // 1) 先将之前被召唤的旧节点平滑飞回原位
     dismissSummoned(true);
 
     if (!centerNode) return;
     const d = centerNode.userData;
     const cPos = centerNode.position;
 
-    // 计算面向相机的基底坐标系（Right, Up, Forward），使环绕阵列完美正对观察视角！
     const forward = new THREE.Vector3().subVectors(camera.position, cPos).normalize();
     const up = camera.up.clone().normalize();
     const right = new THREE.Vector3().crossVectors(up, forward).normalize();
     const correctedUp = new THREE.Vector3().crossVectors(forward, right).normalize();
 
-    // 需召唤的四维关系定义与相对偏移
-    // 错卦在左侧，综卦在右侧，互卦在上方，序卦在下方
-    const DIST_H = 22; // 水平间距
-    const DIST_V = 16; // 垂直间距
+    const DIST_H = 22;
+    const DIST_V = 16;
 
     const summonConfigs = [
       {
@@ -437,7 +425,6 @@
       }
     ];
 
-    // 非相关卦：透明度调暗为 0.12，突出本卦与四大关联卦的能量场
     const activeIndices = new Set([
       centerNode.userData.idx,
       d.cuo.idx,
@@ -451,14 +438,11 @@
       setNodeDimmed(n, !isRelated);
     });
 
-    // 遍历执行召唤动画
     summonConfigs.forEach(cfg => {
       if (cfg.idx === undefined || cfg.idx === null) return;
       const targetNode = nodes[cfg.idx];
-      // 如果目标卦与本卦相同（例如乾卦的综卦是自身），则跳过位移
       if (!targetNode || targetNode === centerNode) return;
 
-      // 记录原本的真实宇宙家园坐标
       const homePos = getHomePos(targetNode, currentMode).clone();
       summonedNodes.push({
         node: targetNode,
@@ -466,38 +450,38 @@
         relType: cfg.type
       });
 
-      // 计算环绕目标位置：以本卦为中心加上偏移，同时向相机方向轻微浮出 3 个单位避免穿插
       const targetPos = cPos.clone().add(cfg.offset).add(forward.clone().multiplyScalar(3));
 
-      // 1) 优雅平滑飞到位
       new TWEEN.Tween(targetNode.position)
         .to(targetPos, 850)
         .easing(TWEEN.Easing.Back.Out)
         .start();
 
-      // 2) 旋转正对相机
       new TWEEN.Tween(targetNode.rotation)
         .to({ x: camera.rotation.x, y: camera.rotation.y, z: camera.rotation.z }, 850)
         .easing(TWEEN.Easing.Cubic.Out)
         .start();
 
-      // 3) 放大发光
       targetNode.scale.set(1.15, 1.15, 1.15);
       targetNode.hitMesh.material.opacity = 0.35;
       targetNode.hitMesh.material.color.setHex(cfg.colorVal);
 
-      // 4) 显示关系徽章 Sprite
       targetNode.relBadgeSprite.updateText(cfg.label, cfg.colorHex);
       targetNode.relBadgeSprite.visible = true;
     });
 
-    // 绘制近距离紧凑的四维能量连线
     setTimeout(() => {
       updateRelationLines(centerNode, summonConfigs);
     }, 400);
+
+    // 激活蒙版与锁定状态
+    isFocusLocked = true;
+    if (focusBackdrop) {
+      focusBackdrop.classList.add('active');
+    }
   }
 
-  // 7. 【平滑归位】将召唤出来的相关卦放回星空，恢复全局状态
+  // 7. 解除锁定，平滑归位
   function dismissSummoned(keepActiveLines = false) {
     if (!keepActiveLines) {
       clearRelationLines();
@@ -506,13 +490,11 @@
     if (summonedNodes.length > 0) {
       summonedNodes.forEach(item => {
         const node = item.node;
-        // 平滑飞回原始宇宙家园位置
         new TWEEN.Tween(node.position)
           .to(item.homePos, 700)
           .easing(TWEEN.Easing.Cubic.Out)
           .start();
 
-        // 旋转恢复面向中心
         const dummy = new THREE.Object3D();
         dummy.position.copy(item.homePos);
         dummy.lookAt(0, 0, 0);
@@ -521,7 +503,6 @@
           .easing(TWEEN.Easing.Cubic.Out)
           .start();
 
-        // 恢复原有尺度与材质
         node.scale.set(1, 1, 1);
         node.hitMesh.material.opacity = node.userData.isPiGua ? 0.18 : 0.08;
         node.hitMesh.material.color.setHex(node.userData.isPiGua ? COLORS.red : COLORS.gold);
@@ -530,11 +511,15 @@
       summonedNodes = [];
     }
 
-    // 恢复所有卦的亮度
     nodes.forEach(n => setNodeDimmed(n, false));
+
+    isFocusLocked = false;
+    if (focusBackdrop) {
+      focusBackdrop.classList.remove('active');
+    }
   }
 
-  // 8. 绘制四维能量光束
+  // 8. 绘制四维连线
   function updateRelationLines(sourceNode, configs) {
     clearRelationLines();
     if (!sourceNode || !configs) return;
@@ -547,10 +532,7 @@
       if (!targetNode || targetNode === sourceNode) return;
 
       const tPos = targetNode.position;
-
-      // 弧形光束
       const mid = new THREE.Vector3().addVectors(sPos, tPos).multiplyScalar(0.5);
-      // 微妙弯曲
       const dist = sPos.distanceTo(tPos);
       mid.y += dist * 0.12;
 
@@ -580,21 +562,17 @@
     activeRelationLines = [];
   }
 
-  // 9. 选择卦象节点
+  // 9. 选择卦象
   function selectNode(node, animateCamera = true) {
-    if (activeNode === node) return; // 已经是当前选中的卦
     activeNode = node;
 
-    // 本卦高亮
     node.scale.set(1.3, 1.3, 1.3);
     node.hitMesh.material.opacity = 0.55;
     node.hitMesh.material.color.setHex(COLORS.gold);
 
-    // 相机平滑飞行推近
     if (animateCamera) {
       const targetPos = node.position;
       const dir = targetPos.clone().normalize();
-      // 在舒适距离观察本卦与环绕的四维星宿
       const camTargetPos = targetPos.clone().add(dir.multiplyScalar(68));
 
       new TWEEN.Tween(camera.position)
@@ -608,12 +586,11 @@
         .start();
     }
 
-    // 触发【全息引力召唤排布】！
     summonRelatedHexagrams(node);
     showDetailCard(node.userData);
   }
 
-  // 10. 全息详情卡片
+  // 10. 全息详情卡
   function showDetailCard(d) {
     document.getElementById('card-symbol').innerText = d.symbol;
     document.getElementById('card-title').innerText = `${d.idx + 1 < 10 ? '0' : ''}${d.idx + 1}. ${d.name}`;
@@ -661,6 +638,20 @@
     renderer.domElement.addEventListener('mousemove', onMouseMove, false);
     renderer.domElement.addEventListener('click', onClick, false);
 
+    // 点击蒙版恢复原状！
+    if (focusBackdrop) {
+      focusBackdrop.addEventListener('click', e => {
+        // 如果点击的是提示栏本身则不误关，点击蒙版空白区域或关闭按钮则恢复
+        if (e.target === focusBackdrop || e.target.id === 'btn-restore-pill') {
+          hideDetailCard();
+        }
+      });
+    }
+
+    if (btnRestorePill) {
+      btnRestorePill.addEventListener('click', hideDetailCard);
+    }
+
     // 视图模式切换
     document.querySelectorAll('.mode-btn').forEach(btn => {
       btn.addEventListener('click', e => {
@@ -672,28 +663,27 @@
       });
     });
 
-    // 关闭卡片
     document.getElementById('card-close-btn').addEventListener('click', hideDetailCard);
 
-    // 详情卡片四维快捷跳转
+    // 详情卡片点击四维卦名：在当前研习态下切换详情卡展示，不解散阵列
     document.getElementById('rel-cuo').addEventListener('click', () => {
       if (activeNode && activeNode.userData.cuo.idx !== undefined) {
-        selectNode(nodes[activeNode.userData.cuo.idx], true);
+        showDetailCard(nodes[activeNode.userData.cuo.idx].userData);
       }
     });
     document.getElementById('rel-zong').addEventListener('click', () => {
       if (activeNode && activeNode.userData.zong.idx !== undefined) {
-        selectNode(nodes[activeNode.userData.zong.idx], true);
+        showDetailCard(nodes[activeNode.userData.zong.idx].userData);
       }
     });
     document.getElementById('rel-hu').addEventListener('click', () => {
       if (activeNode && activeNode.userData.hu.idx !== undefined) {
-        selectNode(nodes[activeNode.userData.hu.idx], true);
+        showDetailCard(nodes[activeNode.userData.hu.idx].userData);
       }
     });
     document.getElementById('rel-xu').addEventListener('click', () => {
       if (activeNode && activeNode.userData.next.idx !== undefined) {
-        selectNode(nodes[activeNode.userData.next.idx], true);
+        showDetailCard(nodes[activeNode.userData.next.idx].userData);
       }
     });
 
@@ -772,6 +762,17 @@
     if (intersects.length > 0) {
       const hitObj = intersects[0].object;
       const node = hitObj.parent;
+
+      // 如果处于锁定态，仅高亮当前阵列中的卦
+      if (isFocusLocked) {
+        const isRelated = node === activeNode || summonedNodes.some(s => s.node === node);
+        if (!isRelated) {
+          container.style.cursor = 'default';
+          tooltip.style.display = 'none';
+          return;
+        }
+      }
+
       if (hoveredNode !== node) {
         if (hoveredNode && hoveredNode !== activeNode) {
           const isSummoned = summonedNodes.some(s => s.node === hoveredNode);
@@ -799,7 +800,6 @@
   }
 
   function onClick(event) {
-    // 忽略点击在 HUD 面板上的事件
     if (event.target.closest('.hud-panel')) return;
 
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -810,12 +810,26 @@
     const intersects = raycaster.intersectObjects(hitMeshes);
 
     if (intersects.length > 0) {
-      // 命中某个卦节点
       const hitObj = intersects[0].object;
-      const node = hitObj.parent;
-      selectNode(node, true);
+      const clickedNode = hitObj.parent;
+
+      // 如果处于【四维拓扑研习锁定态】：
+      if (isFocusLocked) {
+        const isCurrentCluster = clickedNode === activeNode || summonedNodes.some(s => s.node === clickedNode);
+        if (isCurrentCluster) {
+          // 在阵列内点击某个卦，仅切换右侧详情卡并微调高亮，保持锁定不跳出！
+          showDetailCard(clickedNode.userData);
+          return;
+        } else {
+          // 点击了远处无关背景卦：在锁定态下不做任何切换，避免误触！
+          return;
+        }
+      }
+
+      // 未锁定态：正常触发引力召唤
+      selectNode(clickedNode, true);
     } else {
-      // 【点击空白星空区域】：优雅恢复原状！
+      // 点击了空白星空区域：平滑恢复原状！
       hideDetailCard();
     }
   }
@@ -835,10 +849,5 @@
 
     renderer.render(scene, camera);
   }
-
-  // 默认启动时呈现全景，不强行召唤，用户随时点击体验引力聚合
-  setTimeout(() => {
-    // 平滑启动
-  }, 200);
 
 })();
