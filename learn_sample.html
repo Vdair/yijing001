@@ -1,0 +1,2353 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-no-floating-switcher>
+<head>
+<meta charset="UTF-8">
+<link rel="icon" href="assets/favicon.ico" type="image/x-icon">
+<link rel="stylesheet" href="partners.css?v=20260903c">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>学 AI 产品，从入门到精通 · 课程学习 | 小山学堂</title>
+<meta name="description" content="洛小山主讲的 AI 产品经理培训课程，按主题系统学习：大模型原理、Prompt 工程、RAG、Agent、成本优化。Wiki 式左右布局，支持学习进度记录。">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://xueai.miyang.cn/slides/learn.html">
+<meta property="og:url" content="https://xueai.miyang.cn/slides/learn.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="学 AI 产品，从入门到精通 · 课程学习">
+<meta property="og:description" content="洛小山主讲的 AI 产品经理培训课程，按主题系统学习：大模型原理、Prompt 工程、RAG、Agent、成本优化。Wiki 式左右布局，支持学习进度记录。">
+<meta property="og:image" content="https://xueai.miyang.cn/slides/og/learn.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:site_name" content="xueai.miyang.cn · AI 产品经理培训">
+<meta property="og:locale" content="zh_CN">
+<link rel="alternate" hreflang="zh-CN" href="https://xueai.miyang.cn/slides/learn.html">
+<link rel="alternate" hreflang="en" href="https://xueai.miyang.cn/slides/learn.en.html">
+<link rel="alternate" hreflang="ko" href="https://xueai.miyang.cn/slides/learn.ko.html">
+<link rel="alternate" hreflang="zh-TW" href="https://xueai.miyang.cn/slides/learn.tw.html">
+<link rel="alternate" hreflang="zh-HK" href="https://xueai.miyang.cn/slides/learn.hk.html">
+<link rel="alternate" hreflang="zh-MO" href="https://xueai.miyang.cn/slides/learn.hk.html">
+<link rel="alternate" hreflang="x-default" href="https://xueai.miyang.cn/slides/learn.html">
+<script>
+(function(){
+  try{
+    var t = localStorage.getItem('ai_course_theme') || 'light';
+    document.documentElement.setAttribute('data-theme', t);
+  }catch(e){ document.documentElement.setAttribute('data-theme','light'); }
+  /* 宽屏收起目录的偏好要在首屏绘制前就加上，否则侧栏会先闪一下再滑走 */
+  try{
+    if(localStorage.getItem('xueai_sidebar_collapsed')==='1')
+      document.documentElement.classList.add('nav-drawer');
+  }catch(e){}
+})();
+</script>
+<style>
+/* .xa-group 的同名规则由 auth.js 重复注入；auth.js 在页面底部加载，这里必须先垫一份静态外观，否则脚本执行前 SVG 会按默认尺寸撑开导航 */
+.xa-group{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:#059669;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);height:var(--xa-ctl-h);padding:0 14px;border-radius:var(--xa-ctl-r);text-decoration:none;white-space:nowrap;}
+.xa-group svg{width:14px;height:14px;flex:none;}
+@media(max-width:600px){.xa-group .xa-group-txt{display:none;}.xa-group{padding:0 9px;}}
+
+:root{
+  --topbar-h:56px;
+  /* 顶栏控件的统一高度与圆角：分享、主题、交流群、语言、账号按钮共用一档，
+     auth.js 注入的那几个也读这里，避免各写各的尺寸拼出一排高低不齐的按钮 */
+  --xa-ctl-h:36px;
+  --xa-ctl-r:10px;
+  --sidebar-w:308px;
+  /* 侧栏底部的公众号条和右侧翻页条共用这个高度，两条底栏才是平的。
+     82 是翻页条撑出来的：12 内边距 + 57 按钮 + 12 + 1 上边框 */
+  --footbar-h:82px;
+  /* 主色：墨绿。深浅色各自覆盖（见下），深色下需要提亮才够对比度。
+     --green 不再单独存在一个亮绿，统一并到主色，避免侧栏出现两种绿。 */
+  --accent:#146b54;
+  --accent-hover:#0f5643;
+  --accent2:#2f9070;
+  --green:#146b54;
+}
+/* ── 浅色主题（默认） ── */
+:root,[data-theme="light"]{
+  --bg:#f4f4f6;
+  --side:#ffffff;
+  --panel:#e5e2da;
+  --topbar-bg:#ffffff;
+  --topbar-border:rgba(0,0,0,0.07);
+  --tb-text-h:#111827;
+  --tb-text-s:#6b7280;
+  --tb-text-f:#9ca3af;
+  --tb-hover:rgba(0,0,0,0.05);
+  --tb-bar:rgba(0,0,0,0.08);
+  --bar-bg:#ffffff;
+  --border:rgba(0,0,0,0.07);
+  --text-m:#111827;
+  --text-sub:#4b5563;
+  --text-faint:#9ca3af;
+  --hover:#f9fafb;
+  --hover2:rgba(0,0,0,0.04);
+  --tcount-bg:#f3f4f6;
+  --tcount-fg:#9ca3af;
+  --tcount-done-bg:#e9f2ee;
+  --tcount-done-fg:#146b54;
+  --search-bg:#eef0f3;
+  --active-bg:#e9f2ee;
+}
+/* ── 深色主题 ── */
+[data-theme="dark"]{
+  --bg:#101512;
+  --side:#141a16;
+  --panel:#101512;
+  --topbar-bg:#0d120f;
+  --topbar-border:rgba(255,255,255,0.08);
+  --tb-text-h:#ffffff;
+  --tb-text-s:rgba(255,255,255,0.6);
+  --tb-text-f:rgba(255,255,255,0.35);
+  --tb-hover:rgba(255,255,255,0.08);
+  --tb-bar:rgba(255,255,255,0.1);
+  --bar-bg:#141a16;
+  --border:rgba(255,255,255,0.08);
+  --text-m:#f3f4f6;
+  --text-sub:rgba(255,255,255,0.6);
+  --text-faint:rgba(255,255,255,0.38);
+  --hover:rgba(255,255,255,0.05);
+  --hover2:rgba(255,255,255,0.06);
+  --tcount-bg:rgba(255,255,255,0.08);
+  --tcount-fg:rgba(255,255,255,0.45);
+  --tcount-done-bg:rgba(92,181,149,0.18);
+  --tcount-done-fg:#7bd0b1;
+  --search-bg:rgba(255,255,255,0.08);
+  --active-bg:rgba(92,181,149,0.15);
+  /* 墨绿在深底上对比度不够，提亮一档 */
+  --accent:#5cb595;
+  --accent-hover:#74c7a9;
+  --accent2:#8fd4bb;
+  --green:#5cb595;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Helvetica Neue",sans-serif;
+  background:var(--bg);
+  color:var(--text-m);
+  -webkit-font-smoothing:antialiased;
+  overflow:hidden;
+  transition:background .25s ease,color .25s ease;
+}
+
+/* ────── 顶栏 ────── */
+.topbar{
+  position:fixed;top:0;left:0;right:0;
+  height:var(--topbar-h);z-index:100;
+  display:flex;align-items:center;gap:12px;
+  padding:0 20px;
+  background:var(--topbar-bg);
+  border-bottom:1px solid var(--topbar-border);
+  transition:background .25s ease,border-color .25s ease;
+}
+.menu-btn{
+  display:flex;width:36px;height:36px;
+  border:none;background:transparent;border-radius:8px;
+  cursor:pointer;color:var(--tb-text-s);
+  flex-shrink:0;align-items:center;justify-content:center;
+  transition:all .2s;
+}
+.menu-btn:hover{background:var(--tb-hover);color:var(--tb-text-h);}
+.menu-btn svg{width:18px;height:18px;}
+.menu-btn .ico-expand{display:none;}
+/* 侧栏收起后换成展开图标；抽屉滑出来时再换回收起 */
+html.nav-drawer .menu-btn .ico-collapse{display:none;}
+html.nav-drawer .menu-btn .ico-expand{display:block;}
+html.nav-drawer body.nav-open .menu-btn .ico-collapse{display:block;}
+html.nav-drawer body.nav-open .menu-btn .ico-expand{display:none;}
+/* 品牌块占满侧栏那一格，面包屑就正好从课件正文的左边缘起头——侧栏那条竖线
+   和面包屑的左沿连成一条，顶栏才不像是浮在上面的另一层。+6px 是拖拽条的宽度。
+   左上角收起键常驻 36px，外加顶栏 12px gap，从品牌占宽里扣掉，才对得上正文左沿。
+   用 min-width 而不是 width：侧栏被拖得比品牌名还窄时，宁可对不齐，也不能把
+   「学 AI 产品，从入门到精通」压成省略号。 */
+.brand{
+  display:flex;align-items:center;gap:10px;text-decoration:none;
+  flex:none;min-width:calc(var(--sidebar-w) - 74px);
+  transition:min-width .3s cubic-bezier(0.4,0,0.2,1);
+}
+.brand-mark{
+  width:34px;height:34px;border-radius:8px;flex-shrink:0;
+  overflow:hidden;
+}
+.brand-mark img{
+  width:100%;height:100%;object-fit:cover;border-radius:8px;
+}
+.brand-name{
+  font-size:14px;font-weight:700;color:var(--tb-text-h);
+  white-space:nowrap;letter-spacing:-0.2px;
+}
+.brand-sub{font-size:11px;color:var(--tb-text-f);white-space:nowrap;margin-top:1px;}
+.topbar-space{flex:1;}
+
+/* 面包屑在上、进度条在下叠成一组，占据顶栏中段。
+   两者本来一个居左一个绝对居中，各说各的；叠起来之后
+   「你在哪一节」和「整体走到哪」变成一句话，右边也让出了空位。
+   宽度交给 flex + min-width:0，截断由 CSS 处理，不再需要 JS 实测。 */
+.tb-center{
+  flex:1;min-width:0;max-width:560px;margin:0 auto;
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+}
+.prog-wrap{
+  position:relative;width:100%;
+  display:flex;align-items:center;gap:9px;
+  font-size:11px;font-weight:600;color:var(--tb-text-f);
+}
+.prog-bar{
+  flex:1;min-width:0;height:3px;border-radius:2px;
+  background:var(--tb-bar);overflow:hidden;
+}
+/* 纯色不渐变：渐变要两个色，等于凭空多一个强调色 */
+.prog-bar i{
+  display:block;height:100%;width:0;
+  background:var(--accent);
+  transition:width .4s ease;border-radius:2px;
+}
+#progText{flex:none;font-variant-numeric:tabular-nums;letter-spacing:.2px;}
+.cert-link{
+  display:none;
+  font-size:12px;font-weight:700;white-space:nowrap;
+  color:#a97b1f !important;
+  background:rgba(185,138,47,0.12);
+  border:1px solid rgba(185,138,47,0.35);
+  border-radius:8px;padding:4px 10px;
+  transition:all .15s;
+}
+.cert-link:hover{background:rgba(185,138,47,0.22);transform:translateY(-1px);}
+.cert-link.show{display:inline-block;}
+
+/* 进度条 hover 浮层：把「学完能拿到什么」提前摊开给用户看，维持目标感。
+   证书样张由 ops/gen-cert-preview.py 从真证书渲染，改版式后需重跑。 */
+.cert-peek{
+  position:absolute;top:calc(100% + 14px);right:0;
+  width:288px;padding:12px;
+  background:var(--topbar-bg);
+  border:1px solid var(--border);
+  border-radius:14px;
+  box-shadow:0 18px 44px rgba(0,0,0,0.16);
+  opacity:0;visibility:hidden;transform:translateY(-6px);
+  transition:opacity .18s ease,transform .18s ease,visibility .18s;
+  z-index:120;cursor:default;
+}
+.cert-peek::before{     /* 指向进度条的小尖角 */
+  content:"";position:absolute;top:-5px;right:44px;
+  width:9px;height:9px;transform:rotate(45deg);
+  background:var(--topbar-bg);
+  border-left:1px solid var(--border);border-top:1px solid var(--border);
+}
+.cert-peek::after{      /* 补上浮层与触发区之间的空隙，避免鼠标划过时闪断 */
+  content:"";position:absolute;top:-14px;left:0;right:0;height:14px;
+}
+.prog-wrap:hover .cert-peek,
+.prog-wrap:focus-within .cert-peek{
+  opacity:1;visibility:visible;transform:translateY(0);
+}
+.cp-title{
+  font-size:12.5px;font-weight:700;color:var(--tb-text-h);
+  display:flex;align-items:center;gap:6px;margin-bottom:9px;
+}
+.cp-img{
+  display:block;width:100%;height:auto;border-radius:8px;
+  border:1px solid var(--border);background:#fff;
+}
+.cp-foot{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  margin-top:10px;
+}
+.cp-note{font-size:11.5px;font-weight:600;color:var(--tb-text-f);}
+.cp-note b{color:#a97b1f;}
+.cp-cta{
+  flex-shrink:0;font-size:11.5px;font-weight:700;white-space:nowrap;
+  color:#a97b1f !important;
+  background:rgba(185,138,47,0.12);
+  border:1px solid rgba(185,138,47,0.32);
+  border-radius:7px;padding:4px 10px;transition:all .15s;
+}
+.cp-cta:hover{background:rgba(185,138,47,0.22);}
+.topbar a{text-decoration:none;}
+.top-btn{
+  font-size:13px;font-weight:600;
+  padding:7px 14px;border-radius:9px;
+  transition:all .2s;white-space:nowrap;
+}
+.top-btn.ghost{
+  color:var(--tb-text-s);background:transparent;
+  border:1px solid var(--topbar-border);
+}
+.top-btn.ghost:hover{
+  color:var(--tb-text-h);background:var(--tb-hover);
+}
+/* 主题切换按钮 */
+.theme-btn{
+  width:var(--xa-ctl-h);height:var(--xa-ctl-h);flex-shrink:0;
+  border:1px solid var(--topbar-border);background:transparent;
+  border-radius:var(--xa-ctl-r);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--tb-text-s);transition:all .2s;
+}
+.theme-btn:hover{background:var(--tb-hover);color:var(--tb-text-h);}
+.theme-btn svg{width:17px;height:17px;}
+.theme-btn .ico-moon{display:none;}
+.theme-btn .ico-sun{display:block;}
+[data-theme="dark"] .theme-btn .ico-moon{display:block;}
+[data-theme="dark"] .theme-btn .ico-sun{display:none;}
+
+/* ────── 布局 ────── */
+.layout{
+  display:grid;height:100%;
+  grid-template-columns:var(--sidebar-w) 6px minmax(0,1fr);
+  grid-template-rows:minmax(0,1fr);
+  padding-top:var(--topbar-h);
+  transition:grid-template-columns .3s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* ────── 侧边栏 ────── */
+.sidebar{
+  width:var(--sidebar-w);min-width:0;min-height:0;height:100%;
+  background:var(--side);
+  display:flex;flex-direction:column;
+  transition:transform .3s cubic-bezier(0.4,0,0.2,1),background .25s ease;
+  will-change:transform;
+}
+/* ── 侧边栏拖拽调宽 ── */
+.sidebar-resizer{
+  width:6px;min-width:0;cursor:col-resize;
+  position:relative;z-index:30;
+  /* 热区要 6px 才好点中，但底色必须跟着侧栏走：
+     留成透明会露出页面底色，看着就是一条 6px 宽的粗灰带 */
+  background:var(--side);
+}
+.sidebar-resizer::after{
+  content:'';position:absolute;top:0;bottom:0;right:0;width:1px;
+  background:var(--border);transition:background .15s,width .15s;
+}
+.sidebar-resizer:hover::after,
+body.sb-resizing .sidebar-resizer::after{background:var(--accent);width:2px;}
+body.sb-resizing{cursor:col-resize;user-select:none;}
+body.sb-resizing iframe{pointer-events:none;}
+
+.search-wrap{
+  height:52px;min-height:52px;flex-shrink:0;
+  display:flex;align-items:center;position:relative;
+  padding:0 14px;
+}
+.search-wrap input{
+  width:100%;height:36px;
+  border:none;border-radius:10px;
+  padding:0 40px 0 34px;font-size:13px;
+  background:var(--search-bg);color:var(--text-m);outline:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23aaa' stroke-width='2.5'><circle cx='11' cy='11' r='8'/><path d='m21 21-4.3-4.3'/></svg>");
+  background-repeat:no-repeat;background-position:11px center;
+  transition:all .2s;
+}
+/* 光晕从主色派生，深浅主题各自的 --accent 都能跟上，不用写两套 */
+.search-wrap input:focus{
+  box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.search-wrap input::placeholder{color:var(--text-faint);}
+/* ── 让 Alice 搜一搜（PRD 36）──────────────────────────────────────────
+   目录搜索只做「标题/正文里有没有这个词」，答不了「这几页什么关系、先看哪一页」。
+   这一行把当前搜索词交给课件 iframe 里的 Alice，由她查库列课件。
+   用她的淡金（#C9962E，与回答里 ==高亮== 同一支色）而不是站点蓝：这一行是她的
+   地盘，视觉上要和上面的目录筛选分开。 */
+.alice-search{
+  display:flex;align-items:center;gap:7px;
+  width:calc(100% - 28px);margin:0 14px 10px;
+  height:32px;padding:0 11px;
+  border:1px solid rgba(201,150,46,.30);border-radius:9px;
+  background:rgba(201,150,46,.10);color:#8a6414;
+  font-size:12.5px;font-weight:600;text-align:left;cursor:pointer;
+  transition:background .18s,border-color .18s;
+}
+.alice-search[hidden]{display:none;}
+.alice-search:hover{background:rgba(201,150,46,.18);border-color:rgba(201,150,46,.48);}
+.alice-search:focus-visible{outline:2px solid #C9962E;outline-offset:1px;}
+.alice-search svg{flex-shrink:0;}
+.alice-search .as-txt{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+[data-theme="dark"] .alice-search{
+  color:#e3b95f;background:rgba(201,150,46,.14);border-color:rgba(201,150,46,.34);
+}
+[data-theme="dark"] .alice-search:hover{background:rgba(201,150,46,.22);}
+/* ── 学习路线精简目录：下拉与 roadmap.html 的路线卡共用 ai_build_route_v1 ── */
+.route-wrap{flex-shrink:0;padding:0 14px 10px;}
+.route-wrap select{
+  width:100%;height:32px;appearance:none;-webkit-appearance:none;
+  border:none;border-radius:9px;padding:0 32px;font-size:12.5px;font-weight:600;
+  background:var(--search-bg);color:var(--text-m);outline:none;cursor:pointer;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='%23aaa' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'><path d='M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z'/><circle cx='12' cy='10' r='3'/></svg>"),url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23aaa' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>");
+  background-repeat:no-repeat,no-repeat;
+  background-position:11px center,right 11px center;
+  transition:box-shadow .2s;
+}
+.route-wrap select:focus{box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);}
+@keyframes routeSelFlash{
+  0%,100%{box-shadow:0 0 0 0 color-mix(in srgb, var(--accent) 0%, transparent);}
+  50%{box-shadow:0 0 0 4px color-mix(in srgb, var(--accent) 42%, transparent);}
+}
+.route-wrap select.flash{animation:routeSelFlash .65s ease-in-out 2;}
+/* 路线外的主题整块收起；整章都在路线外时保留篇章头但灰显，注明收起了多少节 */
+.topic-block.route-off{display:none;}
+/* 正在读的主题落在路线外时不收起，但要标出来，免得用户以为自己的路线变了 */
+.topic-block.route-guest{border-left:2px dashed var(--border);}
+.part-divider .route-note{display:none;font-size:11px;color:var(--text-faint);margin-top:2px;}
+.part-divider.route-trim .route-note{display:block;}
+.part-divider.route-dim{opacity:.45;cursor:help;}
+/* 搜索优先于路线：搜索词非空时临时放开精简，命中结果不受影响 */
+.nav-tree.searching .topic-block.route-off{display:block;}
+.nav-tree.searching .part-divider.route-dim{opacity:1;cursor:default;}
+.route-off-tip{
+  position:fixed;z-index:100000;pointer-events:none;
+  background:rgba(28,28,30,.92);color:#fff;
+  font-size:12px;font-weight:700;line-height:1.4;
+  padding:7px 12px;border-radius:8px;
+  box-shadow:0 8px 24px rgba(0,0,0,.18);
+  opacity:0;transform:translateY(-100%);
+  transition:opacity .15s ease;
+  max-width:220px;
+}
+.route-off-tip.show{opacity:1;}
+.search-clear{
+  display:none;position:absolute;right:20px;top:50%;transform:translateY(-50%);
+  width:24px;height:24px;border:0;border-radius:50%;padding:0;
+  align-items:center;justify-content:center;cursor:pointer;
+  background:transparent;color:var(--text-faint);
+  font:400 20px/1 -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;
+}
+.search-wrap.has-value .search-clear{display:flex;}
+.search-clear:hover{background:var(--hover);color:var(--text-m);}
+.search-clear:focus-visible{outline:2px solid var(--accent);outline-offset:1px;}
+
+.nav-tree{
+  flex:1;overflow-y:auto;padding:10px 8px 32px;
+}
+.nav-tree::-webkit-scrollbar{width:4px;}
+.nav-tree::-webkit-scrollbar-thumb{background:var(--tb-bar);border-radius:4px;}
+
+.nav-tree{padding-top:14px;}
+
+/* ── 侧边栏底部公众号 ── */
+.sidebar-qr{
+  flex-shrink:0;height:var(--footbar-h);padding:0 14px;
+  border-top:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;
+  position:relative;
+}
+.sidebar-qr-img{
+  width:56px;height:56px;border-radius:10px;
+  border:1px solid var(--border);object-fit:cover;
+  background:#fff;cursor:pointer;
+  transition:transform .2s ease,box-shadow .2s ease;
+}
+.sidebar-qr-img:hover{
+  transform:scale(2.8);
+  transform-origin:bottom left;
+  box-shadow:0 8px 32px rgba(0,0,0,0.18);
+  z-index:999;position:relative;
+  border-radius:12px;
+}
+.sidebar-qr-info{display:flex;flex-direction:column;gap:2px;}
+.sidebar-qr-title{font-size:13px;font-weight:700;color:var(--text-m);}
+.sidebar-qr-title b{color:var(--accent);}
+.sidebar-qr-desc{font-size:11px;color:var(--text-faint);line-height:1.4;}
+
+.part-block{margin-top:6px;}
+.nav-tree > .part-block:first-child{margin-top:0;}
+.group-divider + .part-block{margin-top:8px;}
+.part-divider{
+  display:flex;align-items:center;gap:6px;
+  padding:10px 10px 8px;margin-top:0;
+  user-select:none;cursor:pointer;border-radius:9px;
+  transition:background .15s;
+}
+.part-divider:hover{background:var(--hover2);}
+.part-block.collapsed .part-body{display:none;}
+.part-block.collapsed .part-divider .caret{transform:rotate(-90deg);}
+.part-info{flex:1;min-width:0;}
+.part-num{font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;line-height:1.3;}
+.part-name{font-size:13px;font-weight:800;color:var(--text-m);line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.part-prereq{font-size:10px;color:var(--text-faint);line-height:1.4;margin-top:1px;}
+.group-divider{
+  margin:26px 10px 0;padding:0;
+  font-size:10px;font-weight:800;letter-spacing:2px;
+  color:var(--text-faint);user-select:none;
+}
+.group-divider:first-child{margin-top:4px;}
+.group-divider .group-sub{
+  display:block;font-weight:600;letter-spacing:0;
+  margin-top:2px;text-transform:none;
+}
+
+.topic-block{margin:1px 0;}
+.topic-head{
+  display:flex;align-items:center;gap:6px;
+  padding:7px 10px;border-radius:9px;cursor:pointer;
+  font-size:13px;font-weight:700;color:var(--text-m);
+  user-select:none;transition:background .15s;
+}
+.topic-head:hover{background:var(--hover2);}
+.caret{
+  color:var(--text-faint);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .2s;
+}
+.part-divider .caret{width:18px;height:18px;}
+.topic-head .caret{width:14px;height:14px;}
+.topic-block.collapsed .caret{transform:rotate(-90deg);}
+.ttitle{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.tcount{
+  font-size:11px;font-weight:600;color:var(--tcount-fg);
+  background:var(--tcount-bg);padding:2px 7px;border-radius:10px;flex-shrink:0;
+}
+.tcount.alldone{color:var(--tcount-done-fg);background:var(--tcount-done-bg);}
+
+.lesson-list{padding:2px 0 4px 8px;overflow:hidden;}
+.topic-block.collapsed .lesson-list{display:none;}
+
+.lesson-item{
+  display:flex;align-items:center;gap:8px;
+  padding:7px 10px 7px 8px;border-radius:9px;cursor:pointer;
+  font-size:13px;color:var(--text-sub);line-height:1.35;
+  font-weight:500;border:1px solid transparent;
+  margin:1px 0;transition:all .15s;
+  text-decoration:none;
+}
+.lesson-item:hover{background:var(--hover);color:var(--text-m);}
+/* 选中态：淡绿底 + 加粗，文字保持正文色不整行变绿。
+   整行变色会让侧栏的视觉重量压过正文标题，眼睛先被目录抓走。 */
+.lesson-item.active{
+  background:var(--active-bg);color:var(--text-m);
+  font-weight:700;border-color:transparent;
+}
+.check{
+  width:15px;height:15px;border-radius:50%;flex-shrink:0;
+  border:1.5px solid var(--text-faint);
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;color:#fff;transition:all .2s;
+}
+.lesson-item.done .check{
+  background:var(--green);border-color:var(--green);
+}
+.lesson-item.done .check::after{content:'✓';}
+
+/* 当前这节：绿色描边 + 中心实心点 + 一圈同色光晕。
+   原来只是个空心圈，和「还没学」的状态长得一样，认不出人在哪。
+   三种状态现在各有各的实心程度：空心=未学，实心点=在读，实心勾=学完。 */
+.lesson-item.active .check{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px var(--active-bg);
+}
+.lesson-item.active .check::after{
+  content:'';width:7px;height:7px;border-radius:50%;
+  background:var(--accent);
+}
+/* 已学过又回头重看：勾优先，别把已完成降级成在读 */
+.lesson-item.active.done .check{background:var(--green);border-color:var(--green);}
+.lesson-item.active.done .check::after{
+  content:'✓';width:auto;height:auto;background:none;border-radius:0;
+}
+/* 未登录时需登录课程的锁标记 */
+.lesson-item.locked .check{
+  border-color:transparent;
+  background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='11' width='18' height='11' rx='2'/><path d='M7 11V7a5 5 0 0 1 10 0v4'/></svg>") center/12px no-repeat;
+}
+.ltitle{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+/* 全文搜索：标题里没有该词、只在正文命中的条目打此标记，
+   否则用户会困惑「我搜的词明明不在这个标题里，它为什么出现」 */
+.hit-tag{
+  display:none;flex-shrink:0;
+  font-size:10px;font-weight:600;padding:1px 6px;border-radius:6px;
+  color:var(--tcount-fg);background:var(--tcount-bg);
+}
+.lesson-item.body-hit .hit-tag{display:inline-block;}
+.lesson-star{
+  display:none;flex-shrink:0;width:12px;height:12px;color:#e6b000;
+}
+.lesson-star svg{width:12px;height:12px;display:block;fill:currentColor;stroke:currentColor;stroke-width:1;}
+.lesson-item.starred .lesson-star{display:block;}
+[data-theme="dark"] .lesson-star{color:#f5c518;}
+
+/* ────── 主内容区 ────── */
+.content{
+  flex:1;min-width:0;min-height:0;height:100%;
+  display:flex;flex-direction:column;background:var(--bg);
+}
+
+/* 面包屑并进顶栏后不能再换行：顶栏是定高的，一换行就把整条撑破。
+   截断只落在当前小节标题上（.crumb-cur 带 ellipsis），篇章名和标签始终整着。 */
+.crumb{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  width:100%;min-width:0;overflow:hidden;
+  font-size:12.5px;color:var(--text-sub);white-space:nowrap;
+}
+.crumb-part{font-weight:700;flex:none;}
+.crumb-sep{color:var(--text-faint);flex:none;}
+.crumb-topic{color:var(--text-sub);}
+.crumb-cur{font-weight:700;color:var(--text-m);min-width:0;overflow:hidden;text-overflow:ellipsis;}
+.crumb-tag{
+  font-size:11px;font-weight:700;padding:2px 8px;
+  border-radius:6px;margin-left:4px;flex:none;
+  background:var(--active-bg) !important;
+  color:var(--accent) !important;
+}
+/* ────── 顶栏右侧按钮组 ──────
+   原来这排是「描边的分享 + 描边的标记已学 + 主题 + 语言 + 绿色交流群胶囊
+   + 账号」，四种颜色三种形状，每个都在争注意力，结果谁都不突出。
+   现在统一成同尺寸、无边框、灰阶的图标：形状一致，只靠 hover 底色给反馈，
+   中文标签退到 title 里。真正要用户点的主操作在正文和底栏，不在这一排。
+   撤销学习状态曾经也占着这一格（书签图标 #markDone），2026-08-17 撤掉：
+   一个只在特定状态下才冒出来的图标，猜不出点了会发生什么，且它和底栏
+   「学会了！」是同一件事的两半。撤销并入底栏按钮的 hover 态，见 .learned-btn。 */
+.star-lesson-btn,
+.share-lesson-btn,
+.theme-btn,
+.lang-dd-btn,
+.xa-group{
+  width:var(--xa-ctl-h);height:var(--xa-ctl-h);flex-shrink:0;
+  padding:0;gap:0;
+  align-items:center;justify-content:center;
+  border:none;background:transparent;
+  border-radius:var(--xa-ctl-r);
+  color:var(--tb-text-s);cursor:pointer;
+  font-size:0;                    /* 把按钮里的中文标签一并收起 */
+  white-space:nowrap;
+  transition:background .18s,color .18s;
+}
+.star-lesson-btn:hover,
+.share-lesson-btn:hover,
+.theme-btn:hover,
+.lang-dd-btn:hover,
+.xa-group:hover{
+  background:var(--tb-hover);color:var(--tb-text-h);
+}
+.star-lesson-btn svg,
+.share-lesson-btn svg,
+.theme-btn svg,
+.xa-group svg,
+.lang-dd-btn .ico-globe{width:17px;height:17px;flex:none;}
+.xa-group-txt{display:none;}
+
+.share-toast{
+  position:fixed;left:50%;bottom:84px;
+  transform:translateX(-50%) translateY(16px);
+  background:rgba(28,28,30,.92);color:#fff;
+  font-size:13.5px;font-weight:700;padding:10px 20px;border-radius:999px;
+  opacity:0;pointer-events:none;transition:all .25s;z-index:99999;
+}
+.share-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* 内容主体 */
+.frame-wrap{
+  flex:1;min-height:0;position:relative;
+  background:var(--panel);
+}
+
+/* 篇章锚点横幅的外壳：夹在顶栏和课件 iframe 之间，不参与 iframe 的高度计算 */
+
+.frame-wrap iframe{
+  position:absolute;inset:0;width:100%;height:100%;
+  border:none;background:var(--panel);
+}
+
+/* 结课横幅：全部课程学完后出现在底部导航上方，引导领取结业证书 */
+.finish-banner{
+  display:none;flex-shrink:0;align-items:center;gap:14px;
+  padding:12px 20px;
+  background:linear-gradient(90deg,rgba(185,138,47,0.14),rgba(185,138,47,0.04));
+  border-top:1px solid rgba(185,138,47,0.35);
+}
+.finish-banner.show{display:flex;}
+.fb-icon{flex-shrink:0;font-size:22px;line-height:1;}
+.fb-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;}
+.fb-text b{font-size:14px;color:var(--text-m);}
+.fb-text span{font-size:12px;color:var(--text-sub);}
+.fb-cta{
+  flex-shrink:0;padding:9px 20px;border-radius:10px;
+  background:linear-gradient(135deg,#c9962e,#a97b1f);
+  color:#fff !important;font-size:13px;font-weight:700;white-space:nowrap;
+  box-shadow:0 4px 14px rgba(185,138,47,0.35);transition:all .2s;
+}
+.fb-cta:hover{filter:brightness(1.08);transform:translateY(-1px);}
+.fb-close{
+  flex-shrink:0;border:none;background:transparent;cursor:pointer;
+  color:var(--text-faint);font-size:20px;line-height:1;padding:4px 6px;
+  font-family:inherit;
+}
+.fb-close:hover{color:var(--text-m);}
+
+/* 底部导航 */
+.lesson-foot{
+  flex-shrink:0;display:flex;gap:12px;align-items:stretch;
+  min-height:var(--footbar-h);padding:12px 20px;
+  background:var(--bar-bg);border-top:1px solid var(--border);
+  transition:background .25s ease,border-color .25s ease;
+}
+
+/* ────── 问问 Alice 第三栏：顶天立地 ──────
+   Alice 跑在课件 iframe 里，她的 fixed 只能盖住 iframe 那一段。要让她真的从
+   顶贴到底，就得把 iframe 撑满整个内容区，让翻页条改为浮在课件之上、
+   只占她左边那部分——补白带假装接起来是接不上的，上下总会空出两截。
+   iframe 内的 ask-alice.js 用 postMessage 报当前占宽，外壳再把它的高度回报
+   给它，由课件正文自己让出下内边距。 */
+:root{--alice-side-w:0px;}
+.finish-banner,.lesson-foot{position:relative;z-index:1;}
+body.alice-anim .finish-banner,
+body.alice-anim .lesson-foot{transition:margin-right .22s ease;}
+body.alice-live .finish-banner,
+body.alice-live .lesson-foot{transition:none;}
+body.alice-side-on .content{position:relative;justify-content:flex-end;}
+body.alice-side-on .frame-wrap{position:absolute;inset:0;z-index:0;}
+body.alice-side-on .finish-banner,
+body.alice-side-on .lesson-foot{margin-right:var(--alice-side-w);}
+/* 结课横幅本身是半透明渐变，浮到课件上要先垫一层底色才挡得住 */
+body.alice-side-on .finish-banner{background-color:var(--bg);}
+/* 手机打开 Alice 后，课件 iframe 本身提升为浏览器视口级全屏层。
+   iframe 内的 100dvh 才会因此等于整屏，而不只是中间课件区域。 */
+body.alice-mobile-on .frame-wrap{
+  position:fixed;inset:0;width:100vw;height:100vh;height:100dvh;
+  z-index:100000;background:var(--bg);
+}
+/* 学会了！按钮（底部中间）
+   背景：这颗按钮原先只管标记，撤销挂在顶栏一个书签图标（#markDone）上，学完
+   才冒出来。平时不存在、出现了也看不懂的图标，等于没有入口。2026-08-17 撤掉
+   顶栏那一格，把撤销并进这颗按钮。
+   设计意图：两个状态的 hover 表达同一件事——预演点击后的结果。未学会时 hover
+   把勾提前画出来；已学会时 hover 让绿退成灰、「已学会」向上淡出、「标为未学会」
+   从下方升起，用户在点之前就知道点下去会发生什么。
+   关键约束：两张脸叠在同一个 grid 单元里，按钮宽度取最宽的那张。hover 前后
+   外框尺寸恒定，左右两侧 flex:1 的翻页按钮不会被带着抖。 */
+.learned-btn{
+  --lb-pad:28px;
+  flex-shrink:0;
+  display:grid;grid-template-areas:"lb";align-items:center;justify-items:center;
+  padding:10px var(--lb-pad);border-radius:12px;
+  /* 描边先占成透明的：基态若写 border:none，标记那一刻凭空多出 3px 边框，
+     按钮会连着翻页条一起弹一下 */
+  border:1.5px solid transparent;
+  /* 纯主色不渐变：渐变的第二个色等于凭空多一支强调色，
+     和侧栏的勾、顶栏的进度条撞成三种不同的绿 */
+  background:var(--accent);
+  color:#fff;font-size:14px;font-weight:800;cursor:pointer;
+  box-shadow:0 4px 14px color-mix(in srgb, var(--accent) 34%, transparent);
+  white-space:nowrap;
+  transition:background .2s,color .2s,border-color .2s,box-shadow .2s,
+             transform .2s,filter .2s,padding .18s ease;
+  font-family:inherit;
+}
+.learned-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px color-mix(in srgb, var(--accent) 44%, transparent);filter:brightness(1.05);}
+.learned-btn:active{transform:translateY(0);}
+/* 未学会态 hover：勾展开会多占 24px，两侧内边距同步各收 12px 抵掉，外框宽度
+   不变，只有文案被勾推着往右挪一点。max() 兜住窄屏那档 --lb-pad 收成负数 */
+.learned-btn:not(.done):hover,
+.learned-btn:not(.done):focus-visible{
+  padding-left:max(6px,calc(var(--lb-pad) - 12px));
+  padding-right:max(6px,calc(var(--lb-pad) - 12px));
+}
+.learned-btn.done{
+  background:var(--side);color:var(--green);
+  border-color:var(--green);box-shadow:none;
+}
+/* 已学会态 hover：绿先褪成灰，颜色比文案更早说明「点下去这抹绿就没了」 */
+.learned-btn.done:hover,
+.learned-btn.done:focus-visible{
+  background:var(--hover2);color:var(--text-sub);
+  border-color:color-mix(in srgb, var(--text-sub) 38%, transparent);
+  box-shadow:none;filter:none;
+}
+/* 标记已学的确认动效：绿色以点击处为圆心放射铺满按钮内部，在整片绿的瞬间
+   完成文案与形态切换（突变被绿色盖住），随后褪去，露出描边态的「已学会」。
+   --cx/--cy 由点击处坐标写入；overflow:hidden 把填充块裁进圆角内。 */
+.learned-btn{position:relative;overflow:hidden;isolation:isolate;}
+.learned-btn .lb-face{
+  grid-area:lb;position:relative;z-index:2;
+  display:flex;align-items:center;justify-content:center;
+  transition:opacity .18s ease,transform .24s cubic-bezier(.34,1.3,.64,1);
+}
+/* 撤销那张脸只在已学会时进入布局：未学会时不该让「标为未学会」几个字把按钮撑宽 */
+.learned-btn .lb-face-undo{display:none;opacity:0;transform:translateY(9px) scale(.94);}
+.learned-btn.done .lb-face-undo{display:flex;}
+.learned-btn.done:hover .lb-face-main,
+.learned-btn.done:focus-visible .lb-face-main{opacity:0;transform:translateY(-9px) scale(.96);}
+.learned-btn.done:hover .lb-face-undo,
+.learned-btn.done:focus-visible .lb-face-undo{opacity:1;transform:none;}
+/* 撤销图标逆时针转正，方向本身就是「退回去」的意思 */
+.learned-btn .lb-undo-ico{
+  display:flex;flex:none;width:16px;height:16px;margin-right:8px;
+  transform:rotate(140deg);
+  transition:transform .34s cubic-bezier(.34,1.3,.64,1);
+}
+.learned-btn.done:hover .lb-undo-ico,
+.learned-btn.done:focus-visible .lb-undo-ico{transform:rotate(0);}
+.lb-undo-ico svg{display:block;width:16px;height:16px;}
+/* 勾的宽度和右间距一起过渡：只收宽度的话，收起状态仍会留下 8px 空隙 */
+.learned-btn .lb-check{
+  display:flex;flex:none;width:0;margin-right:0;overflow:hidden;
+  transition:width .18s ease,margin-right .18s ease;
+}
+.learned-btn.done .lb-check,
+.learned-btn:not(.done):hover .lb-check,
+.learned-btn:not(.done):focus-visible .lb-check{width:16px;margin-right:8px;}
+.lb-check svg{display:block;width:16px;height:16px;}
+.lb-check path{
+  stroke:currentColor;stroke-width:2.6;fill:none;
+  stroke-linecap:round;stroke-linejoin:round;
+  stroke-dasharray:22;stroke-dashoffset:22;
+  /* 延迟一点起笔，等宽度先让开位置，两段动作才不糊在一起 */
+  transition:stroke-dashoffset .28s cubic-bezier(.65,0,.35,1) .1s;
+}
+.learned-btn:not(.done):hover .lb-check path,
+.learned-btn:not(.done):focus-visible .lb-check path{stroke-dashoffset:0;}
+.learned-btn.done .lb-check path{
+  animation:lb-draw .34s cubic-bezier(.65,0,.35,1) .1s forwards;
+}
+@keyframes lb-draw{to{stroke-dashoffset:0;}}
+.learned-btn::before{
+  content:'';position:absolute;z-index:1;pointer-events:none;
+  width:260px;height:260px;border-radius:50%;background:var(--green);
+  left:var(--cx,50%);top:var(--cy,50%);margin:-130px 0 0 -130px;
+  transform:scale(0);
+}
+.learned-btn.fire::before{animation:lb-fill .8s cubic-bezier(.22,1,.36,1) forwards;}
+@keyframes lb-fill{
+  0%{transform:scale(0);opacity:1;}
+  50%{transform:scale(1);opacity:1;}
+  100%{transform:scale(1);opacity:0;}
+}
+.learned-btn.fire{animation:lb-pop .42s cubic-bezier(.34,1.56,.64,1);}
+@keyframes lb-pop{
+  0%{transform:scale(1);} 28%{transform:scale(.94);}
+  60%{transform:scale(1.05);} 100%{transform:scale(1);}
+}
+/* 侧边栏对应那一节的圆圈：只给刚点的这一节加 .pop。
+   若把动画绑在 .lesson-item.done 上，初次进阅读器时所有已学节点
+   同时首次获得 .done，满屏圆圈会一起蹦一下。 */
+.check.pop{animation:check-pop .44s cubic-bezier(.34,1.56,.64,1);}
+.check.pop::after{animation:check-in .3s cubic-bezier(.34,1.56,.64,1) .1s backwards;}
+@keyframes check-pop{
+  0%{transform:scale(1);} 30%{transform:scale(.8);}
+  62%{transform:scale(1.18);} 100%{transform:scale(1);}
+}
+@keyframes check-in{from{transform:scale(0);opacity:0;}}
+@media (prefers-reduced-motion: reduce){
+  .learned-btn.fire,.learned-btn.fire::before,
+  .learned-btn.done .lb-check path,
+  .check.pop,.check.pop::after{animation:none;}
+  .learned-btn .lb-check path{stroke-dashoffset:0;}
+  /* hover 双态仍要能切换，只是不再位移和转圈，直接改成瞬时切换 */
+  .learned-btn,.learned-btn .lb-face,
+  .learned-btn .lb-check,.learned-btn .lb-undo-ico{transition:none;}
+  .learned-btn .lb-face-undo{transform:none;}
+  .learned-btn .lb-undo-ico{transform:none;}
+  .learned-btn.done:hover .lb-face-main,
+  .learned-btn.done:focus-visible .lb-face-main{transform:none;}
+}
+.foot-btn{
+  flex:1;display:flex;align-items:center;gap:10px;
+  padding:10px 16px;border-radius:12px;
+  border:1px solid var(--border);background:var(--side);
+  color:var(--text-m);cursor:pointer;min-width:0;
+  text-decoration:none;transition:all .2s;
+}
+.foot-btn:hover{
+  border-color:var(--accent);
+  box-shadow:0 4px 16px color-mix(in srgb, var(--accent) 16%, transparent);
+  transform:translateY(-1px);
+}
+.foot-btn.disabled{opacity:0.35;pointer-events:none;}
+.foot-arr{font-size:22px;color:var(--text-faint);flex-shrink:0;line-height:1;}
+.fb-info{min-width:0;display:flex;flex-direction:column;gap:1px;}
+.fb-lbl{font-size:11px;color:var(--text-faint);font-weight:600;letter-spacing:0.3px;}
+.fb-name{font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.foot-btn.next{flex-direction:row-reverse;text-align:right;}
+
+/* ────── 遮罩 ────── */
+.scrim{
+  display:none;position:fixed;inset:0;top:var(--topbar-h);
+  background:rgba(0,0,0,0.45);backdrop-filter:blur(3px);z-index:39;
+}
+
+/* ────── 移动端 ────── */
+@media(max-width:900px){
+  :root{--sidebar-w:280px;}
+  .layout{display:flex;}
+  .topbar{padding:0 14px;}
+  /* 侧栏在这个宽度是抽屉，没有那格可占；再占着就只剩菜单键和品牌名了 */
+  .brand{min-width:0;}
+  .menu-btn .ico-collapse{display:none;}
+  .menu-btn .ico-expand{display:block;}
+  body.nav-open .menu-btn .ico-collapse{display:block;}
+  body.nav-open .menu-btn .ico-expand{display:none;}
+  .prog-wrap{display:none;}
+  .sidebar{
+    position:fixed;top:var(--topbar-h);bottom:0;left:0;z-index:40;
+    width:min(280px,82vw);
+    transform:translateX(-100%);
+    transition:transform .3s cubic-bezier(0.4,0,0.2,1);
+    box-shadow:8px 0 32px rgba(0,0,0,0.12);
+  }
+  .sidebar-resizer{display:none;}
+  body.nav-open .sidebar{transform:translateX(0);}
+  body.nav-open .scrim{display:block;}
+  .search-wrap{height:48px;min-height:48px;}
+  .lesson-foot{padding:10px 14px;}
+}
+
+/* 宽屏目录与正文共用网格轨道，收起时同步滑出和扩展正文。 */
+@media(min-width:901px){
+  html.nav-drawer .brand{min-width:0;}
+  html.nav-drawer .layout{grid-template-columns:0 0 minmax(0,1fr);}
+  html.nav-drawer .sidebar{
+    transform:translateX(-100%);
+    pointer-events:none;
+  }
+  html.nav-drawer .sidebar-resizer{
+    width:0;opacity:0;pointer-events:none;
+  }
+}
+
+@media(max-width:480px){
+  .brand-sub{display:none;}
+  .fb-name{font-size:12px;}
+  .crumb-topic,.crumb-sep+.crumb-sep{display:none;}
+  .lesson-foot{gap:8px;}
+  .learned-btn{--lb-pad:16px;font-size:13px;}
+  .fb-lbl{display:none;}
+}
+
+/* ── 语言切换 ── */
+.lang-switcher{position:relative;flex-shrink:0;}
+/* 只留地球：顶栏控件已经排得很挤，"Language" 六个字母和下拉箭头都不必占位 */
+.lang-dd-btn{
+  width:var(--xa-ctl-h);height:var(--xa-ctl-h);padding:0;
+  border:1px solid var(--topbar-border);background:transparent;
+  border-radius:var(--xa-ctl-r);cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;
+  color:var(--tb-text-s);transition:all .2s;
+}
+.lang-dd-btn:hover{color:var(--tb-text-h);background:var(--tb-hover);}
+.lang-dd-btn .ico-globe{width:17px;height:17px;flex-shrink:0;}
+.lang-switcher.open .lang-dd-btn{color:var(--tb-text-h);background:var(--tb-hover);}
+.lang-dd-menu{
+  position:absolute;top:calc(100% + 6px);right:0;min-width:126px;
+  background:var(--topbar-bg);border:1px solid var(--topbar-border);
+  border-radius:11px;box-shadow:0 10px 30px rgba(0,0,0,0.14);
+  padding:4px;display:none;z-index:300;
+}
+.lang-switcher.open .lang-dd-menu{display:block;}
+.lang-btn{
+  display:block;padding:7px 11px;border-radius:7px;
+  font-size:12px;font-weight:600;color:var(--tb-text-s);
+  text-decoration:none;white-space:nowrap;transition:all .15s;
+}
+.lang-btn:hover{color:var(--tb-text-h);background:var(--tb-hover);}
+.lang-btn.active{background:var(--accent);color:#fff;}
+@media(max-width:900px){.lang-switcher{display:none;}}
+
+/* ── 顶栏最终收口 ──
+   challenge.css 在本页样式后加载，auth.js 还会运行时注入规则，因此这里用
+   更高特异性 + !important 锁定外观。右侧分两档：
+   · 工具（收藏 / 分享 / 主题 / 语言 / 账号）是 36px 灰阶 ghost 图标，形状本身就说明了功能；
+   · 入口（伴学 / 交流群）带文字。2026-08-16 用户反馈：光一个图标猜不出点开是什么，
+     而这两个恰恰是要请人点进去的。文字之外仍守同一副 ghost 骨架，不做彩色胶囊。 */
+body .topbar :is(
+  .star-lesson-btn,
+  .share-lesson-btn,
+  .theme-btn,
+  .lang-dd-btn,
+  .xa-login-btn,
+  .xa-account-btn
+){
+  width:var(--xa-ctl-h) !important;
+  height:var(--xa-ctl-h) !important;
+  min-width:var(--xa-ctl-h) !important;
+  padding:0 !important;
+  gap:0 !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  border:0 !important;
+  border-radius:var(--xa-ctl-r) !important;
+  background:transparent !important;
+  color:var(--tb-text-s) !important;
+  box-shadow:none !important;
+  font-size:0 !important;
+  animation:none !important;
+  transform:none !important;
+}
+body .topbar :is(
+  .star-lesson-btn,
+  .share-lesson-btn,
+  .theme-btn,
+  .lang-dd-btn,
+  .xa-login-btn,
+  .xa-account-btn
+):hover{
+  background:var(--tb-hover) !important;
+  color:var(--tb-text-h) !important;
+  filter:none !important;
+  transform:none !important;
+}
+body .topbar .star-lesson-btn.on,
+body .topbar .star-lesson-btn.on:hover{
+  color:#e6b000 !important;
+}
+body .topbar .star-lesson-btn.on .ico-star{fill:currentColor;}
+[data-theme="dark"] body .topbar .star-lesson-btn.on,
+[data-theme="dark"] body .topbar .star-lesson-btn.on:hover{
+  color:#f5c518 !important;
+}
+/* 带文字的两个入口：同高同圆角，宽度交给 padding，不再按 36px 方钮切死 */
+body .topbar :is(.xa-group,.ch-entry){
+  height:var(--xa-ctl-h) !important;
+  min-width:0 !important;
+  width:auto !important;
+  padding:0 10px !important;
+  gap:6px !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  border:0 !important;
+  border-radius:var(--xa-ctl-r) !important;
+  background:transparent !important;
+  color:var(--tb-text-s) !important;
+  font-size:12.5px !important;
+  font-weight:600 !important;
+  box-shadow:none !important;
+  animation:none !important;
+  transform:none !important;
+}
+body .topbar :is(.xa-group,.ch-entry):hover{
+  background:var(--tb-hover) !important;
+  color:var(--tb-text-h) !important;
+  filter:none !important;
+  transform:none !important;
+}
+body .topbar .xa-group svg{width:17px !important;height:17px !important;}
+body .topbar .xa-group-txt{display:inline !important;}
+/* 390px 视口装不下第三个文字标签（auth.js 本来就在 600 以下收掉「交流群」三个字，
+   这里的 !important 会盖过它，所以断点要自己再声明一遍），伴学此时已是右下悬浮球 */
+@media(max-width:600px){
+  body .topbar .xa-group-txt{display:none !important;}
+  body .topbar .xa-group{padding:0 9px !important;}
+}
+/* 伴学：金币保持金色——这是它在一排灰图标里唯一的身份。文字是「伴学」+ 一小截
+   当下状态（今日进度 / 可领数 / 战报），完整文案留给 title。 */
+body .topbar .ch-entry img.ch-coin{
+  width:17px !important;height:17px !important;filter:none;opacity:1;
+}
+body .topbar .ch-entry .ch-entry-name{font-weight:700;}
+body .topbar .ch-entry .ch-entry-txt{display:none !important;}
+body .topbar .ch-entry .ch-entry-txt-s{
+  display:inline !important;color:var(--tb-text-f);font-weight:600;
+}
+body .topbar .ch-entry .ch-entry-sub{display:none !important;}
+/* 还没报名的人对「伴学」两个字没有概念，CTA 态给完整的「伴学计划」 */
+body .topbar .ch-entry--cta .ch-entry-txt{
+  display:inline !important;font-weight:700;
+}
+body .topbar .ch-entry--cta .ch-entry-txt-s{display:none !important;}
+/* 今天能领米粒是这排按钮里唯一有时效的一刻：文字转琥珀 + 保留红点，不做实底胶囊。
+   战报态（--report）同样走琥珀文字，但红点只在没翻过时由 --unread 挂出来。 */
+body .topbar .ch-entry--claimable,
+body .topbar .ch-entry--report,
+body .topbar .ch-entry--claimable .ch-entry-txt-s,
+body .topbar .ch-entry--report .ch-entry-txt-s{color:#b45309 !important;}
+[data-theme="dark"] body .topbar .ch-entry--claimable,
+[data-theme="dark"] body .topbar .ch-entry--report,
+[data-theme="dark"] body .topbar .ch-entry--claimable .ch-entry-txt-s,
+[data-theme="dark"] body .topbar .ch-entry--report .ch-entry-txt-s{color:#e0a640 !important;}
+body .topbar .ch-entry--claimable::after,
+body .topbar .ch-entry--unread::after{border-color:var(--topbar-bg);}
+/* 今日已领 / 资格取消：整枚静默下去，金币也跟着褪成灰的 */
+body .topbar .ch-entry--done{opacity:1 !important;}
+body .topbar .ch-entry--done img.ch-coin{filter:grayscale(1);opacity:.5;}
+body .topbar .ch-entry--done,
+body .topbar .ch-entry--done .ch-entry-txt-s{color:var(--tb-text-f) !important;}
+body .topbar .xa-account-name,
+body .topbar .xa-account-caret{display:none !important;}
+/* 伴学入口会自我隐藏（灰度名单外、报名窗口已关、战报窗口过期），靠的是 inline
+   display:none——会被上面那条 display:inline-flex !important 盖掉，只剩一个点得开
+   却没有内容的幽灵按钮，所以隐藏态在这里显式放行。 */
+body .topbar .ch-entry.ch-entry--off{display:none !important;}
+body .topbar .xa-account-btn .xa-avatar{
+  width:30px !important;height:30px !important;border-radius:50% !important;
+}
+body .topbar .xa-login-btn::before{
+  content:'';width:17px;height:17px;background:currentColor;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 21a8 8 0 0 0-16 0'/%3E%3Ccircle cx='12' cy='7' r='4'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 21a8 8 0 0 0-16 0'/%3E%3Ccircle cx='12' cy='7' r='4'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+</style>
+<link rel="stylesheet" href="share-card.css?v=20260809a">
+<link rel="stylesheet" href="challenge.css?v=20260810d">
+</head>
+<body>
+
+<div class="topbar">
+  <button class="menu-btn" id="menuBtn" type="button" data-label-collapse="收起目录" data-label-expand="展开目录" title="收起目录" aria-label="收起目录" aria-expanded="true">
+    <svg class="ico-collapse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="m16 15-3-3 3-3"/></svg>
+    <svg class="ico-expand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="m14 9 3 3-3 3"/></svg>
+  </button>
+  <a href="home.html" class="brand">
+    <div class="brand-mark"><img src="https://img.alice.miyang.cn/xueai/logo.png?imageMogr2/thumbnail/128x%3E/format/webp/quality/82" alt="洛小山"></div>
+    <div>
+      <div class="brand-name">小山学堂</div>
+      <div class="brand-sub">学 AI 产品，从入门到精通</div>
+    </div>
+  </a>
+  <div class="tb-center">
+  <div class="crumb" id="crumb"></div>
+  <div class="prog-wrap">
+    <div class="prog-bar"><i id="progBar"></i></div>
+    <span id="progText">0 / 0</span>
+    <a class="cert-link" id="certLink" href="certificate.html" title="学完全部课程，领取结业证书">🎓 领证书</a>
+    <div class="cert-peek" id="certPeek">
+      <div class="cp-title">🎓 学完全部课程，可领结业证书</div>
+      <img class="cp-img" src="assets/cert-preview.webp" alt="结业证书样张" width="1200" height="848" loading="lazy" decoding="async">
+      <div class="cp-foot">
+        <span class="cp-note" id="cpNote">证书姓名取自米羊昵称</span>
+        <a class="cp-cta" href="certificate.html">看看证书 ›</a>
+      </div>
+    </div>
+  </div>
+  </div>
+    <button class="star-lesson-btn" id="starLesson" type="button" title="收藏本节" aria-label="收藏本节" aria-pressed="false" data-label-off="收藏本节" data-label-on="取消收藏">
+    <svg class="ico-star" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.21 21.02 12 17.77 5.79 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+  </button>
+  <button class="share-lesson-btn" id="shareLesson" title="分享本节给朋友">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+    分享
+  </button>
+  <button class="theme-btn" id="themeBtn" aria-label="切换主题" title="切换浅色 / 深色">
+    <svg class="ico-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+    <svg class="ico-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+  </button>
+  <div class="lang-switcher" id="langSwitcher">
+    <button class="lang-dd-btn" type="button" id="langDDBtn" aria-haspopup="true" aria-expanded="false" aria-label="切换语言" title="切换语言 / Language">
+      <svg class="ico-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+    </button>
+    <div class="lang-dd-menu">
+      <a class="lang-btn active" href="learn.html" data-lang="zh">简体中文</a>
+      <a class="lang-btn" href="learn.tw.html" data-lang="tw">繁體中文（台灣）</a>
+      <a class="lang-btn" href="learn.hk.html" data-lang="hk">廣東話（港澳）</a>
+      <a class="lang-btn" href="learn.en.html" data-lang="en">English</a>
+      <a class="lang-btn" href="learn.ko.html" data-lang="ko">한국어</a>
+    </div>
+  </div>
+  <a class="xa-group" href="assets/group-qrcode.png?v=20260908a" title="交流群 · 公众号 · 推特">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    <span class="xa-group-txt">交流群</span>
+  </a>
+  <span id="authSlot"></span>
+</div>
+
+<div class="scrim" id="scrim"></div>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="search-wrap">
+      <input type="text" id="searchInput" placeholder="搜索知识点…" autocomplete="off">
+      <button class="search-clear" id="searchClear" type="button" aria-label="清空搜索" title="清空搜索">×</button>
+    </div>
+    <button class="alice-search" id="aliceSearchBtn" type="button" hidden>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>
+      <span class="as-txt"></span>
+    </button>
+    <div class="route-wrap">
+      <select id="routeSel" aria-label="按学习路线精简目录" title="按学习路线精简目录，随时可切回完整目录"></select>
+    </div>
+    <nav class="nav-tree" id="navTree"></nav>
+    <div class="sidebar-qr" id="partnerSidebarSlot">
+      <img src="https://img.alice.miyang.cn/xueai/qrcode.jpg" alt="公众号二维码" class="sidebar-qr-img">
+      <div class="sidebar-qr-info">
+        <div class="sidebar-qr-title">关注<b>洛小山</b></div>
+        <div class="sidebar-qr-desc">获取更多 AI 实战干货</div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-resizer" id="sidebarResizer" role="separator" aria-orientation="vertical" title="拖动调整目录宽度，双击恢复默认"></div>
+
+  <main class="content">
+    <div class="frame-wrap">
+      <iframe id="lessonFrame" title="课程内容" referrerpolicy="no-referrer-when-downgrade"></iframe>
+    </div>
+    <div class="finish-banner" id="finishBanner">
+      <span class="fb-icon">🎓</span>
+      <div class="fb-text">
+        <b>恭喜！全部课程已学完</b>
+        <span>你的结业证书已经准备好，姓名取自米羊账号昵称</span>
+      </div>
+      <a class="fb-cta" href="certificate.html">领取结业证书</a>
+      <button class="fb-close" id="finishClose" type="button" title="不再提示">×</button>
+    </div>
+    <div class="lesson-foot">
+      <a class="foot-btn prev" id="prevBtn">
+        <span class="foot-arr">‹</span>
+        <div class="fb-info">
+          <span class="fb-lbl">上一节</span>
+          <span class="fb-name" id="prevTitle">—</span>
+        </div>
+      </a>
+      <button class="learned-btn" id="learnedBtn" type="button" aria-pressed="false" title="学完这一节，点这里标记"><span class="lb-face lb-face-main"><span class="lb-check" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M4 10.5l4 4 8-9"/></svg></span><span class="lb-label">学会了！</span></span><span class="lb-face lb-face-undo" aria-hidden="true"><span class="lb-undo-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v6h6"/><path d="M3 13a9 9 0 1 0 3-7.7L3 8"/></svg></span><span class="lb-undo-label">标为未学会</span></span></button>
+      <a class="foot-btn next" id="nextBtn">
+        <span class="foot-arr">›</span>
+        <div class="fb-info">
+          <span class="fb-lbl">下一节</span>
+          <span class="fb-name" id="nextTitle">—</span>
+        </div>
+      </a>
+    </div>
+  </main>
+</div>
+
+<div class="share-toast" id="shareToast"></div>
+
+<script src="course-data.js?v=20261024a"></script>
+<script src="qr.js?v=20260809a"></script>
+<script src="share-card.js?v=20261024a"></script>
+<script src="auth.js?v=20261024a"></script>
+<script src="challenge.js?v=20261024a" defer></script>
+<script src="watermark.js?v=20260806c"></script>
+<script>
+(function(){
+  var FLAT = window.COURSE_FLAT;
+  var TAGS = window.TAG_STYLE || {};
+  var PROG_KEY = 'ai_course_progress_v1';
+
+  var STAR_KEY = 'xueai_lesson_stars';
+  function readStars(){
+    /*
+     * 背景：整节收藏只要本机记住。progress 的 sanitize 会丢掉多余键，不能塞进去。
+     * 设计意图：独立 localStorage，值只认 1，其它形状丢掉。
+     * 约束：读失败当空对象，不抛到外层。
+     */
+    try{
+      var raw = JSON.parse(localStorage.getItem(STAR_KEY) || '{}');
+      if(!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
+      var out = {};
+      Object.keys(raw).forEach(function(k){ if(raw[k] === 1) out[k] = 1; });
+      return out;
+    }catch(e){
+      console.warn('[star] read failed', e);
+      return {};
+    }
+  }
+  function writeStars(map){
+    /*
+     * 背景：点星后刷新还要在。隐私模式 setItem 会抛。
+     * 设计意图：失败只打日志，按钮仍能切当次状态。
+     * 约束：map 必须是普通对象。
+     */
+    try{ localStorage.setItem(STAR_KEY, JSON.stringify(map)); }
+    catch(e){ console.warn('[star] write failed', e); }
+  }
+  function isStarred(file){ return !!readStars()[file]; }
+  function setStarred(file, on){
+    var map = readStars();
+    if(on) map[file] = 1;
+    else delete map[file];
+    writeStars(map);
+  }
+  function paintLessonStars(){
+    /*
+     * 背景：目录行默认不留星位，已收藏才在标题右侧亮黄星。
+     * 设计意图：读一次 map，按 data-file 打 starred。
+     * 约束：buildTree 重绘后必须再跑一遍。
+     */
+    var map = readStars();
+    navTree.querySelectorAll('.lesson-item').forEach(function(el){
+      el.classList.toggle('starred', !!map[el.dataset.file]);
+    });
+  }
+  function syncStarButton(file){
+    /*
+     * 背景：顶栏那颗星跟着当前课走，换课不能停在上一节的黄。
+     * 设计意图：on class 控制实心黄，title / aria 跟 data-label 走。
+     * 约束：按钮不在 DOM 里时直接返回。
+     */
+    var btn = document.getElementById('starLesson');
+    if(!btn) return;
+    var on = isStarred(file);
+    btn.classList.toggle('on', on);
+    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    var label = on ? (btn.dataset.labelOn || '') : (btn.dataset.labelOff || '');
+    if(label){
+      btn.title = label;
+      btn.setAttribute('aria-label', label);
+    }
+  }
+
+  var FB_KEY = 'xueai_finish_banner_off';   // 结课横幅「不再提示」
+  var fbDismissed = false;
+  try{ fbDismissed = localStorage.getItem(FB_KEY) === '1'; }catch(e){}
+
+  var SB_COLLAPSE_KEY = 'xueai_sidebar_collapsed';
+  function isNarrowNav(){
+    return window.matchMedia('(max-width:900px)').matches;
+  }
+  function syncMenuBtn(){
+    var btn = document.getElementById('menuBtn');
+    if(!btn) return;
+    var sidebarOn = isNarrowNav()
+      ? document.body.classList.contains('nav-open')
+      : !document.documentElement.classList.contains('nav-drawer');
+    var label = sidebarOn ? btn.getAttribute('data-label-collapse') : btn.getAttribute('data-label-expand');
+    btn.title = label;
+    btn.setAttribute('aria-label', label);
+    btn.setAttribute('aria-expanded', sidebarOn ? 'true' : 'false');
+  }
+  function navOpen(on){
+    if(arguments.length === 0) on = !document.body.classList.contains('nav-open');
+    document.body.classList.toggle('nav-open', !!on);
+    syncMenuBtn();
+  }
+  function applySidebarDrawer(collapsed){
+    document.documentElement.classList.toggle('nav-drawer', !!collapsed);
+    try{ localStorage.setItem(SB_COLLAPSE_KEY, collapsed ? '1' : '0'); }catch(e){}
+    navOpen(false);
+  }
+
+  function loadProgress(){
+    try{ return JSON.parse(localStorage.getItem(PROG_KEY)||'{}'); }catch(e){ return {}; }
+  }
+
+  /* ── 学习进度云同步（登录后生效） ──
+     本地 localStorage 始终是即时数据源；登录后：
+     1. 页面加载时拉取服务器进度，与本地合并（并集）后写回两端；
+     2. 之后每次进度变化防抖 1.5s 推送到服务器。 */
+  var cloudSync = false;
+  var pushTimer = null;
+  function pushProgress(){
+    if(!cloudSync) return;
+    clearTimeout(pushTimer);
+    pushTimer = setTimeout(function(){
+      fetch('/auth/progress', {
+        method:'POST', credentials:'same-origin',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({progress: progress})
+      }).catch(function(){});
+    }, 1500);
+  }
+
+  function saveProgress(p){
+    try{ localStorage.setItem(PROG_KEY, JSON.stringify(p)); }catch(e){}
+    pushProgress();
+  }
+  var progress = loadProgress();
+
+  function currentFile(){
+    var h = decodeURIComponent((location.hash||'').replace(/^#/,'')).trim();
+    if(h && FLAT.some(function(l){return l.file===h;})) return h;
+    return (progress.__last && FLAT.some(function(l){return l.file===progress.__last;}))
+      ? progress.__last : FLAT[0].file;
+  }
+
+  var navTree = document.getElementById('navTree');
+
+  function buildTree(){
+    /* 篇章不再排 12345：主线七章保留推荐顺序，其余都是独立篇章，随便挑。
+       分区头只在 group 变化时插一条，数据没标 group 就静默跳过（英韩版兼容）。 */
+    var GROUP_LABELS = {
+      main:  { t: '主线课程', s: '建议按顺序学' },
+      indie: { t: '独立篇章', s: '不分先后，自由选学' },
+      extra: { t: '自测与课后甜点', s: '' },
+    };
+    var html = '';
+    var lastGroup = null;
+    var PART_CARET = '<span class="caret"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span>';
+    var TOPIC_CARET = '<span class="caret"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span>';
+    window.COURSE.parts.forEach(function(part, pi){
+      if (part.group && part.group !== lastGroup && GROUP_LABELS[part.group]) {
+        var g = GROUP_LABELS[part.group];
+        html += '<div class="group-divider">' + g.t
+              + (g.s ? '<span class="group-sub">' + g.s + '</span>' : '')
+              + '</div>';
+        lastGroup = part.group;
+      }
+      var lessonN = 0;
+      part.topics.forEach(function(t){ lessonN += t.lessons.length; });
+      html += '<div class="part-block" data-pidx="'+pi+'">';
+      html += '<div class="part-divider" data-pidx="'+pi+'" role="button" aria-expanded="true">'
+            + PART_CARET
+            + '<div class="part-info">'
+            + '<div class="part-num" style="color:'+part.color+'">'+part.num+'</div>'
+            + '<div class="part-name">'+part.title+'</div>'
+            + (part.prereq ? '<div class="part-prereq">'+part.prereq+'</div>' : '')
+            + '<div class="route-note"></div>'
+            + '</div>'
+            + '<span class="tcount">0/'+lessonN+'</span>'
+            + '</div>';
+      html += '<div class="part-body">';
+      part.topics.forEach(function(topic, ti){
+        html += '<div class="topic-block collapsed" data-topic="'+topic.id+'" data-pidx="'+pi+'" data-tidx="'+ti+'">';
+        html += '<div class="topic-head">'
+              + TOPIC_CARET
+              + '<span class="ttitle">'+topic.title+'</span>'
+              + '<span class="tcount">'+topic.lessons.length+'</span>'
+              + '</div>';
+        html += '<div class="lesson-list">';
+        topic.lessons.forEach(function(ls){
+          html += '<a class="lesson-item" data-file="'+ls.file+'" href="#'+encodeURIComponent(ls.file)+'">'
+               + '<span class="check"></span>'
+               + '<span class="ltitle">'+ls.title+'</span>'
+               + '<span class="hit-tag">'+HIT_TAG_TEXT+'</span>'
+               + '<span class="lesson-star" aria-hidden="true"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.21 21.02 12 17.77 5.79 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span></a>';
+        });
+        html += '</div></div>';
+      });
+      html += '</div></div>';
+    });
+    navTree.innerHTML = html;
+    /* 目录宽度有限，标题被省略时用 tooltip 兜底 */
+    navTree.querySelectorAll('.part-name,.ttitle,.ltitle').forEach(function(el){
+      el.title = el.textContent;
+    });
+
+    navTree.querySelectorAll('.topic-head').forEach(function(h){
+      h.addEventListener('click', function(){
+        h.parentElement.classList.toggle('collapsed');
+      });
+    });
+    navTree.querySelectorAll('.part-divider').forEach(function(h){
+      h.addEventListener('click', function(){ onPartHeadActivate(h); });
+    });
+    paintLessonStars();
+  }
+
+  function onPartHeadActivate(h){
+    /*
+     * 背景：主题已经能收，篇章头原先只是标签，目录仍要扫完所有主题名。
+     * 设计意图：篇章整块收起。篇章三角 14px，主题三角 10px。灰显篇不打开空列表。
+     * 约束：搜索放开路线精简时，灰显篇按普通篇处理，才能点开命中结果。
+     */
+    var block = h.closest('.part-block');
+    if(!block) return;
+    if(h.classList.contains('route-dim') && !navTree.classList.contains('searching')){
+      if(routeSel){
+        routeSel.classList.remove('flash');
+        void routeSel.offsetWidth;
+        routeSel.classList.add('flash');
+      }
+      return;
+    }
+    setPartOpen(block, block.classList.contains('collapsed'));
+  }
+
+  function setPartOpen(block, open){
+    /*
+     * 背景：换课、搜索、路线灰显都要改篇章开合，不能各写一套 class。
+     * 设计意图：一级默认展开，二级默认收起。打开篇章只露出主题名，不摊开课节。
+     * 约束：block 为空时直接返回。
+     */
+    if(!block) return;
+    block.classList.toggle('collapsed', !open);
+    var head = block.querySelector('.part-divider');
+    if(head) head.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+
+  function refreshProgress(){
+    var total = FLAT.length;
+    var done = 0;
+    FLAT.forEach(function(l){ if(progress[l.file]) done++; });
+    document.getElementById('progText').textContent = done + ' / ' + total;
+    document.getElementById('progBar').style.width = (total ? (done/total*100) : 0) + '%';
+    var allDone = total > 0 && done >= total;
+    var certLink = document.getElementById('certLink');
+    if(certLink) certLink.classList.toggle('show', allDone);
+    var cpNote = document.getElementById('cpNote');
+    if(cpNote){
+      cpNote.innerHTML = allDone
+        ? '已达成，去领取吧'
+        : '还差 <b>' + (total - done) + '</b> 节';
+    }
+    var banner = document.getElementById('finishBanner');
+    if(banner) banner.classList.toggle('show', allDone && !fbDismissed);
+    navTree.querySelectorAll('.lesson-item').forEach(function(el){
+      el.classList.toggle('done', !!progress[el.dataset.file]);
+    });
+    navTree.querySelectorAll('.topic-block').forEach(function(block){
+      var items = block.querySelectorAll('.lesson-item');
+      var d = 0;
+      items.forEach(function(el){ if(progress[el.dataset.file]) d++; });
+      var tc = block.querySelector('.tcount');
+      if(tc){
+        tc.textContent = d + '/' + items.length;
+        tc.classList.toggle('alldone', items.length > 0 && d === items.length);
+      }
+    });
+    navTree.querySelectorAll('.part-block').forEach(function(block){
+      var items = block.querySelectorAll('.lesson-item');
+      var d = 0;
+      items.forEach(function(el){ if(progress[el.dataset.file]) d++; });
+      var pc = block.querySelector('.part-divider > .tcount');
+      if(pc){
+        pc.textContent = d + '/' + items.length;
+        pc.classList.toggle('alldone', items.length > 0 && d === items.length);
+      }
+    });
+  }
+
+  var iframe = document.getElementById('lessonFrame');
+
+  /* 外壳和课程页是两个独立 document，data-theme 不会穿过 iframe。
+     同源时先直接写属性（没有消息往返延迟），再发消息给 nav-inject.js?v=20261024a，
+     兼容课程脚本晚于 load 才完成初始化的情况。 */
+  function syncLessonTheme(theme){
+    var value = theme === 'dark' ? 'dark' : 'light';
+    try{
+      if(iframe && iframe.contentDocument){
+        var doc = iframe.contentDocument;
+        doc.documentElement.setAttribute('data-theme', value);
+        /* 课程页数量多，不为一次样式更新制造近千份 cache-bust diff。
+           外壳打开课页时直接把现有 lesson.css 链接换到新版本。 */
+        doc.querySelectorAll('link[href*="lesson.css"]').forEach(function(link){
+          var base = link.getAttribute('href').split('?')[0];
+          link.setAttribute('href', base + '?v=20260816a');
+        });
+        var bridge = doc.getElementById('xueaiThemeBridge');
+        if(!bridge){
+          bridge = doc.createElement('script');
+          bridge.id = 'xueaiThemeBridge';
+          bridge.src = 'theme-bridge.js?v=20260816k';
+          bridge.onload = function(){
+            try{ iframe.contentWindow.XueaiThemeBridge.apply(value); }catch(e){}
+          };
+          doc.head.appendChild(bridge);
+        }else if(iframe.contentWindow.XueaiThemeBridge){
+          iframe.contentWindow.XueaiThemeBridge.apply(value);
+        }
+      }
+    }catch(e){}
+    try{
+      if(iframe && iframe.contentWindow){
+        iframe.contentWindow.postMessage({type:'xueai-theme', theme:value}, location.origin);
+      }
+    }catch(e){}
+  }
+
+  function findLesson(file){
+    for(var i=0;i<FLAT.length;i++){
+      if(FLAT[i].file===file) return {idx:i, data:FLAT[i]};
+    }
+    return {idx:0, data:FLAT[0]};
+  }
+
+  /* 面包屑和进度条改成上下叠放后，宽度由 .tb-center 的 flex + min-width:0
+     接管，截断落在 .crumb-cur 的 ellipsis 上，不再需要逐帧实测边界。
+     函数留空壳：loadLesson() 里还调它，且将来若要恢复测量有落点。 */
+  function fitTopbar(){}
+
+  function loadLesson(file){
+    var f = findLesson(file);
+    var L = f.data;
+    iframe.src = L.file + (L.file.indexOf('?')>=0 ? '&' : '?') + 'embed=1';
+
+    var tagStyle = TAGS[L.tag] || {bg:'#f3f4f6', fg:'#4b5563'};
+    document.getElementById('crumb').innerHTML =
+      '<span class="crumb-part" style="color:var(--accent)">'+L.topicTitle+'</span>'
+      + '<span class="crumb-sep">/</span>'
+      + '<span class="crumb-cur">'+L.title+'</span>'
+      + '<span class="crumb-tag" style="background:'+tagStyle.bg+';color:'+tagStyle.fg+'">'+L.tag+'</span>';
+    fitTopbar();
+
+    // 换页之后「路线外但正在读」的豁免要跟着走，否则上一节的主题一直占着目录
+    if(typeof routeSel !== 'undefined' && routeSel) applyRoute();
+
+    navTree.querySelectorAll('.lesson-item').forEach(function(el){
+      var on = el.dataset.file===L.file;
+      el.classList.toggle('active', on);
+      if(on){
+        var block = el.closest('.topic-block');
+        if(block) block.classList.remove('collapsed');
+        setPartOpen(el.closest('.part-block'), true);
+        el.scrollIntoView({block:'nearest'});
+      }
+    });
+
+    updateMarkUI(L.file);
+    syncStarButton(L.file);
+
+    var r = activeRoute(L.file);
+    var prev = routeStep(f.idx, -1, r);
+    var next = routeStep(f.idx, 1, r);
+
+    var pb = document.getElementById('prevBtn');
+    var nb = document.getElementById('nextBtn');
+    if(prev){
+      pb.classList.remove('disabled');
+      pb.href = '#'+encodeURIComponent(prev.file);
+      document.getElementById('prevTitle').textContent = prev.title;
+    } else {
+      pb.classList.add('disabled');
+      document.getElementById('prevTitle').textContent = '已是第一节';
+    }
+    if(next){
+      nb.classList.remove('disabled');
+      nb.href = '#'+encodeURIComponent(next.file);
+      document.getElementById('nextTitle').textContent = next.title;
+    } else {
+      nb.classList.add('disabled');
+      document.getElementById('nextTitle').textContent = '已是最后一节';
+    }
+
+    progress.__last = L.file;
+    saveProgress(progress);
+    navOpen(false);
+  }
+
+  /* 底部「学会了！」一颗按钮同时承担标记与撤销：未学会时点它标记，已学会时点它
+     撤销。顶栏原先那个 #markDone 书签图标已撤除，撤销入口改由 hover 态浮出的
+     「标为未学会」自我说明，触屏没有 hover，靠 title 与 aria-pressed 兜底。 */
+  function updateMarkUI(file){
+    var isDone = !!progress[file];
+    var lb = document.getElementById('learnedBtn');
+    lb.classList.toggle('done', isDone);
+    if(!isDone) lb.classList.remove('fire');   // 撤销后要能再播一次动效
+    lb.querySelector('.lb-label').textContent = isDone ? '已学会' : '学会了！';
+    lb.setAttribute('aria-pressed', isDone ? 'true' : 'false');
+    lb.title = isDone ? '已学会，点击可标为未学会' : '学完这一节，点这里标记';
+  }
+
+  /* 动效时长与 CSS 里的 lb-fill 对齐：填充铺满到 50% 时（约 300ms）按钮内部
+     整片绿，此刻切换文案与形态，视觉上看不到突变。 */
+  var LB_SWAP_DELAY = 300;
+  var lbReduceMotion = window.matchMedia
+    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function popSidebarCheck(file){
+    /* 按 dataset 逐个比对而非拼选择器：文件名进选择器要转义，
+       少了转义就是一处随时会抛异常的隐患，而这里的循环成本可忽略。 */
+    var dot = null;
+    navTree.querySelectorAll('.lesson-item').forEach(function(el){
+      if(el.dataset.file === file) dot = el.querySelector('.check');
+    });
+    if(!dot) return;
+    dot.classList.remove('pop');
+    void dot.offsetWidth;      // 强制重排，连续标记时动画才会重播
+    dot.classList.add('pop');
+  }
+
+  document.getElementById('learnedBtn').addEventListener('click', function(ev){
+    var file = currentFile();
+    var btn = this;
+    /* 已学会时这颗按钮就是撤销键。撤销不播绿色填充动效：那套扩散是「达成」的
+       语义，反过来用会被读成又标记了一次，状态直接切回去反而清楚。 */
+    if(progress[file]){
+      delete progress[file];
+      saveProgress(progress);
+      refreshProgress();
+      updateMarkUI(file);
+      return;
+    }
+    /* 键盘触发（Enter / 空格）时 clientX 为 0，会把圆心定在左上角，
+       这种情况退回按钮正中扩散。ev.detail 为 0 即非鼠标点击。 */
+    if(ev.detail){
+      var r = btn.getBoundingClientRect();
+      btn.style.setProperty('--cx', (ev.clientX - r.left) + 'px');
+      btn.style.setProperty('--cy', (ev.clientY - r.top) + 'px');
+    }else{
+      btn.style.removeProperty('--cx');
+      btn.style.removeProperty('--cy');
+    }
+    btn.classList.remove('fire');
+    void btn.offsetWidth;
+    btn.classList.add('fire');
+
+    progress[file] = 1;
+    saveProgress(progress);
+    refreshProgress();
+    popSidebarCheck(file);
+    if(lbReduceMotion){
+      updateMarkUI(file);
+      return;
+    }
+    /* 延迟期间可能已翻到别的课，此时 file 的状态不该再写回按钮，
+       否则会覆盖新课的正确形态。 */
+    setTimeout(function(){
+      if(currentFile() === file) updateMarkUI(file);
+    }, LB_SWAP_DELAY);
+  });
+
+  document.getElementById('finishClose').addEventListener('click', function(){
+    fbDismissed = true;
+    try{ localStorage.setItem(FB_KEY, '1'); }catch(e){}
+    document.getElementById('finishBanner').classList.remove('show');
+  });
+
+  /* ────── 目录搜索：本地标题匹配（同步）+ 服务端正文匹配（异步） ──────
+     背景：这个框原先只匹配 course-data.js 的 title/desc/topicTitle，而学员
+     记得住的往往是课里讲过的词（「幻觉」「ReAct」「上下文窗口」），这些词只在
+     正文里，全站 37 万字正文此前 0% 参与检索。
+     设计意图：正文匹配交给 /auth/search 在服务端做，浏览器只拿回命中的文件名。
+     曾评估过「下发全文索引到前端本地匹配」，两点否决：中文索引 gzip 后 362 KB；
+     且 web root 即仓库根目录，索引一旦落地成文件就能被直接 GET，绕过 Nginx
+     对课件的 auth_request 登录墙。详见 PRD-search.md。
+     关键约束：两段式不可合并——第一段本地匹配必须同步出结果，鉴权服务挂了、
+     本地 start.py 起不来时，搜索框都要能退回到改动前的标题搜索行为。 */
+  var SEARCH_LANG = 'zh';
+  var HIT_TAG_TEXT = '正文';    // 角标文案，buildTree() 建节点时取用（在其调用之前赋值）
+  var SEARCH_DEBOUNCE = 250;    // 输入防抖：低于此值会把一次输入打成多次请求
+  var SEARCH_MIN_LEN = 2;       // 单字（尤其中文单字）命中面太广，不值得发请求
+  var SEARCH_TIMEOUT = 3000;
+  var SEARCH_CACHE_MAX = 100;
+  var BY_FILE = {};
+  FLAT.forEach(function(l){ BY_FILE[l.file] = l; });
+
+  var searchQ = '';             // 当前查询词（已 trim + lower）
+  var searchBodyHits = null;    // 当前查询的正文命中 Set；null = 尚未拿到
+  var searchCache = new Map();  // lang+q → Set，退格重输不重复请求
+  var searchSeq = 0;            // 请求序号，用于丢弃过期响应
+  var searchTimer = null;
+  var searchComposing = false;
+
+  function applySearch(){
+    var q = searchQ;
+    var body = searchBodyHits;
+    /* 搜索优先于路线精简：有搜索词时放开 route-off，清空后恢复 */
+    navTree.classList.toggle('searching', !!q);
+    var offTip = document.getElementById('routeOffTip');
+    if(offTip && q) offTip.classList.remove('show');
+    navTree.querySelectorAll('.topic-block').forEach(function(block){
+      var any = false;
+      block.querySelectorAll('.lesson-item').forEach(function(item){
+        var file = item.dataset.file;
+        var L = BY_FILE[file];
+        var titleHit = !q || (L && ((L.title+L.desc+L.topicTitle).toLowerCase().indexOf(q)>=0));
+        var bodyHit = !!q && !titleHit && !!body && body.has(file);
+        var hit = titleHit || bodyHit;
+        item.style.display = hit ? '' : 'none';
+        item.classList.toggle('body-hit', bodyHit);
+        if(hit) any = true;
+      });
+      block.style.display = any ? '' : 'none';
+      if(q && any) block.classList.remove('collapsed');
+    });
+    navTree.querySelectorAll('.part-block').forEach(function(block){
+      var anyVisible = false;
+      block.querySelectorAll('.topic-block').forEach(function(t){
+        if(t.style.display !== 'none') anyVisible = true;
+      });
+      block.style.display = (!q || anyVisible) ? '' : 'none';
+      if(q && anyVisible) setPartOpen(block, true);
+    });
+  }
+
+  function fetchBodyHits(q){
+    var key = SEARCH_LANG + '\n' + q;
+    var seq = ++searchSeq;
+    var ctl = (typeof AbortController === 'function') ? new AbortController() : null;
+    var timer = setTimeout(function(){ if(ctl) ctl.abort(); }, SEARCH_TIMEOUT);
+    fetch('/auth/search?lang=' + SEARCH_LANG + '&q=' + encodeURIComponent(q),
+          {credentials:'same-origin', signal: ctl ? ctl.signal : undefined})
+      .then(function(r){
+        if(!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .then(function(d){
+        clearTimeout(timer);
+        var files = (d && d.files) || [];
+        if(searchCache.size >= SEARCH_CACHE_MAX) searchCache.clear();
+        searchCache.set(key, new Set(files));
+        if(seq !== searchSeq) return;   // 更晚的输入已发出，本次结果作废
+        searchBodyHits = searchCache.get(key);
+        console.debug('[search]', {q:q, lang:SEARCH_LANG, hits:files.length,
+                                   truncated: !!(d && d.truncated)});
+        applySearch();
+      })
+      .catch(function(err){
+        /* 降级而非报错：搜索框此时仍持有第一段的标题匹配结果，功能未中断。
+           本地 start.py 未启用语料、鉴权服务重启期间都会走到这里。 */
+        clearTimeout(timer);
+        if(seq !== searchSeq) return;
+        console.warn('[search] 正文搜索不可用，已退回标题匹配',
+                     {q:q, lang:SEARCH_LANG, error:err && (err.message || err)});
+      });
+  }
+
+  function onSearchInput(raw, allowRemote){
+    var q = (raw||'').trim().toLowerCase();
+    if(q !== searchQ){
+      searchQ = q;
+      searchSeq++;              // 查询词已变，在途请求的结果不再适用
+      var cached = searchCache.get(SEARCH_LANG + '\n' + q);
+      searchBodyHits = cached || null;
+      applySearch();
+    }
+    clearTimeout(searchTimer);
+    if(!allowRemote || q.length < SEARCH_MIN_LEN || searchBodyHits) return;
+    searchTimer = setTimeout(function(){ fetchBodyHits(q); }, SEARCH_DEBOUNCE);
+  }
+
+  var searchInput = document.getElementById('searchInput');
+  var searchClear = document.getElementById('searchClear');
+
+  /* ── 让 Alice 搜一搜（PRD 36）──────────────────────────────────────────
+     Alice 跑在课件 iframe 里，这个按钮在外壳上，所以只能 postMessage 过去。
+     她在不在由 iframe 主动上报（xueai-alice-ready）——灰度关掉或没登录时整个
+     按钮不出现，绝不摆一个点了没反应的死按钮。 */
+  var aliceSearchBtn = document.getElementById('aliceSearchBtn');
+  var aliceSearchTxt = aliceSearchBtn.querySelector('.as-txt');
+  var aliceReady = false;
+
+  function lessonWin(){
+    var f = document.getElementById('lessonFrame');
+    return (f && f.contentWindow) || null;
+  }
+
+  function syncAliceSearch(){
+    var q = searchInput.value.trim();
+    /* 输入法合成期间 value 是半截拼音，先藏起来：拿「tishici」去问她没意义 */
+    var on = aliceReady && !searchComposing && q.length >= SEARCH_MIN_LEN;
+    aliceSearchBtn.hidden = !on;
+    if(on) aliceSearchTxt.textContent = '让 Alice 搜一搜「' + q + '」';
+  }
+
+  aliceSearchBtn.addEventListener('click', function(){
+    var q = searchInput.value.trim();
+    var w = lessonWin();
+    if(q.length < SEARCH_MIN_LEN || !w) return;
+    try{
+      w.postMessage({type:'xueai-alice-search', q:q}, location.origin);
+    }catch(e){ return; }
+    navOpen(false);   /* 手机上收起目录抽屉，让位给她 */
+  });
+
+  window.addEventListener('message', function(e){
+    if(e.origin !== location.origin) return;
+    var d = e.data;
+    if(!d) return;
+    if(d.type === 'xueai-alice-ready'){
+      aliceReady = !!d.enabled;
+      syncAliceSearch();
+      return;
+    }
+    /* 她回答里的课件链接：原地换页，不开新标签（PRD 36）。文件名过一遍目录，
+       只认真实存在的课，不拿收到的字符串直接拼地址。 */
+    if(d.type === 'xueai-alice-goto'){
+      var file = String(d.file || '');
+      if(BY_FILE[file]) location.hash = '#' + encodeURIComponent(file);
+    }
+  });
+
+  function wireLessonLinks(frame){
+    try{
+      var doc = frame.contentDocument;
+      var win = frame.contentWindow;
+      if(!doc || !win) return;
+      var locale = (win.location.pathname.match(/\.(en|ko|tw|hk)\.html$/) || [])[1] || '';
+      doc.querySelectorAll('a[href]').forEach(function(a){
+        var raw = a.getAttribute('href');
+        if(!raw || raw.charAt(0)==='#') return;
+        var url;
+        try{ url = new URL(raw, win.location.href); }catch(e){ return; }
+        if(url.origin !== location.origin) return;
+        var name = decodeURIComponent(url.pathname.split('/').pop() || '');
+        var base = name.replace(/\.(?:en|ko|tw|hk)\.html$/, '.html');
+        if(!BY_FILE[base]) return;
+        var localized = locale ? base.replace(/\.html$/, '.'+locale+'.html') : base;
+        url.pathname = url.pathname.replace(/[^/]*$/, localized);
+        a.setAttribute('href', url.pathname + url.search + url.hash);
+        a.addEventListener('click', function(e){
+          if(e.defaultPrevented || e.button!==0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+          e.preventDefault();
+          location.hash = '#' + encodeURIComponent(base);
+        });
+      });
+    }catch(e){}
+  }
+
+  /* iframe 每次翻页都是一份新的 ask-alice.js。它自己会上报，但外壳先就绪时
+     那次上报可能早于本监听器，所以换页后再问一声。 */
+  (function(){
+    var f = document.getElementById('lessonFrame');
+    if(!f) return;
+    f.addEventListener('load', function(){
+      syncLessonTheme(document.documentElement.getAttribute('data-theme'));
+      wireLessonLinks(f);
+      aliceReady = false;
+      syncAliceSearch();
+      var w = lessonWin();
+      if(!w) return;
+      try{ w.postMessage({type:'xueai-alice-hello'}, location.origin); }catch(e){}
+    });
+  })();
+
+  function syncSearchClear(){
+    searchInput.closest('.search-wrap').classList.toggle('has-value', !!searchInput.value);
+    syncAliceSearch();
+  }
+  /* 输入法合成期间 input 事件会带出半截拼音（「zhen」→「侦」的中间态），
+     此时只做本地过滤、不发请求，避免用无意义的中间串去查全文。 */
+  searchInput.addEventListener('compositionstart', function(){ searchComposing = true; });
+  searchInput.addEventListener('compositionend', function(e){
+    searchComposing = false;
+    syncSearchClear();
+    onSearchInput(e.target.value, true);
+  });
+  searchInput.addEventListener('input', function(e){
+    syncSearchClear();
+    onSearchInput(e.target.value, !searchComposing);
+  });
+  searchClear.addEventListener('click', function(){
+    searchInput.value = '';
+    searchComposing = false;
+    syncSearchClear();
+    onSearchInput('', true);
+    searchInput.focus();
+  });
+  syncSearchClear();
+
+  document.getElementById('themeBtn').addEventListener('click', function(){
+    var cur = document.documentElement.getAttribute('data-theme')==='dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', cur);
+    try{ localStorage.setItem('ai_course_theme', cur); }catch(e){}
+    syncLessonTheme(cur);
+  });
+
+  /* ── 分享这一节：尖角浮层 + 本节海报，实现在 share-card.js ── */
+  var starBtn = document.getElementById('starLesson');
+  if(starBtn){
+    starBtn.addEventListener('click', function(){
+      var file = currentFile();
+      var next = !isStarred(file);
+      setStarred(file, next);
+      syncStarButton(file);
+      paintLessonStars();
+    });
+  }
+  if(window.XueaiShareCard){
+    window.XueaiShareCard.mount({
+      btn: document.getElementById('shareLesson'),
+      getLesson: function(){ return findLesson(currentFile()).data; },
+      lang: 'zh'
+    });
+  }
+
+  document.getElementById('menuBtn').addEventListener('click', function(){
+    if(isNarrowNav()) navOpen();
+    else applySidebarDrawer(!document.documentElement.classList.contains('nav-drawer'));
+  });
+  document.getElementById('scrim').addEventListener('click', function(){
+    navOpen(false);
+  });
+  var navMq = window.matchMedia('(max-width:900px)');
+  function onNavMq(){
+    if(!navMq.matches) navOpen(false);
+    else syncMenuBtn();
+  }
+  if(navMq.addEventListener) navMq.addEventListener('change', onNavMq);
+  else if(navMq.addListener) navMq.addListener(onNavMq);
+  syncMenuBtn();
+
+  window.addEventListener('hashchange', function(){
+    syncRouteFromStorage();
+    loadLesson(currentFile());
+  });
+
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && document.body.classList.contains('nav-open')){
+      navOpen(false);
+      return;
+    }
+    if(e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
+    var f = findLesson(currentFile());
+    var r = activeRoute(f.data.file);
+    var target = e.key==='ArrowRight' ? routeStep(f.idx, 1, r)
+               : e.key==='ArrowLeft'  ? routeStep(f.idx, -1, r)
+               : null;
+    if(target) location.hash = '#'+encodeURIComponent(target.file);
+  });
+
+  /* ── 学习路线精简目录 ──
+     和 roadmap.html 的路线卡共用 ai_build_route_v1：在路线页选了「做 AI 产品」，
+     打开目录时下拉已就位并完成精简；在这里切换，回路线页卡片也跟着选中。
+     翻页跟着路线走（见下面的 routeStep），进度与解锁一概不动。 */
+  var ROUTE_KEY = 'ai_build_route_v1';
+  var ROUTE_ALL = ['use', 'pro', 'pm', 'build'];
+  var ROUTE_OPTS = [
+    { v: 'all',   label: '完整目录 · 全都要' },
+    { v: 'use',   label: '路线：只想会用 AI' },
+    { v: 'pro',   label: '路线：把 AI 用到专业' },
+    { v: 'pm',    label: '路线：做 AI 产品' },
+    { v: 'build', label: '路线：自己动手搭' },
+  ];
+  var routeSel = document.getElementById('routeSel');
+
+  function topicRoutes(part, topic){
+    return topic.routes || part.routes || ROUTE_ALL;   // 没标记的篇章三条路线都含
+  }
+
+  /* ── 翻页跟随路线 ──
+     目录按路线把整段主题收起来，翻页原先一直走全量 FLAT，于是「下一节」会把人
+     送进目录里根本看不到的章节，落地后左侧不高亮，位置感全丢（吐槽 #30 / #31）。
+     全站有 27 处这样的断点，「只想会用 AI」路线最多，10 处。
+     独立打开的课件页由 nav-inject.js 做同一件事，两边共用 ai_build_route_v1。 */
+  var LESSON_ROUTES = (function(){
+    var map = {};
+    window.COURSE.parts.forEach(function(p){
+      p.topics.forEach(function(t){
+        var rs = topicRoutes(p, t);
+        t.lessons.forEach(function(l){ map[l.file] = rs; });
+      });
+    });
+    return map;
+  })();
+
+  function inRoute(file, r){
+    if(r === 'all') return true;
+    var rs = LESSON_ROUTES[file];
+    // routes: [] 是「硬核选修，只在完整目录里」，和没登记过的页面不是一回事
+    return rs ? rs.indexOf(r) >= 0 : true;
+  }
+
+  /* 当前这一节自己就在路线外，说明用户是主动点进来的（搜索、外链、Alice 推荐）。
+     这时候再按路线挑邻居，会把他一脚踢出正在读的这一章，比原来的毛病还烦人。 */
+  function activeRoute(file){
+    var r = routeSel ? routeSel.value : 'all';
+    if(ROUTE_ALL.indexOf(r) < 0) return 'all';
+    return inRoute(file, r) ? r : 'all';
+  }
+
+  function routeStep(idx, dir, r){
+    for(var i = idx + dir; i >= 0 && i < FLAT.length; i += dir){
+      if(inRoute(FLAT[i].file, r)) return FLAT[i];
+    }
+    return null;
+  }
+  function routeCount(r){
+    var n = 0;
+    window.COURSE.parts.forEach(function(p){ p.topics.forEach(function(t){
+      if(r === 'all' || topicRoutes(p, t).indexOf(r) >= 0) n += t.lessons.length;
+    }); });
+    return n;
+  }
+  function applyRoute(){
+    var r = routeSel.value;
+    /* 正在读的这一节所在的主题，即使落在路线外也不收起：藏掉它，左侧就完全找不到
+       当前位置了，这正是吐槽 #31 的后半句。改用虚线左边框标一下，不假装它属于路线。 */
+    var cur = currentFile();
+    var holds = function(topic){
+      return topic.lessons.some(function(l){ return l.file === cur; });
+    };
+    navTree.querySelectorAll('.topic-block').forEach(function(block){
+      var part = window.COURSE.parts[+block.dataset.pidx];
+      var topic = part.topics[+block.dataset.tidx];
+      var off = r !== 'all' && topicRoutes(part, topic).indexOf(r) < 0;
+      block.classList.toggle('route-off', off && !holds(topic));
+      block.classList.toggle('route-guest', off && holds(topic));
+    });
+    navTree.querySelectorAll('.part-divider').forEach(function(d){
+      var part = window.COURSE.parts[+d.dataset.pidx];
+      var total = 0, kept = 0, guest = false;
+      part.topics.forEach(function(t){
+        total += t.lessons.length;
+        if(r === 'all' || topicRoutes(part, t).indexOf(r) >= 0) kept += t.lessons.length;
+        else if(holds(t)) guest = true;
+      });
+      // 整篇都在路线外、却因为用户正读着它而留了一块在目录里，就别再淡出篇章头
+      var dim = kept === 0 && !guest;
+      if(dim) setPartOpen(d.closest('.part-block'), false);
+      else if(d.classList.contains('route-dim')) setPartOpen(d.closest('.part-block'), true);
+      d.classList.toggle('route-dim', dim);
+      d.classList.toggle('route-trim', kept < total);
+      if(kept === 0 && !guest && r !== 'all'){
+        d.setAttribute('aria-label', part.title + '，这个不在当前学习路线内');
+      }else{
+        d.removeAttribute('aria-label');
+      }
+      var note = d.querySelector('.route-note');
+      if(note) note.textContent = kept === 0
+        ? (guest ? '路线外 · 你正读着这里' : '路线外 · 已收起 ' + total + ' 节')
+        : (kept < total ? '已按路线收起 ' + (total - kept) + ' 节' : '');
+    });
+  }
+
+  /* 路线外篇章头不可点开主题，悬停要讲清楚原因。
+     提示挂在 body 上用 fixed，侧栏 overflow 裁不到。搜索放开精简时不弹。 */
+  function initRouteOffHint(){
+    var tip = document.createElement('div');
+    tip.className = 'route-off-tip';
+    tip.setAttribute('role', 'tooltip');
+    tip.id = 'routeOffTip';
+    tip.textContent = '这个不在当前学习路线内';
+    document.body.appendChild(tip);
+    var hovering = null;
+    var hide = function(){
+      hovering = null;
+      tip.classList.remove('show');
+    };
+    var flashRouteSel = function(){
+      if(!routeSel) return;
+      routeSel.classList.remove('flash');
+      void routeSel.offsetWidth;
+      routeSel.classList.add('flash');
+    };
+    if(routeSel){
+      routeSel.addEventListener('animationend', function(){
+        routeSel.classList.remove('flash');
+      });
+    }
+    var showFor = function(d){
+      if(!d || navTree.classList.contains('searching')){ hide(); return; }
+      if(hovering !== d){
+        hovering = d;
+        flashRouteSel();
+      }
+      var box = d.getBoundingClientRect();
+      var above = box.top > 48;
+      tip.style.left = Math.max(8, box.left + 10) + 'px';
+      tip.style.top = (above ? box.top - 8 : box.bottom + 8) + 'px';
+      tip.style.transform = above ? 'translateY(-100%)' : 'translateY(0)';
+      tip.classList.add('show');
+    };
+    navTree.addEventListener('pointerover', function(e){
+      var d = e.target.closest && e.target.closest('.part-divider.route-dim');
+      if(d) showFor(d);
+    });
+    navTree.addEventListener('pointerout', function(e){
+      var d = e.target.closest && e.target.closest('.part-divider.route-dim');
+      if(!d) return;
+      if(e.relatedTarget && d.contains(e.relatedTarget)) return;
+      hide();
+    });
+    navTree.addEventListener('scroll', hide);
+  }
+
+  /* roadmap.html（build.js）存的是 JSON 字符串（'"pm"' 带引号），这里读写都走
+     JSON，两边才互认；直接 getItem 裸比对会永远对不上。 */
+  function savedRoute(){
+    var s = '';
+    try{ s = JSON.parse(localStorage.getItem(ROUTE_KEY) || '""'); }catch(e){}
+    return ROUTE_ALL.indexOf(s) >= 0 ? s : 'all';
+  }
+
+  /* 路线选择是课程第一节，人在 iframe 里点。它存完路线只换顶层 hash，learn.html
+     不重载，侧栏得自己回头看一眼，否则精简要等到下次刷新才生效。 */
+  function syncRouteFromStorage(){
+    var saved = savedRoute();
+    if(saved === routeSel.value) return;
+    routeSel.value = saved;
+    applyRoute();
+    console.info('[route] 跟随课内选择更新目录', { route: saved, lessons: routeCount(saved) });
+  }
+
+  function initRouteSel(){
+    routeSel.innerHTML = ROUTE_OPTS.map(function(o){
+      return '<option value="' + o.v + '">' + o.label + ' · ' + routeCount(o.v) + ' 节</option>';
+    }).join('');
+    routeSel.value = savedRoute();
+    routeSel.addEventListener('change', function(){
+      try{ localStorage.setItem(ROUTE_KEY, JSON.stringify(routeSel.value)); }catch(e){}
+      applyRoute();
+      console.info('[route] 目录切换学习路线', { route: routeSel.value, lessons: routeCount(routeSel.value) });
+    });
+  }
+
+  buildTree();
+  initRouteSel();
+  applyRoute();
+  initRouteOffHint();
+  refreshProgress();
+  loadLesson(currentFile());
+
+  /* ── 登录：顶栏登录区 + 侧边栏锁标记（每个篇章前两节免登录） ──
+     课程页 HTML 始终带全文供抓取，可见范围由 iframe 内的 paywall.js 限制，
+     不再依赖服务端整页拦截；这里只负责把状态可视化。两边都以 /auth/me 为准，
+     口径一致，别在这儿另加一套判断。 */
+  if(window.XueaiAuth){
+    window.XueaiAuth.mount(document.getElementById('authSlot'));
+    var applyLocks = function(){
+      var logged = window.XueaiAuth.state.loggedIn;
+      navTree.querySelectorAll('.lesson-item').forEach(function(el){
+        var locked = !logged && !window.XueaiAuth.isFree(el.dataset.file);
+        el.classList.toggle('locked', locked);
+        if(locked){ el.title = '登录后可学习本节（免费）'; }
+        else{ el.removeAttribute('title'); }
+      });
+    };
+    applyLocks();
+    window.XueaiAuth.ready.then(function(){
+      applyLocks();
+      if(!window.XueaiAuth.state.loggedIn) return;
+      /* 登录态：拉服务器进度 → 与本地并集合并 → 写回两端 */
+      fetch('/auth/progress', {credentials:'same-origin'})
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+          cloudSync = true;
+          var remote = (d && d.ok && d.progress) || {};
+          var changed = false;
+          Object.keys(remote).forEach(function(k){
+            if(k === '__last'){
+              if(!progress.__last && remote.__last){ progress.__last = remote.__last; changed = true; }
+            }else if(!progress[k]){
+              progress[k] = 1; changed = true;
+            }
+          });
+          if(changed){
+            refreshProgress();
+            updateMarkUI(currentFile());
+          }
+          saveProgress(progress); // 合并结果同时推回服务器
+        })
+        .catch(function(){});
+    });
+  }
+})();
+</script>
+<script>
+/* 侧边栏宽度拖拽：不同语言标题长度差异大，宽度交给用户 */
+(function(){
+  var KEY = 'xueai_sidebar_w', MIN = 220, COLLAPSE_AT = 180, MAX = 480, DEF = 308;
+  var root = document.documentElement;
+  var rz = document.getElementById('sidebarResizer');
+  var sb = document.querySelector('.sidebar');
+  if(!rz || !sb) return;
+
+  function apply(w){ root.style.setProperty('--sidebar-w', w + 'px'); }
+  /* 上限还要让出正文的可读宽度，否则窄屏拖到 1000 会把课文挤没 */
+  function maxW(){ return Math.max(MIN, Math.min(MAX, window.innerWidth - 560)); }
+  function clamp(w){ return Math.min(maxW(), Math.max(MIN, Math.round(w))); }
+
+  try{
+    var saved = parseInt(localStorage.getItem(KEY), 10);
+    if(saved) apply(clamp(saved));
+  }catch(e){}
+
+  var startX = 0, startW = 0, curW = 0, rawW = 0, collapseReady = false;
+  function pointX(e){ return e.touches ? e.touches[0].clientX : e.clientX; }
+  function onMove(e){
+    rawW = startW + (pointX(e) - startX);
+    collapseReady = rawW <= COLLAPSE_AT;
+    curW = clamp(rawW);
+    apply(curW);
+    document.body.classList.toggle('sb-collapse-ready', collapseReady);
+    if(e.cancelable) e.preventDefault();
+  }
+  function onUp(){
+    document.body.classList.remove('sb-resizing');
+    document.body.classList.remove('sb-collapse-ready');
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+    document.removeEventListener('touchmove', onMove);
+    document.removeEventListener('touchend', onUp);
+    try{ if(curW) localStorage.setItem(KEY, curW); }catch(e){}
+    if(collapseReady){
+      var menu = document.getElementById('menuBtn');
+      if(menu) menu.click();
+    }
+  }
+  function onDown(e){
+    startX = pointX(e);
+    startW = sb.getBoundingClientRect().width;
+    curW = rawW = startW;
+    collapseReady = false;
+    document.body.classList.add('sb-resizing');
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+    document.addEventListener('touchmove', onMove, {passive:false});
+    document.addEventListener('touchend', onUp);
+    e.preventDefault();
+  }
+  rz.addEventListener('mousedown', onDown);
+  rz.addEventListener('touchstart', onDown, {passive:false});
+  rz.addEventListener('dblclick', function(){
+    apply(DEF);
+    curW = DEF;
+    try{ localStorage.setItem(KEY, DEF); }catch(e){}
+  });
+})();
+</script>
+<script>
+/* 问问 Alice：iframe 内的 Alice 报当前占宽，外壳把翻页条收到她左边，
+   再把它的高度回报给 iframe，让课件正文避开这条浮在它上面的横条 */
+(function(){
+  var root = document.documentElement, anim = false, on = false;
+
+  function pushInset(){
+    var frame = document.getElementById('lessonFrame');
+    if(!frame || !frame.contentWindow) return;
+    /* 面包屑已并入顶栏，顶栏在布局的 padding-top 之外，不压课件，top 恒为 0 */
+    var top = 0, bottom = 0;
+    if(on){
+      var fb = document.getElementById('finishBanner');
+      var lf = document.querySelector('.lesson-foot');
+      bottom = (lf ? lf.offsetHeight : 0) +
+               (fb && fb.classList.contains('show') ? fb.offsetHeight : 0);
+    }
+    try{
+      frame.contentWindow.postMessage(
+        { type:'xueai-reader-inset', top:top, bottom:bottom }, location.origin);
+    }catch(e){}
+  }
+
+  window.addEventListener('message', function(e){
+    if(e.origin !== location.origin) return;
+    var d = e.data;
+    if(!d || d.type !== 'xueai-alice-side') return;
+    var w = Math.max(0, parseInt(d.w, 10) || 0);
+    on = w > 0;
+    root.style.setProperty('--alice-side-w', w + 'px');
+    document.body.classList.toggle('alice-side-on', on);
+    document.body.classList.toggle('alice-mobile-on', !!d.mobile);
+    document.body.classList.toggle('alice-live', !!d.live);
+    /* 首帧不播过渡：翻页恢复侧边栏时，两条横条不该跟着抖一下 */
+    if(!anim){
+      anim = true;
+      requestAnimationFrame(function(){ document.body.classList.add('alice-anim'); });
+    }
+    requestAnimationFrame(pushInset);   /* 等两条收完宽再量高 */
+  });
+
+  /* 两条的高度会随窗口宽度、结课横幅出现而变，盯着它们自己重报 */
+  if(window.ResizeObserver){
+    var ro = new ResizeObserver(pushInset);
+    ['#finishBanner', '.lesson-foot'].forEach(function(sel){
+      var el = document.querySelector(sel);
+      if(el) ro.observe(el);
+    });
+  }
+  window.addEventListener('resize', pushInset);
+})();
+</script>
+<script>
+/* 语言切换：链接追加当前 hash，点击记录偏好。
+   目标语言从 data-lang 读，不按元素 id 分支——三份 learn 页曾经各写一套，
+   韩文版用 data-lang、中英文版用 #langZh/#langEn/#langKo，同一个控件三种写法，
+   加语种或改行为得记得改三处。 */
+(function(){
+  var dd = document.getElementById('langSwitcher');
+  if(!dd) return;
+  function updateLangLinks(){
+    var hash = location.hash || '';
+    dd.querySelectorAll('a[data-lang]').forEach(function(a){
+      a.href = a.getAttribute('href').split('#')[0] + hash;
+    });
+  }
+  updateLangLinks();
+  window.addEventListener('hashchange', updateLangLinks);
+  dd.querySelectorAll('a[data-lang]').forEach(function(a){
+    a.addEventListener('click', function(){
+      try{ localStorage.setItem('xueai_lang', a.dataset.lang); }catch(e){}
+    });
+  });
+  var ddBtn = document.getElementById('langDDBtn');
+  if(ddBtn){
+    ddBtn.addEventListener('click', function(e){
+      e.stopPropagation();
+      var open = dd.classList.toggle('open');
+      ddBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    document.addEventListener('click', function(){
+      dd.classList.remove('open');
+      ddBtn.setAttribute('aria-expanded','false');
+    });
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Escape'){
+        dd.classList.remove('open');
+        ddBtn.setAttribute('aria-expanded','false');
+      }
+    });
+  }
+})();
+</script>
+<script src="i18n.js?v=20261024a"></script>
+<script src="return-mark.js?v=20260909a"></script>
+<script src="partners.js?v=20260905a"></script>
+<script src="/pwa-install.js?v=20260901c"></script>
+</body>
+</html>

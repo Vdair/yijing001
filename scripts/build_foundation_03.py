@@ -1,0 +1,181 @@
+# -*- coding: utf-8 -*-
+"""
+脚本：提炼 03_易理哲学与认知模型，生成第三课《时位决策 · 易经时位辩证与邵雍以物观物法则》
+"""
+import os
+import json
+import re
+
+base_dir = r'c:\Users\HiQhb\.gemini\antigravity-ide\scratch\yijing001'
+out_md = os.path.join(base_dir, 'data', '00_认知基础_03_时位辩证与以物观物.md')
+data_path = os.path.join(base_dir, 'course_data.js')
+
+content_md = """# 认知筑基 · 第三课：时位决策 —— 易经时位辩证与邵雍以物观物心智
+
+> 本篇提炼自《03_易理哲学与认知模型/01_易经时位辩证法则.md》与《03_易理哲学与认知模型/05_邵雍观物论_以物观物的客观认知模型.md》。  
+> 旨在帮助自修学者建立易经最精妙的**“时空动态推演”**与**“破除主观我执的客观反观思维”**。
+
+---
+
+## 壹、 易经的“时空相对论”：时与位
+
+> 《易经》中没有绝对的吉凶，吉凶只取决于你是否在“对的时机”，处于“对的位置”，做出“合道合规的动作”。
+
+### 1. 什么是“位”？（空间角色与系统定位）
+* 卦由六爻组成，爻位自下而上对应不同的社会权力层级与事物发展阶段：
+  * **初爻（基层起步）**：潜伏扎根、摸清规则、未可急躁；
+  * **二爻（骨干破土）**：中正初显、出类拔萃、利见贵人；
+  * **三爻（下卦之顶）**：夹层危地、功高震主、如履薄冰；
+  * **四爻（高管改革）**：近君重臣、审慎试错、随时进退；
+  * **五爻（中正尊位）**：掌舵领袖、搭建生态、聚拢天下贤才；
+  * **上爻（极盛退隐）**：物极必反、急流勇退、防亢龙之悔。
+
+### 2. 什么是“时”？（时间窗口与发展势能）
+* **《系辞上》**：“君子藏器于身，待时而动。”
+* 易经强调“时乘六龙以御天”。时机未到，强行蛮干必遭横祸（如初九之“勿用”）；时机已至，犹豫不决必失先机（如九四之“进无咎”）；时过境迁，贪恋权势必遭反噬（如上九之“盈不可久”）。
+
+---
+
+## 贰、 时位辩证三大核心算法
+
+### 1. 得位与失位（当位法则）
+* 一、三、五为阳位；二、四、六为阴位。
+* 阳爻居阳位、阴爻居阴位，称为**“当位 / 得位”**（权责匹配，行为符合身份定位）；
+* 阳爻居阴位、阴爻居阳位，称为**“失位 / 不当位”**（角色错位，能力与岗位或资源不匹配）。
+
+### 2. “得中”胜于“得位”（中道法则）
+* 下卦之中心在**二爻**，上卦之中心在**五爻**。
+* **易经最高哲学**：**得位不如得中**！
+  * 一个人即使位置非常正（如九三得位），如果行为偏激好强（不中），依然凶多吉少；
+  * 一个人即使暂时角色错位（如六五以阴居阳），但只要心怀虚怀若谷的中庸之道（得中），反而能成就大业。
+
+### 3. 乘、承、比、应（人际博弈与组织协同网）
+* **应（对位共振）**：初爻与四爻、二爻与五爻、三爻与上爻。一阴一阳则相互吸引互补（有应），同阴同阳则缺乏互补动能（无应）；
+* **比（邻近协同）**：相邻两爻的关系。近朱者赤，需防不良邻里侵蚀；
+* **乘与承（上下级博弈）**：
+  * **承（柔承刚）**：阴爻在阳爻之下，如同部属全力支持上级，顺理成章，吉；
+  * **乘（柔乘刚）**：阴爻凌驾于阳爻之上，小人凌驾君子，弱者强行夺权，多主凶阻。
+
+---
+
+## 叁、 邵雍《观物论》：以物观物的高维认知模型
+
+> 北宋大哲学家邵雍（康节先生）在《皇极经世·观物外篇》中，给出了破除一切认知偏执的最高心智工具。
+
+### 1. 什么是“以我观物”？（人类常犯的认知盲区）
+* **邵雍指出**：“以我观物者，情也；情也者，狂也、偏也。”
+* 普通人观察外界，总是带着自己的主观好恶、情绪投射、利益偏见（“我以为”、“我认为应该怎样”）。
+* 其结果是：把主观执念当作客观事实，撞了南墙依然执迷不悟。
+
+### 2. 什么是“以物观物”？（圣人洞察规律的法门）
+* **邵雍指出**：“以物观物者，性也；性也者，公也、通也。圣人之所以能一万物之情者，谓其能反观也。”
+* **操作要义**：
+  * 彻底抽离自己的私人情绪与我执；
+  * 站在事物本来的物理规律、生态属性与因果逻辑来观察事物；
+  * 如观察火，不怨其灼热，而借其光明；观察水，不畏其幽深，而顺其就下；
+  * 观察人性，不苛求完人，而顺应利益与时位。
+
+### 3. 现代心智迁移：打造“客观决策底盘”
+* 在商业战略、投资研判与人际冲突中，时刻自问：
+  * “我现在是在‘以我观物’（被焦虑恐惧驱动），还是在‘以物观物’（看见客观因果律）？”
+  * 抽离我执，事物本来的面貌与最优解，自然朗朗现前。
+
+---
+"""
+
+with open(out_md, 'w', encoding='utf-8') as f:
+    f.write(content_md)
+print('SUCCESS: 00_认知基础_03_时位辩证与以物观物.md written! Size:', os.path.getsize(out_md))
+
+# 编译为 HTML
+def md_to_html(md):
+    lines = md.strip().split('\n')
+    html_parts = []
+    in_ul = False
+    in_table = False
+    in_blockquote = False
+    
+    for line in lines:
+        l = line.strip()
+        if not l:
+            if in_ul: html_parts.append('</ul>'); in_ul = False
+            if in_blockquote: html_parts.append('</blockquote>'); in_blockquote = False
+            continue
+            
+        if l.startswith('### '):
+            if in_ul: html_parts.append('</ul>'); in_ul = False
+            if in_blockquote: html_parts.append('</blockquote>'); in_blockquote = False
+            title = l[4:].strip()
+            html_parts.append(f'<h4 class="sub-sec-title">{title}</h4>')
+        elif l.startswith('## '):
+            if in_ul: html_parts.append('</ul>'); in_ul = False
+            if in_blockquote: html_parts.append('</blockquote>'); in_blockquote = False
+            title = l[3:].strip()
+            html_parts.append(f'<div class="step-header" style="margin-top:24px;"><span class="step-badge" style="background:var(--accent-light); color:var(--accent);">时位心智</span><h3 class="step-title">{title}</h3></div>')
+        elif l.startswith('| '):
+            if in_ul: html_parts.append('</ul>'); in_ul = False
+            if in_blockquote: html_parts.append('</blockquote>'); in_blockquote = False
+            cells = [c.strip() for c in l.split('|')[1:-1]]
+            if '---' in cells[0]: continue
+            row_html = ''.join([f'<td style="padding:8px 12px; border:1px solid var(--border-light); font-size:14.5px;">{c}</td>' for c in cells])
+            if not in_table:
+                html_parts.append('<table style="width:100%; border-collapse:collapse; margin:16px 0; background:var(--bg);">')
+                in_table = True
+            html_parts.append(f'<tr>{row_html}</tr>')
+        elif l.startswith('> '):
+            if in_table: html_parts.append('</table>'); in_table = False
+            if in_ul: html_parts.append('</ul>'); in_ul = False
+            if not in_blockquote:
+                html_parts.append('<blockquote class="classic-quote">')
+                in_blockquote = True
+            bq_text = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', l[2:])
+            html_parts.append(f'<p>{bq_text}</p>')
+        elif l.startswith('* ') or l.startswith('- '):
+            if in_table: html_parts.append('</table>'); in_table = False
+            if in_blockquote: html_parts.append('</blockquote>'); in_blockquote = False
+            if not in_ul:
+                html_parts.append('<ul class="classic-list">')
+                in_ul = True
+            li_text = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', l[2:])
+            li_text = re.sub(r'\*(.*?)\*', r'<i>\1</i>', li_text)
+            html_parts.append(f'<li>{li_text}</li>')
+        else:
+            if in_table: html_parts.append('</table>'); in_table = False
+            if in_ul: html_parts.append('</ul>'); in_ul = False
+            if in_blockquote: html_parts.append('</blockquote>'); in_blockquote = False
+            p_text = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', l)
+            p_text = re.sub(r'\*(.*?)\*', r'<i>\1</i>', p_text)
+            html_parts.append(f'<p class="normal-p">{p_text}</p>')
+            
+    if in_table: html_parts.append('</table>')
+    if in_ul: html_parts.append('</ul>')
+    if in_blockquote: html_parts.append('</blockquote>')
+    return '\n'.join(html_parts)
+
+lesson3_html = f'''
+<section class="step-section" style="border-left:4px solid var(--accent);">
+  {md_to_html(content_md)}
+</section>
+'''
+
+# 注入 course_data.js 中的第三课（p0-03 或 lesson-zero-3）
+code = open(data_path, encoding='utf-8').read()
+json_str = code.replace('window.COURSE = ', '').strip().rstrip(';')
+course = json.loads(json_str)
+
+for part in course['parts']:
+    if '认知' in part['title']:
+        for topic in part['topics']:
+            for les in topic['lessons']:
+                if les['id'] in ['p0-03', 'lesson-zero-3']:
+                    les['title'] = '第三课 · 时位决策 —— 易经时位辩证与邵雍以物观物法则'
+                    les['navTitle'] = '03. 时位决策哲学'
+                    les['tag'] = '心智模型'
+                    les['motto'] = '观物以性，破我执情；时乘六位，中正无咎'
+                    les['full_rich_html'] = lesson3_html
+                    break
+
+with open(data_path, 'w', encoding='utf-8') as f:
+    f.write('window.COURSE = ' + json.dumps(course, ensure_ascii=False, indent=2) + ';\n')
+
+print('SUCCESS: Foundation lesson 3 successfully injected into course_data.js!')

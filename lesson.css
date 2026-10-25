@@ -1,0 +1,685 @@
+/* 易道认知工坊 - 现代沉浸式宽屏自修课件样式表 (大字版·铺满视窗·教学级排版) */
+:root, [data-theme="dark"] {
+  --bg: #0d1117;
+  --side: #161b22;
+  --card: #1c2128;
+  --card-hover: #22272e;
+  --border: rgba(255, 255, 255, 0.14);
+  --border-light: rgba(255, 255, 255, 0.08);
+  --text-m: #f0f6fc;
+  --text-sub: #adbac7;
+  --text-faint: #768390;
+  --accent: #2ea043;
+  --accent-light: rgba(46, 160, 67, 0.18);
+  --gold: #f0b429;
+  --gold-light: rgba(240, 180, 41, 0.18);
+  --blue: #58a6ff;
+  --blue-light: rgba(88, 166, 255, 0.18);
+  --purple: #bc8cff;
+  --purple-light: rgba(188, 140, 255, 0.18);
+  --danger: #f85149;
+  --danger-light: rgba(248, 81, 73, 0.15);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+
+[data-theme="light"] {
+  --bg: #f8fafc;
+  --side: #ffffff;
+  --card: #ffffff;
+  --card-hover: #f1f5f9;
+  --border: rgba(0, 0, 0, 0.12);
+  --border-light: rgba(0, 0, 0, 0.06);
+  --text-m: #0f172a;
+  --text-sub: #475569;
+  --text-faint: #64748b;
+  --accent: #15803d;
+  --accent-light: rgba(21, 128, 61, 0.12);
+  --gold: #b45309;
+  --gold-light: rgba(180, 83, 9, 0.12);
+  --blue: #0284c7;
+  --blue-light: rgba(2, 132, 199, 0.12);
+  --purple: #7e22ce;
+  --purple-light: rgba(126, 34, 206, 0.12);
+  --danger: #b91c1c;
+  --danger-light: rgba(185, 28, 28, 0.1);
+  --shadow: 0 4px 16px rgba(0,0,0,0.06);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  background: var(--bg);
+  color: var(--text-m);
+  line-height: 1.85;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  font-size: 16.5px; /* 全局清晰大字基准 */
+}
+
+/* 顶栏 */
+.topbar {
+  height: 62px;
+  background: var(--side);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  flex-shrink: 0;
+  z-index: 100;
+}
+.brand { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 20px; }
+.brand-badge {
+  background: var(--accent);
+  color: #fff;
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 99px;
+  letter-spacing: 0.5px;
+}
+.top-actions { display: flex; align-items: center; gap: 14px; }
+.route-selector, .btn-action {
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text-m);
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 14.5px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s;
+}
+.route-selector:hover, .btn-action:hover { border-color: var(--accent); }
+
+/* 主工作区布局 */
+.main-wrapper {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+/* 左侧栏 */
+.sidebar {
+  width: 330px;
+  background: var(--side);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  transition: transform 0.25s ease;
+}
+.sidebar-search {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-light);
+}
+.sidebar-search input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 9px 14px;
+  color: var(--text-m);
+  font-size: 14px;
+  outline: none;
+}
+.progress-box {
+  padding: 12px 16px;
+  background: var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13.5px;
+  color: var(--text-sub);
+}
+.progress-bar-bg {
+  width: 130px;
+  height: 8px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  width: 0%;
+  transition: width 0.3s;
+}
+
+.course-tree {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+}
+.part-group { margin-bottom: 16px; }
+.part-title {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.topic-group { margin-bottom: 8px; }
+.lesson-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 14.5px;
+  color: var(--text-m);
+  cursor: pointer;
+  text-decoration: none;
+  margin-bottom: 3px;
+  transition: all 0.15s;
+}
+.lesson-item:hover { background: var(--card-hover); }
+.lesson-item.active { background: var(--accent-light); color: var(--accent); font-weight: 700; }
+.lesson-item .status-icon { font-size: 14px; color: var(--text-faint); }
+.lesson-item.done .status-icon { color: var(--accent); }
+.lesson-tag {
+  font-size: 11.5px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: var(--border);
+  color: var(--text-sub);
+  margin-left: auto;
+}
+
+/* ── 右侧研习主视窗 (宽屏自适应铺满 · 彻底消除窄栏) ── */
+.reader-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg);
+}
+.reader-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 36px 48px;
+  width: 100%; /* 彻底铺满屏幕宽幅 */
+  max-width: 100%; /* 彻底取消窄宽居中限制 */
+  margin: 0;
+}
+
+/* 卦象标题头 */
+.lesson-header {
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+.header-top { display: flex; align-items: center; gap: 20px; margin-bottom: 16px; }
+.gua-symbol-badge {
+  font-size: 46px;
+  line-height: 1;
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  color: var(--gold);
+  box-shadow: var(--shadow);
+}
+.header-meta h1 { font-size: 32px; font-weight: 800; color: var(--text-m); letter-spacing: -0.5px; }
+.header-meta .motto { font-size: 17px; color: var(--text-sub); margin-top: 6px; }
+.header-tags { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+.pill-tag {
+  font-size: 13.5px;
+  font-weight: 700;
+  padding: 5px 14px;
+  border-radius: 99px;
+  background: var(--blue-light);
+  color: var(--blue);
+}
+
+/* ── 竖向六爻天梯与演变结构 ── */
+.yao-ladder-container {
+  display: flex;
+  gap: 28px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  margin-top: 24px;
+  box-shadow: var(--shadow);
+}
+.yao-ladder {
+  display: flex;
+  flex-direction: column-reverse; /* 严格由下至上！索引0在底，索引5在顶 */
+  gap: 10px;
+  width: 260px;
+  flex-shrink: 0;
+  background: var(--bg);
+  padding: 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-light);
+}
+.yao-ladder-rung {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 12px;
+  border-radius: 6px;
+  background: var(--card);
+  border: 1px solid var(--border-light);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.yao-ladder-rung:hover {
+  border-color: var(--gold);
+  transform: translateX(4px);
+  background: var(--card-hover);
+}
+.yao-pos-name {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-sub);
+  width: 78px;
+}
+.yao-graphic {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 86px;
+  height: 12px;
+}
+.yao-graphic.yang {
+  background: var(--gold);
+  border-radius: 3px;
+}
+.yao-graphic.yin {
+  background: transparent;
+  display: flex;
+  gap: 10px;
+}
+.yin-half {
+  flex: 1;
+  height: 100%;
+  background: var(--blue);
+  border-radius: 3px;
+}
+
+.yao-ladder-intro {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.yao-ladder-intro h4 {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--gold);
+  margin-bottom: 10px;
+}
+.yao-ladder-intro p {
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--text-sub);
+}
+
+/* ── 核心教学步骤 Section ── */
+.step-section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px 32px;
+  margin-bottom: 30px;
+  box-shadow: var(--shadow);
+}
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.step-badge {
+  font-size: 13px;
+  font-weight: 800;
+  padding: 4px 12px;
+  border-radius: 6px;
+  text-transform: uppercase;
+}
+.step-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-m);
+}
+.step-body {
+  font-size: 16px;
+  line-height: 1.85;
+}
+
+/* 经传原典大字卡 */
+.classic-quote-box {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-left: 5px solid var(--gold);
+  border-radius: 8px;
+  padding: 20px 24px;
+  margin-bottom: 18px;
+}
+.classic-quote-title {
+  font-size: 21px;
+  font-weight: 800;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+.classic-teacher-explain {
+  background: var(--border-light);
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-top: 12px;
+  font-size: 15.5px;
+  line-height: 1.8;
+}
+.teacher-tag {
+  display: inline-block;
+  background: var(--accent);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-right: 8px;
+}
+
+/* 大师羽翼网格 (程颐、朱熹、孔颖达、邵雍) */
+.classic-wings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  gap: 18px;
+  margin-top: 18px;
+}
+.wing-box {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.wing-box-title {
+  font-size: 15px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-light);
+}
+.wing-box-title.zhuxi { color: var(--gold); }
+.wing-box-title.chengyi { color: var(--accent); }
+.wing-box-title.kong { color: var(--blue); }
+.wing-box-title.shaoyong { color: var(--purple); }
+.wing-box-content {
+  font-size: 14.5px;
+  line-height: 1.75;
+  color: var(--text-m);
+}
+.wing-box-teacher {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--border-light);
+  font-size: 13.5px;
+  color: var(--text-sub);
+}
+
+/* ── 逐爻全息卡片 ── */
+.yao-deep-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 24px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: border-color 0.3s;
+}
+.yao-deep-header {
+  padding: 18px 24px;
+  background: var(--border-light);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.yao-deep-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 21px;
+  font-weight: 800;
+  color: var(--text-m);
+}
+.yao-pos-badge {
+  background: var(--gold);
+  color: #000;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+.yao-stage-tag {
+  font-size: 13.5px;
+  color: var(--text-sub);
+  background: var(--bg);
+  border: 1px solid var(--border-light);
+  padding: 4px 12px;
+  border-radius: 99px;
+}
+.yao-deep-body {
+  padding: 24px;
+}
+
+/* 导师大白话拆解 */
+.modern-decode-box {
+  background: var(--accent-light);
+  border-left: 4px solid var(--accent);
+  border-radius: 6px;
+  padding: 16px 20px;
+  margin: 16px 0;
+  font-size: 15.5px;
+  line-height: 1.8;
+  color: var(--text-m);
+}
+
+/* 红线警示框 */
+.redline-warning {
+  background: var(--danger-light);
+  border-left: 4px solid var(--danger);
+  border-radius: 6px;
+  padding: 14px 18px;
+  margin-top: 14px;
+  font-size: 15px;
+  color: var(--danger);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 梅花易数类象图谱卡 */
+.meihua-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+.meihua-item {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 14.5px;
+}
+.meihua-item b {
+  color: var(--gold);
+  display: inline-block;
+  width: 76px;
+}
+
+/* 场景迁移卡片 */
+.scene-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 18px;
+}
+.scene-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+}
+.scene-card h4 {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text-m);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.scene-card p {
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--text-sub);
+}
+
+/* 费曼输出 */
+.feynman-box {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 24px;
+}
+.feynman-box h4 {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+.feynman-formula {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--gold);
+  background: var(--border-light);
+  padding: 14px 18px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+.feynman-expand-btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 18px;
+  font-size: 14.5px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 14px;
+  transition: opacity 0.2s;
+}
+.feynman-expand-btn:hover { opacity: 0.9; }
+
+/* 底部操作条 */
+.footbar {
+  height: 64px;
+  background: var(--side);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 36px;
+  flex-shrink: 0;
+}
+.foot-btn {
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text-m);
+  padding: 10px 22px;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s;
+}
+.foot-btn:hover:not(:disabled) { border-color: var(--accent); }
+.foot-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.foot-btn.primary {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+
+/* ── 全息大课富文本排版增强 ── */
+.sub-sec-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--gold);
+  margin: 22px 0 10px 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-light);
+}
+.yao-sub-title {
+  font-size: 18.5px;
+  font-weight: 800;
+  color: var(--text-m);
+  margin: 18px 0 8px 0;
+  padding: 8px 14px;
+  background: var(--border-light);
+  border-left: 4px solid var(--gold);
+  border-radius: 4px;
+  transition: all 0.3s;
+}
+.classic-quote {
+  background: var(--bg);
+  border-left: 4px solid var(--accent);
+  padding: 14px 18px;
+  margin: 12px 0;
+  border-radius: 6px;
+  font-size: 16.5px;
+  line-height: 1.85;
+}
+.classic-quote p { margin-bottom: 6px; }
+.classic-quote p:last-child { margin-bottom: 0; }
+.classic-list {
+  padding-left: 24px;
+  margin: 12px 0;
+  font-size: 16px;
+  line-height: 1.85;
+}
+.classic-list li { margin-bottom: 8px; }
+.num-item {
+  font-size: 16px;
+  line-height: 1.85;
+  margin: 10px 0;
+  padding: 6px 12px;
+  background: var(--card-hover);
+  border-radius: 6px;
+}
+.normal-p {
+  font-size: 16px;
+  line-height: 1.85;
+  margin: 10px 0;
+  color: var(--text-m);
+}
+.step-section {
+  border-left: 4px solid var(--gold);
+}
+.step-section.section-idx-1 { border-left-color: var(--blue); }
+.step-section.section-idx-2 { border-left-color: var(--purple); }
+.step-section.section-idx-3 { border-left-color: var(--accent); }
+.step-section.section-idx-4 { border-left-color: var(--gold); }
+.step-section.section-idx-5 { border-left-color: var(--blue); }
+.step-section.section-idx-6 { border-left-color: var(--danger); }

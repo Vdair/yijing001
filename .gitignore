@@ -25,4 +25,9 @@ venv/
 *.log
 scratch/
 .system_generated/
-data/
+
+# 知识库中间爬虫、测试与临时切片缓存（仅版本化保留核心 markdown 成果档案）
+data/*.json
+data/*.txt
+data/*.html
+data/slices/
