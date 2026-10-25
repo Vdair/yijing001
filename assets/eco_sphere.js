@@ -236,7 +236,7 @@
       group.add(linesGroup);
       group.linesGroup = linesGroup;
 
-      const hitRadius = 4.5;
+      const hitRadius = 6.2;
       const hitGeo = new THREE.SphereGeometry(hitRadius, 16, 16);
       const hitMat = new THREE.MeshBasicMaterial({
         color: item.isPiGua ? COLORS.red : COLORS.gold,
@@ -939,6 +939,17 @@
     });
   }
 
+  function resetHoverHighlight(node) {
+    if (!node || !node.hitMesh) return;
+    if (node === activeNode) {
+      node.hitMesh.material.opacity = 0.55;
+    } else if (summonedNodes.some(s => s.node === node)) {
+      node.hitMesh.material.opacity = 0.35;
+    } else {
+      node.hitMesh.material.opacity = node.userData.isPiGua ? 0.18 : 0.08;
+    }
+  }
+
   function setNodeDimmed(node, dimmed) {
     const opacity = dimmed ? 0.12 : 1.0;
     node.linesGroup.children.forEach(mesh => {
@@ -965,12 +976,24 @@
 
     if (intersects.length > 0) {
       const hitObj = intersects[0].object;
-      const node = hitObj.parent;
+      if (hitObj === focusVeilMesh) {
+        if (hoveredNode) {
+          resetHoverHighlight(hoveredNode);
+          hoveredNode = null;
+        }
+        container.style.cursor = 'default';
+        tooltip.style.display = 'none';
+        return;
+      }
 
-      // 如果处于锁定态，仅高亮当前阵列中的卦
+      const node = hitObj.parent;
+      if (!node || !node.userData) return;
+
       if (isFocusLocked) {
         const isRelated = node === activeNode || summonedNodes.some(s => s.node === node);
         if (!isRelated) {
+          if (hoveredNode) resetHoverHighlight(hoveredNode);
+          hoveredNode = null;
           container.style.cursor = 'default';
           tooltip.style.display = 'none';
           return;
@@ -978,26 +1001,23 @@
       }
 
       if (hoveredNode !== node) {
-        if (hoveredNode && hoveredNode !== activeNode) {
-          const isSummoned = summonedNodes.some(s => s.node === hoveredNode);
-          hoveredNode.scale.set(isSummoned ? 1.15 : 1, isSummoned ? 1.15 : 1, isSummoned ? 1.15 : 1);
-        }
+        if (hoveredNode) resetHoverHighlight(hoveredNode);
         hoveredNode = node;
-        if (node !== activeNode) {
-          node.scale.set(1.22, 1.22, 1.22);
+        if (node.hitMesh) {
+          node.hitMesh.material.opacity = 0.45;
         }
       }
+
       container.style.cursor = 'pointer';
       tooltip.style.display = 'block';
       tooltip.style.left = `${event.clientX}px`;
       tooltip.style.top = `${event.clientY}px`;
       tooltip.innerText = `${node.userData.symbol} ${node.userData.idx + 1 < 10 ? '0' : ''}${node.userData.idx + 1}. ${node.userData.name}`;
     } else {
-      if (hoveredNode && hoveredNode !== activeNode) {
-        const isSummoned = summonedNodes.some(s => s.node === hoveredNode);
-        hoveredNode.scale.set(isSummoned ? 1.15 : 1, isSummoned ? 1.15 : 1, isSummoned ? 1.15 : 1);
+      if (hoveredNode) {
+        resetHoverHighlight(hoveredNode);
+        hoveredNode = null;
       }
-      hoveredNode = null;
       container.style.cursor = 'default';
       tooltip.style.display = 'none';
     }
@@ -1014,42 +1034,43 @@
     const intersects = raycaster.intersectObjects(hitMeshes);
 
     if (intersects.length > 0) {
-      const hitObj = intersects[0].object;
-      const clickedNode = hitObj.parent;
+      // 优先拾取卦节点，防止误点背后的 focusVeilMesh
+      const nodeHit = intersects.find(hit => hit.object !== focusVeilMesh && hit.object.parent && hit.object.parent.userData);
 
-      // 点击了 3D 幕布，平滑恢复原状！
-      if (hitObj === focusVeilMesh) {
-        hideDetailCard();
-        return;
-      }
+      if (nodeHit) {
+        const clickedNode = nodeHit.object.parent;
 
-      // 如果处于【四维拓扑研习锁定态】：
-      if (isFocusLocked) {
-        if (clickedNode === activeNode) {
-          // 【再次点击本卦】：直接激活并推进六爻时位演进！
-          if (!isTimelineActive) {
-            activateYaoTimeline(activeNode);
-          } else {
-            let nextStep = currentTimelineStep + 1;
-            if (nextStep > 6) nextStep = 1;
-            applyTimelineStep(nextStep, true);
+        if (isFocusLocked) {
+          if (clickedNode === activeNode) {
+            if (!isTimelineActive) {
+              activateYaoTimeline(activeNode);
+            } else {
+              let nextStep = currentTimelineStep + 1;
+              if (nextStep > 6) nextStep = 1;
+              applyTimelineStep(nextStep, true);
+            }
+            return;
+          }
+
+          const isCurrentCluster = clickedNode === activeNode || summonedNodes.some(s => s.node === clickedNode);
+          if (isCurrentCluster) {
+            showDetailCard(clickedNode.userData);
+            return;
           }
           return;
         }
 
-        const isCurrentCluster = clickedNode === activeNode || summonedNodes.some(s => s.node === clickedNode);
-        if (isCurrentCluster) {
-          showDetailCard(clickedNode.userData);
-          return;
-        } else {
-          return;
-        }
+        selectNode(clickedNode, true);
+        return;
       }
 
-      // 未锁定态：正常触发引力召唤
-      selectNode(clickedNode, true);
+      // 未命中任何卦，而是真正点击了背景幕布：恢复原状
+      const veilHit = intersects.find(hit => hit.object === focusVeilMesh);
+      if (veilHit) {
+        hideDetailCard();
+        return;
+      }
     } else {
-      // 点击了空白星空区域：平滑恢复原状！
       hideDetailCard();
     }
   }
