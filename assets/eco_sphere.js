@@ -866,6 +866,35 @@
           this.drawCommand(ctx, width, height, frame);
           break;
 
+        // Sprint 2 专属意象引擎
+        case 'wind':
+          this.drawWind(ctx, width, height, frame);
+          break;
+        case 'tiger':
+          this.drawTiger(ctx, width, height, frame);
+          break;
+        case 'grass':
+        case 'tree':
+        case 'bamboo':
+          this.drawFlora(ctx, width, height, frame);
+          break;
+        case 'lotus':
+        case 'feather':
+          this.drawFloat(ctx, width, height, frame);
+          break;
+        case 'cart':
+          this.drawCart(ctx, width, height, frame);
+          break;
+        case 'sun':
+          this.drawSun(ctx, width, height, frame);
+          break;
+        case 'rock':
+          this.drawRock(ctx, width, height, frame);
+          break;
+        case 'path':
+          this.drawPath(ctx, width, height, frame);
+          break;
+
         default:
           this.drawGeneric(ctx, width, height, frame);
           break;
@@ -1259,6 +1288,143 @@
       ctx.beginPath();
       ctx.arc(w/2, h/2, 35 + Math.sin(f*0.1)*5, 0, Math.PI * 2);
       ctx.stroke();
+    }
+
+    drawWind(ctx, w, h, f) {
+      // 柔顺微风气流波纹
+      ctx.fillStyle = '#09131f'; ctx.fillRect(0, 0, w, h);
+      ctx.strokeStyle = 'rgba(125, 211, 252, 0.35)'; ctx.lineWidth = 1.5;
+      for (let i = 0; i < 5; i++) {
+        ctx.beginPath();
+        for (let x = 0; x < w; x += 12) {
+          let y = h * 0.2 + i * 26 + Math.sin((x * 0.03) + (f * 0.06) + i * 1.5) * 8;
+          if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+      this.particles.forEach(p => {
+        p.x += p.speed * 1.5; if (p.x > w) p.x = 0;
+        ctx.fillStyle = `rgba(167, 243, 208, ${0.4 + Math.sin(f * 0.05 + p.phase) * 0.3})`;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fill();
+      });
+    }
+
+    drawTiger(ctx, w, h, f) {
+      // 猛虎警觉与如履薄冰的戒惧力场
+      ctx.fillStyle = '#180d0d'; ctx.fillRect(0, 0, w, h);
+      let pulse = Math.sin(f * 0.08) * 12;
+      ctx.strokeStyle = 'rgba(239, 68, 68, 0.4)'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(w/2, h/2, 45 + pulse, 0, Math.PI * 2); ctx.stroke();
+      ctx.strokeStyle = 'rgba(245, 158, 11, 0.7)'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(w/2, h/2, 28 - pulse * 0.5, 0, Math.PI * 2); ctx.stroke();
+      // 虎目金芒
+      ctx.fillStyle = 'rgba(251, 191, 36, 0.9)';
+      ctx.beginPath(); ctx.arc(w/2 - 18, h/2 - 6, 3, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(w/2 + 18, h/2 - 6, 3, 0, Math.PI * 2); ctx.fill();
+    }
+
+    drawFlora(ctx, w, h, f) {
+      // 草木拔节萌发与生根
+      ctx.fillStyle = '#06130d'; ctx.fillRect(0, 0, w, h);
+      ctx.strokeStyle = 'rgba(52, 211, 153, 0.6)'; ctx.lineWidth = 2;
+      // 几道向上伸展的嫩茎
+      for (let i = -1; i <= 1; i++) {
+        ctx.beginPath();
+        ctx.moveTo(w/2 + i * 25, h);
+        ctx.quadraticCurveTo(w/2 + i * 35 + Math.sin(f*0.04 + i)*8, h*0.4, w/2 + i * 20, h*0.25);
+        ctx.stroke();
+      }
+      this.particles.forEach(p => {
+        p.y -= p.speed * 0.8; if (p.y < 0) p.y = h;
+        ctx.fillStyle = `rgba(110, 231, 183, ${0.4 + Math.sin(f * 0.07 + p.phase) * 0.4})`;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fill();
+      });
+    }
+
+    drawFloat(ctx, w, h, f) {
+      // 轻盈翩翩飘羽与净莲
+      ctx.fillStyle = '#0d1520'; ctx.fillRect(0, 0, w, h);
+      this.particles.forEach((p, idx) => {
+        p.y += p.speed * 0.6;
+        p.x += Math.sin(f * 0.03 + p.phase) * 0.8;
+        if (p.y > h) p.y = 0;
+        if (p.x > w) p.x = 0; if (p.x < 0) p.x = w;
+        ctx.fillStyle = `rgba(224, 242, 254, ${0.5 + Math.sin(f * 0.05 + p.phase) * 0.3})`;
+        ctx.beginPath();
+        // 椭圆羽毛或花瓣
+        ctx.ellipse(p.x, p.y, p.radius * 2, p.radius, p.phase + f * 0.02, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+
+    drawCart(ctx, w, h, f) {
+      // 厚重车轮同心旋转
+      ctx.fillStyle = '#14110e'; ctx.fillRect(0, 0, w, h);
+      let angle = f * 0.03;
+      let cx = w/2, cy = h/2, r = 40;
+      ctx.strokeStyle = 'rgba(217, 119, 6, 0.7)'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+      ctx.strokeStyle = 'rgba(245, 158, 11, 0.5)'; ctx.lineWidth = 1.5;
+      for (let i = 0; i < 8; i++) {
+        let a = angle + (i * Math.PI / 4);
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+        ctx.stroke();
+      }
+      ctx.fillStyle = 'rgba(251, 191, 36, 0.9)';
+      ctx.beginPath(); ctx.arc(cx, cy, 6, 0, Math.PI * 2); ctx.fill();
+    }
+
+    drawSun(ctx, w, h, f) {
+      // 破晓大日圆光
+      ctx.fillStyle = '#1f1305'; ctx.fillRect(0, 0, w, h);
+      let glow = 35 + Math.sin(f * 0.06) * 6;
+      let grad = ctx.createRadialGradient(w/2, h/2, 8, w/2, h/2, glow * 1.6);
+      grad.addColorStop(0, 'rgba(254, 240, 138, 0.95)');
+      grad.addColorStop(0.4, 'rgba(245, 158, 11, 0.6)');
+      grad.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad;
+      ctx.beginPath(); ctx.arc(w/2, h/2, glow * 1.6, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+      ctx.beginPath(); ctx.arc(w/2, h/2, 14, 0, Math.PI * 2); ctx.fill();
+    }
+
+    drawRock(ctx, w, h, f) {
+      // 坚如磐石巍然不动
+      ctx.fillStyle = '#0e1117'; ctx.fillRect(0, 0, w, h);
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.7)'; ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(w*0.25, h*0.8);
+      ctx.lineTo(w*0.4, h*0.3);
+      ctx.lineTo(w*0.6, h*0.28);
+      ctx.lineTo(w*0.75, h*0.8);
+      ctx.closePath();
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(71, 85, 105, 0.35)'; ctx.fill();
+      // 内部沉定金光
+      let pulse = Math.sin(f * 0.05) * 5;
+      ctx.fillStyle = 'rgba(234, 179, 8, 0.6)';
+      ctx.beginPath(); ctx.arc(w/2, h*0.55, 12 + pulse, 0, Math.PI * 2); ctx.fill();
+    }
+
+    drawPath(ctx, w, h, f) {
+      // 坦荡通衢大道
+      ctx.fillStyle = '#08101a'; ctx.fillRect(0, 0, w, h);
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.6)'; ctx.lineWidth = 2;
+      // 透视路边线
+      ctx.beginPath();
+      ctx.moveTo(w * 0.42, h * 0.2); ctx.lineTo(w * 0.08, h);
+      ctx.moveTo(w * 0.58, h * 0.2); ctx.lineTo(w * 0.92, h);
+      ctx.stroke();
+      // 道路中间虚线
+      ctx.strokeStyle = 'rgba(250, 204, 21, 0.5)'; ctx.lineWidth = 2;
+      let offset = (f * 1.5) % 30;
+      for (let y = h * 0.25 + offset; y < h; y += 30) {
+        let t = (y - h*0.2) / (h*0.8);
+        let x = w/2;
+        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + 14 * t); ctx.stroke();
+      }
     }
 
     drawGeneric(ctx, w, h, f) {
