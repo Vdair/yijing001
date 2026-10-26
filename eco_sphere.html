@@ -100,38 +100,111 @@
     <div class="hint-item"><span class="hint-key" id="btn-auto-rotate" style="cursor:pointer; background:rgba(212,175,55,0.2); border:1px solid var(--gold);">✨ 自动漫游</span></div>
   </div>
 
-  <!-- Six Yao Timeline Progress Scrubber -->
+    <!-- Six Yao Narrative Cinematic Scrubber (六爻故事化动态演进剧场) -->
   <div class="hud-panel yao-timeline-bar" id="yao-timeline-bar">
-    <div class="timeline-header">
-      <div class="tl-title">
-        <span class="tl-icon">⏳</span>
-        <b id="tl-gua-name">01. 乾为天 · 六爻时位演进</b>
+    <!-- 剧场顶部控制栏 -->
+    <div class="theater-top-bar">
+      <div class="theater-title-group">
+        <span class="theater-icon">🎬</span>
+        <div class="theater-title-text">
+          <b id="theater-gua-title">01. 乾为天 · 六爻时位故事剧场</b>
+          <span class="theater-subtitle" id="theater-subtitle">六阶职场英雄之旅 · 自下而上生命周期演进</span>
+        </div>
       </div>
+
+      <!-- 视角切换器 -->
+      <div class="perspective-switch-wrap">
+        <span class="perspective-label">研习视角：</span>
+        <div class="perspective-capsules" id="perspective-capsules">
+          <button class="perspective-btn active" data-perspective="career" id="btn-persp-career">👔 职场史诗</button>
+          <button class="perspective-btn" data-perspective="startup" id="btn-persp-startup">🚀 创业破局</button>
+          <button class="perspective-btn" data-perspective="classic" id="btn-persp-classic">☯️ 乾龙修身</button>
+        </div>
+      </div>
+
       <div class="tl-controls">
-        <button class="tl-btn" id="tl-btn-play" title="播放/暂停演进">▶ 自动演进</button>
-        <button class="tl-btn" id="tl-btn-reset" title="重置回初爻">↺ 初爻</button>
-        <button class="tl-close-btn" id="tl-btn-close" title="退出六爻演进">&times;</button>
+        <button class="tl-btn" id="tl-btn-prev" title="上一爻">⏮ 上一幕</button>
+        <button class="tl-btn play-btn" id="tl-btn-play" title="播放/暂停演进">▶ 自动放映</button>
+        <button class="tl-btn" id="tl-btn-next" title="下一爻">下一幕 ⏭</button>
+        <button class="tl-close-btn" id="tl-btn-close" title="退出剧场">&times;</button>
       </div>
-    </div>
-    
-    <div class="timeline-stage-info" id="tl-stage-info">
-      <span class="stage-tag" id="tl-stage-tag">初爻 · 潜伏生发</span>
-      <span class="stage-desc" id="tl-stage-desc">初爻地道之始：潜藏蓄力，未可施用。深扎根系，切忌急功近利。</span>
     </div>
 
+    <!-- 剧场主体区：左侧动态意象画卷 + 右侧沉浸式剧情解说 -->
+    <div class="theater-main-stage">
+      <!-- 左侧：实时 Canvas 粒子意象微电影 -->
+      <div class="stage-visual-container">
+        <canvas id="stage-canvas" width="220" height="180"></canvas>
+        <div class="visual-badge" id="visual-badge">
+          <span class="visual-icon" id="visual-icon">🌊</span>
+          <span class="visual-name" id="visual-name">深渊暗流</span>
+        </div>
+        <div class="visual-scene-hint" id="visual-scene-hint">初入江湖 · 蓄力破局</div>
+      </div>
+
+      <!-- 右侧：结构化故事解说卡片 -->
+      <div class="stage-script-card">
+        <!-- 头部元数据行 -->
+        <div class="script-header-line">
+          <div class="script-yao-pill" id="script-yao-pill">
+            <span class="yao-code">初九</span>
+            <span class="yao-stage" id="script-stage-tag">第一幕 · 深渊潜伏</span>
+          </div>
+          <div class="script-original-quote" id="script-original-quote">
+            <span class="orig-text">初九：潜龙，勿用。</span>
+            <span class="orig-trans" id="script-orig-trans">如同潜伏深渊的巨龙，时机未到，切勿轻举妄动。</span>
+          </div>
+        </div>
+
+        <!-- 故事内容大字解说 -->
+        <div class="script-story-body">
+          <h3 class="story-chapter-title" id="story-chapter-title">深渊潜伏 · 职场新人的沉潜破局</h3>
+          <p class="story-chapter-text" id="story-chapter-text">
+            刚刚步入职场或大厂团队，没有资历与人脉，周围暗流涌动。此时最致命的错误是急于证明自己或盲目出头。真正的聪明人懂得“深水潜伏”，把公司的核心业务链路摸透，默默把专业硬技能打磨到无可替代。忍得住寂寞，才能撑得起未来的大任。
+          </p>
+        </div>
+
+        <!-- 底部心法锦囊 -->
+        <div class="script-wisdom-pill" id="script-wisdom-pill">
+          <span class="wisdom-tag">💡 决策心法</span>
+          <span class="wisdom-text" id="script-wisdom-text">慎始敬终，深扎根系；未见全貌，不露锋芒。</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部六爻演进刻度条 -->
     <div class="timeline-track-wrap">
       <div class="timeline-steps" id="tl-steps-container">
-        <button class="tl-step-btn current" data-step="1"><span>初爻</span><small>基层潜伏</small></button>
-        <button class="tl-step-btn" data-step="2"><span>二爻</span><small>破土崭露</small></button>
-        <button class="tl-step-btn" data-step="3"><span>三爻</span><small>夹层危厉</small></button>
-        <button class="tl-step-btn" data-step="4"><span>四爻</span><small>审慎跃迁</small></button>
-        <button class="tl-step-btn" data-step="5"><span>五爻</span><small>至尊执中</small></button>
-        <button class="tl-step-btn" data-step="6"><span>上爻</span><small>极盛知退</small></button>
+        <button class="tl-step-btn current" data-step="1">
+          <span class="step-num">初九</span>
+          <small class="step-desc">潜龙勿用</small>
+        </button>
+        <button class="tl-step-btn" data-step="2">
+          <span class="step-num">九二</span>
+          <small class="step-desc">见龙在田</small>
+        </button>
+        <button class="tl-step-btn" data-step="3">
+          <span class="step-num">九三</span>
+          <small class="step-desc">终日乾乾</small>
+        </button>
+        <button class="tl-step-btn" data-step="4">
+          <span class="step-num">九四</span>
+          <small class="step-desc">或跃在渊</small>
+        </button>
+        <button class="tl-step-btn" data-step="5">
+          <span class="step-num">九五</span>
+          <small class="step-desc">飞龙在天</small>
+        </button>
+        <button class="tl-step-btn" data-step="6">
+          <span class="step-num">上九</span>
+          <small class="step-desc">亢龙有悔</small>
+        </button>
       </div>
       <div class="timeline-progress-bar">
         <div class="timeline-progress-fill" id="tl-progress-fill"></div>
       </div>
     </div>
+  </div>
   </div>
 
   <!-- Right Detail Card (Glassmorphism Modal) -->
