@@ -28,7 +28,7 @@
   let currentTimelineStep = 1; // 1 to 6
   let timelinePlayTimer = null;
   const yaoTimelineBar = document.getElementById('yao-timeline-bar');
-  const tlGuaName = document.getElementById('tl-gua-name');
+  const theaterGuaTitle = document.getElementById('theater-gua-title');
   const tlStageTag = document.getElementById('tl-stage-tag');
   const tlStageDesc = document.getElementById('tl-stage-desc');
   const tlProgressFill = document.getElementById('tl-progress-fill');
@@ -1477,9 +1477,40 @@
       }
     });
 
-    if (tlGuaName) {
-      const tTitle = document.getElementById('theater-gua-title'); if (tTitle) tTitle.innerText = `${node.userData.idx + 1 < 10 ? '0' : ''}${node.userData.idx + 1}. ${node.userData.name} · 六爻时位故事剧场`;
+    // 1. 动态更新顶部主标题
+    const theaterTitleEl = document.getElementById('theater-gua-title');
+    if (theaterTitleEl) {
+      const padIdx = (node.userData.idx + 1 < 10 ? '0' : '') + (node.userData.idx + 1);
+      theaterTitleEl.innerText = `${padIdx}. ${node.userData.name} · 六爻时位故事剧场`;
     }
+
+    // 2. 动态更新底部 6 个爻位按钮的爻名与阶段命题
+    const storeItem = window.NARRATIVE_STORE && window.NARRATIVE_STORE[guaIdx];
+    const tlStepBtns = document.querySelectorAll('.tl-step-btn');
+    tlStepBtns.forEach(btn => {
+      const step = parseInt(btn.getAttribute('data-step'), 10);
+      const stage = storeItem && storeItem.stages && storeItem.stages[step];
+      const numEl = btn.querySelector('.step-num');
+      const descEl = btn.querySelector('.step-desc');
+      if (stage) {
+        if (numEl) numEl.innerText = stage.yaoCode || `第${step}爻`;
+        if (descEl) {
+          let desc = '';
+          if (stage.stageTag && stage.stageTag.includes('·')) {
+            desc = stage.stageTag.split('·')[1].trim();
+          } else if (stage.visual && stage.visual.name) {
+            desc = stage.visual.name.split('·')[0].trim();
+          } else {
+            desc = `时位${step}`;
+          }
+          descEl.innerText = desc;
+        }
+      } else {
+        if (numEl) numEl.innerText = `第${step}爻`;
+        if (descEl) descEl.innerText = `时位${step}`;
+      }
+    });
+
     if (yaoTimelineBar) {
       yaoTimelineBar.classList.add('active');
     }
