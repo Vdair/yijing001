@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>易道认知工坊 · 现代沉浸式自修课堂</title>
   <!-- 引入课程全息数据库（添加版本号防止本地开发环境浏览器静态文件强缓存） -->
-  <script src="course_data.js?v=20261026_1705"></script>
+  <script src="course_data.js?v=20261026_1715"></script>
 </head>
 <body>
   <!-- 顶栏 -->
@@ -152,6 +152,14 @@
           container.appendChild(partDiv);
         }
       });
+
+      // 自动确保当前处于激活状态的卦项平滑进入视野
+      setTimeout(() => {
+        const activeItem = container.querySelector('.lesson-item.active');
+        if (activeItem) {
+          activeItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+      }, 50);
     }
 
     function loadLesson(idx) {
@@ -164,12 +172,16 @@
 
       // 1. 生成竖排六爻天梯 HTML (严格自下而上，初爻在底，上爻在顶)
       let verticalLadderHtml = '';
-      if (lesson.lines && lesson.lines.length === 6) {
+      const linesArr = Array.isArray(lesson.lines)
+        ? lesson.lines
+        : (typeof lesson.lines === 'string' ? lesson.lines.split('').map(b => parseInt(b, 10)) : null);
+
+      if (linesArr && linesArr.length === 6) {
         const rungNames = ['初爻 (萌芽)', '二爻 (破土)', '三爻 (惕励)', '四爻 (跃迁)', '五爻 (尊位)', '上爻 (极盛)'];
         let rungsHtml = '';
         // lines 索引 0 是初爻，5 是上爻。flex-direction: column-reverse 保证 index 0 排在最下面！
-        lesson.lines.forEach((line, i) => {
-          const isYang = (line === 1);
+        linesArr.forEach((line, i) => {
+          const isYang = (line === 1 || line === '1');
           const targetId = `yao-card-${i}`;
           rungsHtml += `
             <div class="yao-ladder-rung" onclick="scrollToYao('${targetId}')" title="点击定位到${rungNames[i]}">
