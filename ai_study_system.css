@@ -1,0 +1,284 @@
+/* 易道认知工坊 · 四阶分层学习与复习系统样式表 */
+
+/* 1. 正文划词跟随浮标 (Inline Selection Bubble) */
+.inline-selection-popover {
+  position: absolute;
+  z-index: 9999;
+  background: var(--side);
+  border: 1px solid var(--gold);
+  border-radius: 99px;
+  padding: 6px 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), 0 0 12px rgba(240, 180, 41, 0.3);
+  display: none;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--gold);
+  backdrop-filter: blur(8px);
+  transform: translate(-50%, -100%);
+  margin-top: -10px;
+  animation: popIn 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: transform 0.15s ease;
+}
+.inline-selection-popover:hover {
+  transform: translate(-50%, -105%) scale(1.05);
+  background: var(--card);
+}
+@keyframes popIn {
+  from { opacity: 0; transform: translate(-50%, -85%) scale(0.9); }
+  to { opacity: 1; transform: translate(-50%, -100%) scale(1); }
+}
+
+/* 2. 阶段一&二：伴读提问交互浮窗 (Dialog Drawer) */
+.stage12-modal {
+  position: fixed;
+  top: 62px;
+  right: -520px;
+  width: 480px;
+  max-width: 90vw;
+  height: calc(100vh - 62px);
+  background: var(--side);
+  border-left: 1px solid var(--border);
+  box-shadow: -10px 0 35px rgba(0,0,0,0.5);
+  z-index: 1050;
+  display: flex;
+  flex-direction: column;
+  transition: right 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.stage12-modal.open {
+  right: 0;
+}
+.stage12-header {
+  padding: 16px 20px;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.stage12-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.selection-quote-box {
+  background: var(--border-light);
+  border-left: 3px solid var(--gold);
+  padding: 10px 14px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--text-sub);
+  line-height: 1.6;
+}
+
+/* 对话气泡极具层次感 */
+.layered-chat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.layered-user-bubble {
+  align-self: flex-end;
+  background: var(--accent);
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 12px 12px 2px 12px;
+  font-size: 14px;
+  max-width: 88%;
+  line-height: 1.6;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.layered-ai-card {
+  align-self: flex-start;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px 12px 12px 2px;
+  padding: 16px;
+  max-width: 95%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 14px;
+  line-height: 1.75;
+  box-shadow: var(--shadow);
+}
+.layered-ai-tag {
+  font-size: 11px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+.tag-school { background: var(--gold-light); color: var(--gold); }
+.tag-stage { background: var(--blue-light); color: var(--blue); }
+.tag-mind { background: var(--purple-light); color: var(--purple); }
+
+/* 3. 底部两大阶段卡片 (阶段三 & 阶段四) */
+.bottom-study-stage {
+  margin-top: 48px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px 36px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.bottom-study-stage::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 100%;
+}
+.stage-review::before {
+  background: linear-gradient(180deg, var(--gold) 0%, var(--accent) 100%);
+}
+.stage-feynman::before {
+  background: linear-gradient(180deg, var(--purple) 0%, var(--gold) 100%);
+}
+
+.stage-title-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 16px;
+}
+.stage-badge-large {
+  font-size: 12px;
+  font-weight: 800;
+  padding: 4px 12px;
+  border-radius: 99px;
+  letter-spacing: 0.5px;
+}
+.stage-title-wrap h2 {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--text-m);
+  margin-top: 4px;
+}
+
+/* 费曼四维通关骨架输入格 */
+.feynman-framework-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+@media (max-width: 900px) {
+  .feynman-framework-grid { grid-template-columns: 1fr; }
+}
+.framework-cell {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: border-color 0.2s;
+}
+.framework-cell:focus-within {
+  border-color: var(--gold);
+}
+.framework-cell-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--gold);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.framework-cell-desc {
+  font-size: 12px;
+  color: var(--text-faint);
+  line-height: 1.5;
+}
+.framework-cell-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-top: 1px dashed var(--border-light);
+  padding-top: 8px;
+  color: var(--text-m);
+  font-size: 14px;
+  line-height: 1.6;
+  outline: none;
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+}
+
+/* 复习档案总览弹窗 (Review Vault Modal) */
+.vault-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(6px);
+  z-index: 3000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.vault-modal-overlay.open {
+  display: flex;
+}
+.vault-modal-window {
+  background: var(--side);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  width: 900px;
+  max-width: 92vw;
+  height: 80vh;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.vault-window-header {
+  padding: 20px 24px;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.vault-window-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+.vault-gua-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.vault-gua-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--gold);
+  box-shadow: var(--shadow);
+}
