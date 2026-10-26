@@ -1449,6 +1449,34 @@
     if (!node) return;
     isTimelineActive = true;
     currentTimelineStep = 1;
+    const guaIdx = node.userData.idx + 1;
+    const isQian = (guaIdx === 1);
+
+    // 动态适配三维视角胶囊标签与映射
+    const btn1 = document.getElementById('btn-persp-career');
+    const btn2 = document.getElementById('btn-persp-startup');
+    const btn3 = document.getElementById('btn-persp-classic');
+
+    if (isQian) {
+      if (btn1) { btn1.setAttribute('data-perspective', 'career'); btn1.innerText = '👔 职场史诗'; }
+      if (btn2) { btn2.setAttribute('data-perspective', 'startup'); btn2.innerText = '🚀 创业破局'; }
+      if (btn3) { btn3.setAttribute('data-perspective', 'classic'); btn3.innerText = '☯️ 乾龙修身'; }
+      currentPerspective = 'career';
+    } else {
+      if (btn1) { btn1.setAttribute('data-perspective', 'primary'); btn1.innerText = '🌟 专属情境微电影'; }
+      if (btn2) { btn2.setAttribute('data-perspective', 'career'); btn2.innerText = '💼 实战决策复盘'; }
+      if (btn3) { btn3.setAttribute('data-perspective', 'classic'); btn3.innerText = '☯️ 易道原典宗师解'; }
+      currentPerspective = 'primary';
+    }
+    const perspBtns = document.querySelectorAll('.perspective-btn');
+    perspBtns.forEach(b => {
+      if (b.getAttribute('data-perspective') === currentPerspective) {
+        b.classList.add('active');
+      } else {
+        b.classList.remove('active');
+      }
+    });
+
     if (tlGuaName) {
       const tTitle = document.getElementById('theater-gua-title'); if (tTitle) tTitle.innerText = `${node.userData.idx + 1 < 10 ? '0' : ''}${node.userData.idx + 1}. ${node.userData.name} · 六爻时位故事剧场`;
     }
@@ -1482,7 +1510,11 @@
     const storeItem = window.NARRATIVE_STORE && window.NARRATIVE_STORE[guaIdx];
     if (storeItem && storeItem.stages && storeItem.stages[step]) {
       const qItem = storeItem.stages[step];
-      const pData = (qItem.perspectives && (qItem.perspectives[currentPerspective] || qItem.perspectives['primary'] || qItem.perspectives['career'])) || {};
+      let pData = (qItem.perspectives && qItem.perspectives[currentPerspective]);
+      if (!pData && qItem.perspectives) {
+        pData = qItem.perspectives['primary'] || qItem.perspectives['career'] || qItem.perspectives['classic'];
+      }
+      pData = pData || {};
       storyData = {
         yaoCode: qItem.yaoCode || `第${step}爻`,
         stageTag: qItem.stageTag || `第${step}幕`,
