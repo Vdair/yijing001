@@ -683,3 +683,189 @@ body {
 .step-section.section-idx-4 { border-left-color: var(--gold); }
 .step-section.section-idx-5 { border-left-color: var(--blue); }
 .step-section.section-idx-6 { border-left-color: var(--danger); }
+
+/* ── 【在天成象 · 在地成形】天地自然交感图解卡片 ── */
+.yj-nature-card {
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  margin-top: 24px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.3s;
+}
+.yj-nature-card:hover {
+  border-color: var(--gold);
+}
+.yj-nature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--gold), var(--blue), var(--purple));
+}
+.yj-nature-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-light);
+  margin-bottom: 18px;
+}
+.yj-nature-title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.yj-nature-badge {
+  background: var(--gold-light);
+  color: var(--gold);
+  font-size: 13px;
+  font-weight: 800;
+  padding: 4px 12px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+}
+.yj-nature-scene-text {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text-m);
+  letter-spacing: 0.5px;
+}
+.yj-nature-quote {
+  font-size: 14px;
+  color: var(--text-sub);
+  background: var(--bg);
+  padding: 4px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border-light);
+}
+.yj-nature-trigrams-row {
+  display: flex;
+  align-items: stretch;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+@media (max-width: 860px) {
+  .yj-nature-trigrams-row {
+    flex-direction: column;
+  }
+}
+.yj-trigram-capsule {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+  transition: transform 0.2s, border-color 0.2s;
+}
+.yj-trigram-capsule:hover {
+  transform: translateY(-2px);
+  border-color: var(--gold);
+}
+.yj-trigram-capsule.upper {
+  border-top: 3px solid var(--gold);
+}
+.yj-trigram-capsule.lower {
+  border-top: 3px solid var(--blue);
+}
+.yj-trig-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.yj-trig-role {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-faint);
+  letter-spacing: 0.5px;
+}
+.yj-trig-sym {
+  font-size: 24px;
+  color: var(--gold);
+  line-height: 1;
+}
+.yj-trigram-capsule.lower .yj-trig-sym {
+  color: var(--blue);
+}
+.yj-trig-name {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text-m);
+}
+.yj-trig-virtue {
+  font-size: 12px;
+  color: var(--gold);
+  background: var(--gold-light);
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-left: 6px;
+  font-weight: 700;
+}
+.yj-trigram-capsule.lower .yj-trig-virtue {
+  color: var(--blue);
+  background: var(--blue-light);
+}
+.yj-trig-desc {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text-sub);
+}
+.yj-trigram-interact-axis {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 70px;
+  flex-shrink: 0;
+}
+.yj-trigram-interact-axis .axis-line {
+  flex: 1;
+  width: 1.5px;
+  background: var(--border);
+}
+.yj-trigram-interact-axis .axis-badge {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--purple);
+  background: var(--purple-light);
+  border: 1px solid var(--purple);
+  border-radius: 12px;
+  padding: 4px 6px;
+  white-space: nowrap;
+  margin: 6px 0;
+  letter-spacing: 0.5px;
+}
+.yj-nature-reasoning-box {
+  background: var(--bg);
+  border: 1px solid var(--border-light);
+  border-left: 4px solid var(--gold);
+  border-radius: 8px;
+  padding: 16px 20px;
+}
+.yj-reasoning-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-m);
+  margin-bottom: 8px;
+}
+.yj-reasoning-content {
+  font-size: 14.5px;
+  line-height: 1.85;
+  color: var(--text-sub);
+  text-align: justify;
+}

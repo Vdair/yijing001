@@ -1,0 +1,88 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "YijingGuaStudyRecord",
+  "description": "易道认知工坊 · 单卦个人修学档案结构定义（强绑定当前卦象）",
+  "type": "object",
+  "required": ["version", "gua_id", "gua_title", "updated_at", "dialogues", "notes", "review", "feynman"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "档案规范版本，如 2.0.0"
+    },
+    "gua_id": {
+      "type": "string",
+      "description": "卦象唯一标识，如 lesson-01_乾为天"
+    },
+    "gua_title": {
+      "type": "string",
+      "description": "卦象完整标题，如 第 01 卦 · 乾为天（䷀）"
+    },
+    "gua_symbol": {
+      "type": "string",
+      "description": "卦象符号，如 ䷀"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "dialogues": {
+      "type": "array",
+      "description": "来源1：本章节的伴读问答对话流（按对话维度存储）",
+      "items": {
+        "type": "object",
+        "required": ["id", "timestamp", "question", "answer"],
+        "properties": {
+          "id": { "type": "string" },
+          "timestamp": { "type": "string" },
+          "question": { "type": "string", "description": "学员提问内容" },
+          "answer": { "type": "string", "description": "助教回答内容" }
+        }
+      }
+    },
+    "notes": {
+      "type": "array",
+      "description": "来源2：本章节的研习心得与灵感笔记",
+      "items": {
+        "type": "object",
+        "required": ["id", "timestamp", "title", "content"],
+        "properties": {
+          "id": { "type": "string" },
+          "timestamp": { "type": "string" },
+          "title": { "type": "string", "description": "笔记标题或关键词" },
+          "content": { "type": "string", "description": "笔记正文内容" }
+        }
+      }
+    },
+    "review": {
+      "type": "object",
+      "description": "来源3：本章节的悟道复盘（易道心智提炼与生命对齐）",
+      "properties": {
+        "q1_mirror": { "type": "string", "description": "① 照镜子（生命印证）" },
+        "q2_mindset": { "type": "string", "description": "② 炼心法（认知跃迁底牌）" },
+        "q3_action": { "type": "string", "description": "③ 知行合一（行动承诺践行）" },
+        "updated_at": { "type": ["string", "null"] }
+      }
+    },
+    "feynman": {
+      "type": "object",
+      "description": "来源4：本章节的费曼学习输出内容（四维认知骨架与通俗自述）",
+      "properties": {
+        "framework": {
+          "type": "object",
+          "properties": {
+            "core_trend": { "type": "string", "description": "1. 卦象时势核心判据" },
+            "key_yao_turn": { "type": "string", "description": "2. 核心爻变拐点攻防" },
+            "real_case": { "type": "string", "description": "3. 现实生活/商业案例映射" },
+            "anti_common_rule": { "type": "string", "description": "4. 反常识易道心智底牌" }
+          }
+        },
+        "full_text": { "type": "string", "description": "综合通俗费曼自述全稿" },
+        "updated_at": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

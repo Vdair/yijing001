@@ -1,0 +1,19 @@
+{
+  "records": {
+    "lesson-01_乾为天": {
+      "gua_id": "lesson-01_乾为天",
+      "gua_title": "第 01 卦 · 乾为天（䷀）—— 纯阳刚健与六龙驭天全息精研",
+      "gua_symbol": "䷀",
+      "dialogues_count": 1,
+      "notes_count": 1,
+      "has_review": true,
+      "has_feynman": true,
+      "has_ai_analysis": true,
+      "updated_at": "10/27/2026, 10:49:39 AM",
+      "json_file": "lesson-01_乾为天.json",
+      "md_file": "lesson-01_乾为天.md"
+    }
+  },
+  "total_saved_guas": 1,
+  "last_sync_time": "2026-10-27 10:49:40"
+}

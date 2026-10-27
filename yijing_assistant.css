@@ -1,8 +1,9 @@
 /* ==========================================================================
-   易道认知工坊 · 现代自修伴学高对比度主题系统 (Light/Dark 自适应)
+   易道认知工坊 · 东方现代精品助教与专属修学档案样式系统 (Yijing Assistant & Vault)
+   【完美自适应主流程主题】：支持 [data-theme="dark"] 暗黑曜石与 [data-theme="light"] 宣纸玉白无缝切换
    ========================================================================== */
 
-/* 1. 浮动助教胶囊按钮 (清爽明亮·自适应浅色) */
+/* 1. 浮动助教胶囊唤起球 */
 .yj-assistant-trigger {
   position: fixed;
   right: 28px;
@@ -11,25 +12,26 @@
   border: 1.5px solid var(--gold);
   color: var(--text-m);
   border-radius: 99px;
-  padding: 9px 18px 9px 12px;
+  padding: 8px 16px 8px 10px;
   display: flex;
   align-items: center;
   gap: 10px;
   cursor: pointer;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 0 10px rgba(240, 180, 41, 0.15);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18), 0 0 12px var(--gold-light);
   z-index: 800;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
 }
 .yj-assistant-trigger:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18), 0 0 16px rgba(240, 180, 41, 0.25);
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25), 0 0 18px var(--gold-light);
   background: var(--card-hover);
 }
 .yj-avatar-mini {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  background: linear-gradient(135deg, var(--gold) 0%, #d97706 100%);
   color: #fff;
   display: flex;
   align-items: center;
@@ -37,42 +39,97 @@
   font-size: 14px;
 }
 
-/* 2. 划词点穴轻量气泡 */
+/* 2. 划词点穴轻量操作气泡 (问助教 / 记笔记 / 复制) */
 .yj-selection-bubble {
   position: absolute;
-  z-index: 1000;
-  background: var(--card);
-  color: var(--gold);
-  border: 1.5px solid var(--gold);
+  z-index: 2200;
   border-radius: 99px;
-  padding: 6px 14px;
-  font-size: 13px;
-  font-weight: 700;
+  padding: 4px 6px;
   display: none;
   align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-  transform: translate(-50%, -120%);
+  gap: 3px;
+  transform: translate(-50%, -130%);
   user-select: none;
-}
-.yj-selection-bubble:hover {
-  background: var(--gold-light);
-  transform: translate(-50%, -125%) scale(1.05);
+  animation: yjBubblePop 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* 3. 伴学助教面板 (仿图4/图5浅色清新大卡片) */
+@keyframes yjBubblePop {
+  0% { opacity: 0; transform: translate(-50%, -115%) scale(0.92); }
+  100% { opacity: 1; transform: translate(-50%, -130%) scale(1); }
+}
+
+/* 纯正实体材质，绝不使用半透明透底 */
+[data-theme="dark"] .yj-selection-bubble {
+  background: var(--side);
+  border: 1px solid var(--gold);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7), 0 0 14px var(--gold-light);
+}
+[data-theme="light"] .yj-selection-bubble {
+  background: #ffffff;
+  border: 1px solid var(--gold);
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.16), 0 0 12px var(--gold-light);
+}
+
+/* 按钮放大动效 (scale 悬浮放大) */
+.yj-bubble-action {
+  background: transparent;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 99px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), background 0.18s, color 0.18s;
+  outline: none;
+  white-space: nowrap;
+  color: var(--text-m);
+}
+.yj-bubble-action:hover {
+  transform: scale(1.12);
+  background: var(--gold-light);
+  color: var(--gold);
+}
+
+.yj-bubble-divider {
+  width: 1px;
+  height: 14px;
+  background: var(--border);
+}
+
+/* 定位小三角 */
+.yj-selection-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+}
+[data-theme="dark"] .yj-selection-bubble::after {
+  border-top: 6px solid var(--side);
+}
+[data-theme="light"] .yj-selection-bubble::after {
+  border-top: 6px solid #ffffff;
+}
+
+/* 3. 右侧伴学助教面板 */
 .yj-assistant-panel {
   position: fixed;
-  top: 76px;
-  right: -480px;
+  top: 74px;
+  right: -490px;
   width: 440px;
   max-width: calc(100vw - 32px);
-  height: calc(100vh - 100px);
+  height: calc(100vh - 96px);
   background: var(--side);
   border: 1px solid var(--border);
   border-radius: 20px;
-  box-shadow: -10px 16px 40px rgba(0, 0, 0, 0.12);
+  box-shadow: -12px 18px 45px rgba(0, 0, 0, 0.25);
   z-index: 850;
   display: flex;
   flex-direction: column;
@@ -82,7 +139,6 @@
 .yj-assistant-panel.open {
   right: 24px;
 }
-
 .yj-panel-header {
   padding: 16px 20px;
   background: var(--card);
@@ -100,7 +156,7 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  background: linear-gradient(135deg, var(--gold) 0%, #d97706 100%);
   color: #fff;
   display: flex;
   align-items: center;
@@ -111,10 +167,12 @@
   font-size: 15.5px;
   font-weight: 800;
   color: var(--text-m);
+  margin: 0;
 }
 .yj-coach-meta p {
   font-size: 12px;
   color: var(--text-sub);
+  margin: 2px 0 0 0;
 }
 .yj-panel-tools {
   display: flex;
@@ -128,6 +186,7 @@
   padding: 5px 10px;
   border-radius: 8px;
   font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -166,10 +225,10 @@
   background: var(--side);
 }
 .yj-welcome-title {
-  font-size: 22px;
+  font-size: 19px;
   font-weight: 800;
   color: var(--text-m);
-  margin: 12px 0 18px;
+  margin: 8px 0 16px;
   letter-spacing: 0.5px;
 }
 
@@ -179,195 +238,259 @@
   gap: 10px;
   margin-bottom: 20px;
 }
-.yj-prompt-card {
+.yj-prompt-btn {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 13px 16px;
-  font-size: 13.5px;
+  padding: 12px 16px;
   color: var(--text-m);
-  line-height: 1.55;
+  font-size: 13.5px;
+  line-height: 1.5;
+  text-align: left;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
-.yj-prompt-card:hover {
+.yj-prompt-btn:hover {
   border-color: var(--gold);
+  transform: translateX(4px);
   background: var(--card-hover);
-  transform: translateX(3px);
-}
-.yj-prompt-card::after {
-  content: '➔';
-  font-size: 12px;
-  color: var(--text-faint);
-}
-.yj-prompt-card:hover::after {
   color: var(--gold);
 }
 
 .yj-chat-container {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
+  margin-bottom: 16px;
 }
 .yj-msg-bubble {
   max-width: 90%;
   padding: 12px 16px;
   border-radius: 14px;
   font-size: 14px;
-  line-height: 1.7;
+  line-height: 1.6;
 }
 .yj-msg-user {
   align-self: flex-end;
-  background: var(--accent);
-  color: #fff;
-  border-bottom-right-radius: 2px;
+  background: linear-gradient(135deg, var(--gold) 0%, #b88636 100%);
+  color: #ffffff;
+  border-bottom-right-radius: 4px;
+  box-shadow: 0 4px 12px rgba(212, 163, 89, 0.25);
 }
 .yj-msg-ai {
   align-self: flex-start;
   background: var(--card);
   border: 1px solid var(--border);
   color: var(--text-m);
-  border-bottom-left-radius: 2px;
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
 }
-
-.yj-panel-footer {
-  padding: 14px 18px;
-  background: var(--card);
-  border-top: 1px solid var(--border-light);
+/* AI 思维链与流式打字光标 */
+.yj-thinking-box {
+  background: var(--bg);
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: var(--text-faint);
+  line-height: 1.5;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
-.yj-context-pill {
-  font-size: 12px;
-  color: var(--text-sub);
+.yj-thinking-toggle {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: var(--bg);
-  padding: 4px 10px;
-  border-radius: 6px;
-  border: 1px solid var(--border-light);
-  width: fit-content;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 700;
+  color: var(--gold);
 }
-.yj-input-box {
+.yj-thinking-content {
+  display: none;
+  font-size: 11.5px;
+  color: var(--text-sub);
+  white-space: pre-wrap;
+  max-height: 140px;
+  overflow-y: auto;
+  padding-top: 4px;
+  border-top: 1px dotted var(--border-light);
+}
+.yj-thinking-content::-webkit-scrollbar {
+  width: 3px;
+}
+.yj-thinking-content::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+.yj-typing-cursor::after {
+  content: '▋';
+  color: var(--gold);
+  font-size: 12px;
+  animation: yjBlink 0.8s infinite;
+  margin-left: 2px;
+}
+@keyframes yjBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.yj-panel-footer {
+  padding: 12px 18px;
+  background: var(--card);
+  border-top: 1px solid var(--border-light);
+}
+.yj-input-wrapper {
   display: flex;
-  align-items: flex-end;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 8px 12px;
   gap: 8px;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 6px 8px 6px 14px;
+  align-items: flex-end;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
-.yj-input-box:focus-within {
+.yj-input-wrapper:focus-within {
   border-color: var(--gold);
+  box-shadow: 0 0 0 1px var(--gold-light);
 }
-.yj-input-field {
+.yj-input-wrapper textarea {
   flex: 1;
   background: transparent;
   border: none;
   outline: none;
   color: var(--text-m);
-  font-size: 14px;
+  font-size: 13.5px;
   line-height: 1.5;
+  padding: 4px 0;
   resize: none;
+  min-height: 28px;
+  max-height: 120px;
+  overflow-y: hidden;
   font-family: inherit;
+  box-sizing: border-box;
+}
+.yj-input-wrapper textarea::-webkit-scrollbar {
+  width: 4px;
+}
+.yj-input-wrapper textarea::-webkit-scrollbar-thumb {
+  background: var(--gold);
+  border-radius: 4px;
 }
 .yj-send-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--accent);
+  background: var(--gold);
   color: #fff;
   border: none;
+  border-radius: 8px;
+  padding: 7px 15px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  height: 34px;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+  user-select: none;
+}
+.yj-send-btn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+.yj-send-btn:active {
+  transform: scale(0.96);
 }
 
-/* ==========================================================================
-   4. 正文底部两大独立阶段 (悟道复盘 + 费曼骨架)
-   ========================================================================== */
+/* 4. 正文底部悟道复盘与费曼通关卡片 */
 .yj-stage-card-wrap {
-  margin-top: 48px;
-  margin-bottom: 40px;
+  margin-top: 50px;
   display: flex;
   flex-direction: column;
   gap: 32px;
+  padding-bottom: 60px;
 }
-
 .yj-stage-card {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 30px 34px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border-radius: 18px;
+  padding: 26px 30px;
+  box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 20px;
 }
 .yj-stage-header {
   display: flex;
-  justify-content: space-between;
   align-items: flex-start;
+  justify-content: space-between;
   border-bottom: 1px solid var(--border-light);
-  padding-bottom: 14px;
+  padding-bottom: 16px;
+}
+.yj-stage-header h2 {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-m);
+  margin: 6px 0 4px 0;
+}
+.yj-stage-header p {
+  font-size: 13px;
+  color: var(--text-sub);
+  margin: 0;
+  line-height: 1.5;
 }
 .yj-stage-tag {
   font-size: 12px;
   font-weight: 800;
   padding: 3px 10px;
-  border-radius: 99px;
+  border-radius: 6px;
   display: inline-block;
-  margin-bottom: 6px;
-}
-.yj-stage-header h2 {
-  font-size: 21px;
-  font-weight: 800;
-  color: var(--text-m);
-}
-.yj-stage-header p {
-  font-size: 13.5px;
-  color: var(--text-sub);
-  margin-top: 4px;
 }
 
 .yj-review-grid {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
 }
 .yj-review-item {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 .yj-review-item label {
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--gold);
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-m);
 }
-.yj-review-item textarea {
+.yj-review-item textarea,
+.yj-framework-box textarea,
+.mentor-textarea {
   width: 100%;
-  background: transparent;
-  border: none;
-  border-top: 1px dashed var(--border-light);
-  padding-top: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
   color: var(--text-m);
   font-size: 14px;
   line-height: 1.6;
   resize: vertical;
+  box-sizing: border-box;
   outline: none;
   font-family: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.yj-review-item textarea:focus,
+.yj-framework-box textarea:focus,
+.mentor-textarea:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px var(--gold-light);
 }
 
 .yj-framework-grid {
@@ -375,21 +498,19 @@
   grid-template-columns: repeat(2, 1fr);
   gap: 16px;
 }
-@media (max-width: 960px) {
-  .yj-framework-grid { grid-template-columns: 1fr; }
+@media (max-width: 768px) {
+  .yj-framework-grid {
+    grid-template-columns: 1fr;
+  }
 }
 .yj-framework-box {
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  transition: border-color 0.2s;
-}
-.yj-framework-box:focus-within {
-  border-color: var(--accent);
+  gap: 8px;
 }
 .yj-box-title {
   font-size: 14px;
@@ -401,112 +522,487 @@
 }
 .yj-box-desc {
   font-size: 12px;
-  color: var(--text-faint);
-  line-height: 1.5;
-}
-.yj-framework-box textarea {
-  width: 100%;
-  background: transparent;
-  border: none;
-  border-top: 1px dashed var(--border-light);
-  padding-top: 6px;
-  color: var(--text-m);
-  font-size: 13.5px;
-  line-height: 1.6;
-  resize: vertical;
-  min-height: 70px;
-  outline: none;
-  font-family: inherit;
+  color: var(--text-sub);
+  line-height: 1.4;
 }
 
 /* ==========================================================================
-   5. 修学复习册 (彻底修复遮罩太深、深字深底与加载失败问题)
+   5. 专属修学档案模态框 (Vault Modal) - 纯正实体材质，严格双模适配
    ========================================================================== */
+
 .yj-vault-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  /* 现代轻量通透遮罩：绝非 0.75 纯黑！ */
-  background: rgba(15, 23, 42, 0.28);
-  backdrop-filter: blur(5px);
-  z-index: 2000;
+  z-index: 2500;
   display: none;
   align-items: center;
   justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+  animation: yjFadeIn 0.25s ease-out;
 }
 .yj-vault-overlay.open {
   display: flex;
 }
+
+/* 遮罩在深浅主题下的沉浸度 */
+[data-theme="dark"] .yj-vault-overlay {
+  background: rgba(3, 7, 18, 0.78);
+  backdrop-filter: blur(14px) saturate(180%);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+}
+[data-theme="light"] .yj-vault-overlay {
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(14px) saturate(180%);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+}
+
+@keyframes yjFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes yjSlideUp {
+  from { opacity: 0; transform: translateY(20px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* 弹窗主体：纯正实体材质，彻底告别低透明度与灰浊底色 */
 .yj-vault-modal {
-  width: 960px;
-  max-width: 92vw;
-  height: 84vh;
-  /* 严格使用自适应卡片底色（浅色模式下为纯白/浅灰，文字清晰对比度极高） */
-  background: var(--side);
-  border: 1px solid var(--border);
-  border-radius: 18px;
+  width: 1060px;
+  max-width: 95vw;
+  height: 88vh;
+  max-height: 860px;
+  border-radius: 20px;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
   overflow: hidden;
+  position: relative;
+  animation: yjSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+/* 暗黑模式主体 */
+[data-theme="dark"] .yj-vault-modal {
+  background: #11141c;
+  border: 1px solid rgba(240, 180, 41, 0.4);
+  box-shadow: 0 35px 90px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.06), 0 0 30px rgba(240, 180, 41, 0.15);
+  color: var(--text-m);
+}
+
+/* 浅色/宣纸白模式主体 */
+[data-theme="light"] .yj-vault-modal {
+  background: #ffffff;
+  border: 1px solid rgba(180, 83, 9, 0.35);
+  box-shadow: 0 25px 75px rgba(15, 23, 42, 0.22), 0 0 0 1px rgba(180, 83, 9, 0.18);
+  color: var(--text-m);
+}
+
+/* 弹窗顶部头部 */
 .yj-vault-header {
-  padding: 20px 26px;
-  background: var(--card);
-  border-bottom: 1px solid var(--border-light);
+  padding: 18px 28px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  border-bottom: 1px solid var(--border-light);
+  flex-shrink: 0;
 }
-.yj-vault-body {
+[data-theme="dark"] .yj-vault-header {
+  background: #161b26;
+}
+[data-theme="light"] .yj-vault-header {
+  background: #f8fafc;
+}
+
+.yj-vault-badge-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.yj-vault-gua-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--gold-light);
+  border: 1.5px solid var(--gold);
+  color: var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 800;
+  box-shadow: 0 4px 12px var(--gold-light);
+}
+.yj-vault-header-title {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.yj-vault-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.yj-vault-title-text {
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: var(--text-m);
+}
+.yj-vault-scope-tag {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--gold-light);
+  color: var(--gold);
+  border: 1px solid var(--gold);
+}
+.yj-vault-desc-row {
+  font-size: 13px;
+  color: var(--text-sub);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.yj-gua-picker-select {
+  background: transparent;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  font-size: 12.5px;
+  font-weight: 700;
+  border-radius: 6px;
+  padding: 2px 6px;
+  cursor: pointer;
+  outline: none;
+}
+[data-theme="dark"] .yj-gua-picker-select option {
+  background: #11141c;
+  color: #f8fafc;
+}
+[data-theme="light"] .yj-gua-picker-select option {
+  background: #ffffff;
+  color: #0f172a;
+}
+
+/* 头部操作按钮组 */
+.yj-vault-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.yj-btn-gold {
+  background: linear-gradient(135deg, var(--gold) 0%, #b88636 100%);
+  color: #ffffff !important;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 14px rgba(212, 163, 89, 0.35);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.yj-btn-gold:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+}
+.yj-btn-outline {
+  background: transparent;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+.yj-btn-outline:hover {
+  background: var(--gold-light);
+}
+.yj-btn-close {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-sub);
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.yj-btn-close:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: #ef4444;
+  color: #ef4444;
+  transform: rotate(90deg);
+}
+
+/* 四大来源专属导航 TAB 栏 */
+.yj-vault-tabs-bar {
+  display: flex;
+  align-items: center;
+  padding: 0 28px;
+  border-bottom: 1px solid var(--border-light);
+  flex-shrink: 0;
+  gap: 24px;
+}
+[data-theme="dark"] .yj-vault-tabs-bar {
+  background: #131722;
+}
+[data-theme="light"] .yj-vault-tabs-bar {
+  background: #f1f5f9;
+}
+
+.yj-vtab-item {
+  padding: 14px 4px;
+  font-size: 14.5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  transition: all 0.2s;
+  color: var(--text-sub);
+}
+.yj-vtab-item:hover {
+  color: var(--gold);
+}
+.yj-vtab-item.active {
+  color: var(--gold);
+}
+.yj-vtab-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--gold) 0%, #b88636 100%);
+  border-radius: 3px 3px 0 0;
+}
+.yj-vtab-count {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 1px 7px;
+  border-radius: 99px;
+  background: var(--gold-light);
+  color: var(--gold);
+}
+
+/* 弹窗内容工作台区域 */
+.yj-vault-body-content {
   flex: 1;
   overflow-y: auto;
-  padding: 22px 26px;
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+}
+
+/* 来源 1: 伴读问答面板 */
+.yj-vault-pane {
+  display: none;
+  flex-direction: column;
+  gap: 18px;
+}
+.yj-vault-pane.active {
+  display: flex;
+}
+
+.yj-dialogue-list {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  background: var(--bg);
+  min-height: 200px;
 }
-.yj-vault-summary-bar {
+.yj-dialogue-card {
+  border-radius: 14px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   background: var(--card);
   border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+.yj-dialogue-q {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14.5px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--text-m);
+}
+.yj-dialogue-a {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14px;
+  line-height: 1.65;
+  padding: 12px 14px;
   border-radius: 10px;
-  padding: 12px 18px;
+  background: var(--gold-light);
+  border-left: 3px solid var(--gold);
+  color: var(--text-m);
+}
+
+/* 来源 2: 笔记面板 */
+.yj-notes-topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 13.5px;
-  color: var(--text-m);
+  margin-bottom: 8px;
 }
-.yj-vault-grid {
+.yj-notes-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
 }
-.yj-gua-vault-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px;
+.yj-note-card {
+  border-radius: 14px;
+  padding: 18px 20px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  gap: 10px;
+  position: relative;
+  background: var(--card);
+  border: 1px solid var(--border);
+  transition: all 0.2s;
 }
-.yj-gua-vault-card:hover {
+.yj-note-card:hover {
   border-color: var(--gold);
   transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
 }
-.layered-ai-tag {
-  font-size: 11px;
-  font-weight: 700;
-  display: inline-flex;
+.yj-note-title {
+  font-size: 15.5px;
+  font-weight: 800;
+  display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 2px 7px;
-  border-radius: 4px;
+  justify-content: space-between;
+  color: var(--text-m);
 }
+.yj-note-content {
+  font-size: 13.5px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  color: var(--text-sub);
+}
+.yj-note-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-faint);
+  border-top: 1px dashed var(--border-light);
+  padding-top: 8px;
+  margin-top: 4px;
+}
+
+/* 来源 3 & 4 内部输入卡片 */
+.yj-vault-inner-card {
+  border-radius: 14px;
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--card);
+  border: 1px solid var(--border);
+}
+
+/* 弹窗底部操作条 */
+.yj-vault-footer {
+  padding: 14px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--border-light);
+  flex-shrink: 0;
+  font-size: 13px;
+  background: var(--card);
+  color: var(--text-sub);
+}
+
+/* 东方空状态提示 */
+.yj-vault-empty {
+  text-align: center;
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-sub);
+}
+.yj-vault-empty-icon {
+  font-size: 38px;
+  opacity: 0.6;
+}
+
+/* 主 Agent 玄微先生易道深度学术剖析卡片 */
+.yj-review-analysis-card {
+  margin-top: 18px;
+  background: var(--card);
+  border: 1px solid var(--gold);
+  border-radius: 14px;
+  padding: 20px 24px;
+  box-shadow: 0 4px 20px rgba(212, 163, 89, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+}
+.yj-review-analysis-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, var(--gold), transparent);
+}
+.yj-analysis-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px dashed var(--border-light);
+  padding-bottom: 10px;
+}
+.yj-analysis-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14.5px;
+  font-weight: 800;
+  color: var(--gold);
+  letter-spacing: 0.5px;
+}
+.yj-analysis-body {
+  font-size: 13.5px;
+  line-height: 1.8;
+  color: var(--text-m);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.yj-analysis-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-light);
+}
+
