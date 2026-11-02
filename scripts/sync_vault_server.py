@@ -20,7 +20,7 @@ import datetime
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VAULT_DIR = os.path.join(BASE_DIR, 'data', 'learning_vault')
 INDEX_FILE = os.path.join(VAULT_DIR, 'index.json')
-PORT = 8089
+PORT = int(os.environ.get('PORT', 8090))
 
 class VaultSyncHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
@@ -140,10 +140,16 @@ class VaultSyncHandler(http.server.SimpleHTTPRequestHandler):
 
             # 3. 悟道复盘
             rev = record.get('review', {})
-            f.write(f"## 🧠 三、易道悟道复盘（反身而诚）\n\n")
-            f.write(f"1. **生命印证（照镜子）**：\n   {rev.get('q1_mirror', '（未填写）')}\n\n")
-            f.write(f"2. **认知跃迁（炼心法）**：\n   {rev.get('q2_mindset', '（未填写）')}\n\n")
-            f.write(f"3. **行动承诺（知行合一）**：\n   {rev.get('q3_action', '（未填写）')}\n\n")
+            f.write(f"## 🧠 三、易道悟道复盘（本课专属研学心得）\n\n")
+            if 'items' in rev and isinstance(rev['items'], list) and len(rev['items']) > 0:
+                for idx, item in enumerate(rev['items'], 1):
+                    q = item.get('question', f"复盘问题 #{idx}")
+                    a = item.get('answer', '（未填写）')
+                    f.write(f"### {idx}. {q}\n\n{a}\n\n")
+            else:
+                f.write(f"1. **生命印证（照镜子）**：\n   {rev.get('q1_mirror', '（未填写）')}\n\n")
+                f.write(f"2. **认知跃迁（炼心法）**：\n   {rev.get('q2_mindset', '（未填写）')}\n\n")
+                f.write(f"3. **行动承诺（知行合一）**：\n   {rev.get('q3_action', '（未填写）')}\n\n")
 
             # 3.1 主 Agent 学术点评
             ai_analysis = rev.get('ai_analysis', {})
@@ -154,12 +160,19 @@ class VaultSyncHandler(http.server.SimpleHTTPRequestHandler):
             # 4. 费曼通关
             fey = record.get('feynman', {})
             fw = fey.get('framework', {})
-            f.write(f"## 🏆 四、费曼认知通关骨架\n\n")
-            f.write(f"- **1. 卦象时势核心判据**：{fw.get('core_trend', '（未填写）')}\n")
-            f.write(f"- **2. 核心爻变拐点攻防**：{fw.get('key_yao_turn', '（未填写）')}\n")
-            f.write(f"- **3. 现实生活/商业案例映射**：{fw.get('real_case', '（未填写）')}\n")
-            f.write(f"- **4. 反常识易道心智底牌**：{fw.get('anti_common_rule', '（未填写）')}\n\n")
-            f.write(f"### 综合通俗白话自述全稿：\n\n{fey.get('full_text', '（未填写综合自述）')}\n")
+            f.write(f"## 🏆 四、费曼大白话讲透工坊（向外行通俗自述）\n\n")
+            if fey.get('feynman_analogy'):
+                f.write(f"- **生活/工作场景通俗比喻**：{fey.get('feynman_analogy')}\n")
+            if fey.get('feynman_core'):
+                f.write(f"- **大白话核心转译**：{fey.get('feynman_core')}\n")
+            if fey.get('feynman_gap'):
+                f.write(f"- **盲区与外行追问卡点**：{fey.get('feynman_gap')}\n\n")
+            elif any(fw.values()):
+                f.write(f"- **1. 卦象时势核心判据**：{fw.get('core_trend', '（未填写）')}\n")
+                f.write(f"- **2. 核心爻变拐点攻防**：{fw.get('key_yao_turn', '（未填写）')}\n")
+                f.write(f"- **3. 现实生活/商业案例映射**：{fw.get('real_case', '（未填写）')}\n")
+                f.write(f"- **4. 反常识易道心智底牌**：{fw.get('anti_common_rule', '（未填写）')}\n\n")
+            f.write(f"### 费曼大白话自述全稿：\n\n{fey.get('full_text', '（未填写综合自述）')}\n")
 
     def update_vault_index(self, gua_id, safe_name, record):
         """维护全库总索引 index.json"""
@@ -225,7 +238,7 @@ if __name__ == '__main__':
     print(f"3. 页面访问地址: http://127.0.0.1:{PORT}/index.html")
     print(f"4. 状态监测接口: http://127.0.0.1:{PORT}/api/vault/status")
     print(f"============================================================")
-    server = http.server.ThreadingHTTPServer(('127.0.0.1', PORT), VaultSyncHandler)
+    server = http.server.ThreadingHTTPServer(('0.0.0.0', PORT), VaultSyncHandler)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

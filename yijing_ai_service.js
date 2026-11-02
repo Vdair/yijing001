@@ -191,44 +191,45 @@ ${question}
      * 3. 职能二：悟道复盘与费曼输出深度多维剖析 Prompt (核心承载)
      */
     buildReviewAnalysisPrompt({ reviewData = {}, feynmanData = {}, lessonMeta = {} }) {
-      const title = lessonMeta.title || '本卦精研';
+      const title = lessonMeta.title || '本课精研';
+
+      let reviewText = '';
+      if (reviewData.items && Array.isArray(reviewData.items) && reviewData.items.length > 0) {
+        reviewText = reviewData.items.map((it, idx) => `问题 ${idx + 1}：${it.question}\n学员复盘心得：${it.answer || '（未填写）'}`).join('\n\n');
+      } else {
+        reviewText = `1. 生命印证：${reviewData.q1_mirror || '（未填写）'}\n2. 认知心法：${reviewData.q2_mindset || '（未填写）'}\n3. 知行承诺：${reviewData.q3_action || '（未填写）'}`;
+      }
+
+      let feynmanText = feynmanData.full_text || '';
+      if (feynmanData.feynman_analogy) {
+        feynmanText = `【生活/工作通俗比喻】：${feynmanData.feynman_analogy}\n【大白话核心转译】：${feynmanData.feynman_core || '（未详述）'}\n【自我排查卡点】：${feynmanData.feynman_gap || '（无）'}\n\n【完整自述全稿】：\n${feynmanData.full_text || '（未填写）'}`;
+      }
+
       const prompt = `【学员研习成果提请玄微先生进行易道深度学术剖析】：
 研习课时：《${title}》
 
 ====================
-【壹·学员悟道复盘（反身而诚）】
-1. 生命印证（以卦照镜·过往反思）：
-${reviewData.q1_mirror || '（学员暂未详述往事印证）'}
-
-2. 认知心法（破妄立真·反常识底牌）：
-${reviewData.q2_mindset || '（学员暂未提炼心法底牌）'}
-
-3. 知行承诺（知行合一·当下践履尺子）：
-${reviewData.q3_action || '（学员暂未设立具体行动承诺）'}
+【壹·学员本课专属研学复盘（反身而诚）】
+${reviewText}
 
 ====================
-【贰·学员费曼通俗输出（四维通关架构）】
-- 时势判据：${feynmanData.framework?.core_trend || '（未填写）'}
-- 关键拐点：${feynmanData.framework?.key_yao_turn || '（未填写）'}
-- 实战案例：${feynmanData.framework?.real_case || '（未填写）'}
-- 反常识底牌：${feynmanData.framework?.anti_common_rule || '（未填写）'}
-- 通俗自述（讲给外行听）：
-${feynmanData.full_text || '（未填写白话自述）'}
+【贰·学员费曼大白话通俗自述（向外行朋友讲透）】
+${feynmanText || '（学员暂未提交费曼大白话自述）'}
 
 ====================
 【主 Agent 玄微先生剖析职责与输出规范】：
-请你以宗师级易道导师身份，依托外接知识库中《${title}》的经传原典、四大宗师阐微与时位模型，对学员提交的复盘与费曼成果展开高保真深度学术点评。点评必须严格包含以下四大维度：
+请你以宗师级易道导师身份，依托外接知识库中《${title}》的经传原典、四大宗师阐微与时位模型，对学员提交的本课专属复盘与费曼成果展开高保真深度学术点评。点评必须严格包含以下四大维度：
 
-1. 🧭【时位契合度诊断】：
-   - 评析学员对本卦核心时势、阴阳消长和关键爻位（得中、当位、应比）的把握是否精准。
-   - 明确指出学员认知中是“得其精微”还是“误把顺境作长久/误把潜龙作进取”的时位偏差。
+1. 🧭【时位与义理契合度诊断】：
+   - 评析学员对本课核心概念、阴阳消长和关键临界点的把握是否精准。
+   - 明确指出学员认知中是“得其精微”还是存在理解偏差。
 
 2. ⚡【反常识穿透力诊断】：
-   - 检验学员提炼的心法与费曼自述，是流于一般世俗经验与鸡汤口号，还是真正穿透了易道“阴中有阳、物极必反、生克转化”的反常识底层逻辑。
+   - 检验学员提炼的心法与费曼自述，是流于一般世俗表面，还是真正穿透了易道“生克制化、物极必反”的底层认知逻辑。
 
-3. 🛡️【知行闭环与演进推演】：
-   - 针对学员设定的“行动承诺”进行易道推演：预判该行动在现实推进中，最容易在哪个阶段触发“吝、厉、悔、凶”的阻力或亢满风险？
-   - 给出如何“防微杜渐”、“履霜坚冰”的具体知行防守建议。
+3. 🛡️【费曼讲透成色与知行建议】：
+   - 评析学员的大白话讲述是否通俗晓畅、是否有效去除了古文术语黑话。
+   - 预判学员在现实知行落地中，最容易在哪一步遇到卡点，给出防微杜渐的建议。
 
 4. 📜【玄微知行箴言】：
    - 提炼一句量身定制、兼具古雅底蕴与现代指引的易道知行箴言（20字以内）。

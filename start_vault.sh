@@ -8,13 +8,16 @@ set -e
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$DIR"
 
+PORT="${PORT:-8090}"
+
 echo "☯️ ==========================================================="
 echo "    易道认知工坊 · 东方现代沉浸式自修课堂"
 echo "    本地项目数据自动落盘守护服务 (Vault Auto-Sync)"
 echo "============================================================"
 echo "📁 数据落盘目录: $DIR/data/learning_vault"
-echo "🚀 服务端口: http://127.0.0.1:8089"
-echo "🌐 课堂页面: http://127.0.0.1:8089/index.html"
+echo "🚀 服务端口: http://127.0.0.1:$PORT"
+echo "🌐 课堂页面: http://127.0.0.1:$PORT/learn.html"
+echo "🏠 主页导航: http://127.0.0.1:$PORT/index.html"
 echo "============================================================"
 
 # 检查 Python 环境
@@ -27,10 +30,10 @@ else
     exit 1
 fi
 
-# 检查 8089 端口是否已被占用
-if lsof -Pi :8089 -sTCP:LISTEN -t >/dev/null 2>&1 ; then
-    echo "⚠️ 端口 8089 已在运行中，守护进程已处于就绪状态。"
-    echo "👉 请直接在浏览器打开: http://127.0.0.1:8089/index.html"
+# 检查端口是否已被占用
+if lsof -Pi :"$PORT" -sTCP:LISTEN -t >/dev/null 2>&1 ; then
+    echo "⚠️ 端口 $PORT 已在运行中，守护进程已处于就绪状态。"
+    echo "👉 请直接在浏览器打开: http://127.0.0.1:$PORT/learn.html"
     exit 0
 fi
 

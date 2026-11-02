@@ -303,8 +303,10 @@
       if (!rec) return { success: false };
 
       const endpoints = [
-        '/api/vault/save',                         // 1. 同源相对路径 (托管模式 http://127.0.0.1:8089)
-        'http://127.0.0.1:8089/api/vault/save'    // 2. 跨域绝对路径 (file:// 或其它端口打开时)
+        '/api/vault/save',                         // 1. 同源相对路径
+        'http://127.0.0.1:8090/api/vault/save',   // 2. 默认本地端口 8090
+        'http://localhost:8090/api/vault/save',   // 3. localhost 8090
+        'http://127.0.0.1:8089/api/vault/save'    // 4. 备用本地端口 8089
       ];
 
       for (let url of endpoints) {
@@ -343,7 +345,7 @@
      * 检测本地存储守护服务状态
      */
     async checkServerStatus() {
-      const endpoints = ['/api/vault/status', 'http://127.0.0.1:8089/api/vault/status'];
+      const endpoints = ['/api/vault/status', 'http://127.0.0.1:8090/api/vault/status', 'http://localhost:8090/api/vault/status', 'http://127.0.0.1:8089/api/vault/status'];
       for (let url of endpoints) {
         try {
           const r = await fetch(url);
@@ -372,7 +374,7 @@
      * 初始化时自动从项目 data/learning_vault 拉取已有档案融合
      */
     async pullFromProjectVault() {
-      const endpoints = ['/api/vault/list', 'http://127.0.0.1:8089/api/vault/list'];
+      const endpoints = ['/api/vault/list', 'http://127.0.0.1:8090/api/vault/list', 'http://localhost:8090/api/vault/list', 'http://127.0.0.1:8089/api/vault/list'];
       for (let url of endpoints) {
         try {
           const r = await fetch(url);
