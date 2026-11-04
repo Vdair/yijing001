@@ -59,7 +59,7 @@ html_content = """<!DOCTYPE html>
       <!-- 底部翻页控制器 -->
       <footer class="footbar">
         <button class="foot-btn" onclick="prevLesson()" id="btnPrev">◀ 上一课 (←)</button>
-        <button class="foot-btn primary" onclick="toggleCurrentDone()" id="btnDone">✓ 标记已掌握 (空格)</button>
+        <button class="foot-btn primary" onclick="toggleCurrentDone()" id="btnDone">✓ 标记已掌握</button>
         <button class="foot-btn" onclick="nextLesson()" id="btnNext">下一课 (→) ▶</button>
       </footer>
     </main>
@@ -105,13 +105,9 @@ html_content = """<!DOCTYPE html>
 
       // 键盘监听
       window.addEventListener('keydown', (e) => {
-        if (e.target.tagName === 'INPUT') return;
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
         if (e.key === 'ArrowLeft') prevLesson();
         if (e.key === 'ArrowRight') nextLesson();
-        if (e.key === ' ' || e.code === 'Space') {
-          e.preventDefault();
-          toggleCurrentDone();
-        }
       });
     }
 
@@ -285,7 +281,7 @@ html_content = """<!DOCTYPE html>
       
       const isDone = completedLessons.has(lesson.id);
       const btnDone = document.getElementById('btnDone');
-      btnDone.innerHTML = isDone ? '✓ 已掌握 (点击取消)' : '○ 标记已掌握 (空格)';
+      btnDone.innerHTML = isDone ? '✓ 已掌握 (点击取消)' : '○ 标记已掌握';
       btnDone.style.background = isDone ? 'var(--gold)' : 'var(--accent)';
 
       // 刷新侧栏高亮

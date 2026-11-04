@@ -7,7 +7,7 @@
   <!-- 引入课程全息数据库（添加版本号防止本地开发环境浏览器静态文件强缓存） -->
   <script src="course_data.js?v=20261026_1715"></script>
   <link rel="stylesheet" href="lesson.css?v=20261027_nature_v1">
-  <link rel="stylesheet" href="yijing_assistant.css?v=20261102_stage_recon">
+  <link rel="stylesheet" href="yijing_assistant.css?v=20261104_phase4">
 </head>
 <body>
   <!-- 顶栏 -->
@@ -58,7 +58,7 @@
       <!-- 底部翻页控制器 -->
       <footer class="footbar">
         <button class="foot-btn" onclick="prevLesson()" id="btnPrev">◀ 上一课 (←)</button>
-        <button class="foot-btn primary" onclick="toggleCurrentDone()" id="btnDone">✓ 标记已掌握 (空格)</button>
+        <button class="foot-btn primary" onclick="toggleCurrentDone()" id="btnDone">✓ 标记已掌握</button>
         <button class="foot-btn" onclick="nextLesson()" id="btnNext">下一课 (→) ▶</button>
       </footer>
     </main>
@@ -104,13 +104,9 @@
       updateProgress();
 
       window.addEventListener('keydown', (e) => {
-        if (e.target.tagName === 'INPUT') return;
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
         if (e.key === 'ArrowLeft') prevLesson();
         if (e.key === 'ArrowRight') nextLesson();
-        if (e.key === ' ' || e.code === 'Space') {
-          e.preventDefault();
-          toggleCurrentDone();
-        }
       });
     }
 
@@ -374,7 +370,7 @@
         document.getElementById('btnNext').disabled = (idx === flatLessons.length - 1);
         const isDone = completedLessons.has(lesson.id);
         const btnDone = document.getElementById('btnDone');
-        btnDone.innerHTML = isDone ? '✓ 已掌握 (点击取消)' : '○ 标记已掌握 (空格)';
+        btnDone.innerHTML = isDone ? '✓ 已掌握 (点击取消)' : '○ 标记已掌握';
         btnDone.style.background = isDone ? 'var(--gold)' : 'var(--accent)';
         renderSidebar(document.getElementById('searchInput').value);
         return;
@@ -466,7 +462,7 @@
       
       const isDone = completedLessons.has(lesson.id);
       const btnDone = document.getElementById('btnDone');
-      btnDone.innerHTML = isDone ? '✓ 已掌握 (点击取消)' : '○ 标记已掌握 (空格)';
+      btnDone.innerHTML = isDone ? '✓ 已掌握 (点击取消)' : '○ 标记已掌握';
       btnDone.style.background = isDone ? 'var(--gold)' : 'var(--accent)';
 
       renderSidebar(document.getElementById('searchInput').value);
@@ -556,7 +552,7 @@
   <script src="learning_storage.js?v=20261027_prompt_v2"></script>
   <script src="yijing_natural_trigrams.js?v=20261027_nature_v1"></script>
   <script src="yijing_inquiry_bank.js?v=20261027_prompt_v2"></script>
-  <script src="yijing_ai_service.js?v=20261027_prompt_v2"></script>
-  <script src="yijing_assistant.js?v=20261102_stage_recon"></script>
+  <script src="yijing_ai_service.js?v=20261104_phase3"></script>
+  <script src="yijing_assistant.js?v=20261104_phase4"></script>
 </body>
 </html>

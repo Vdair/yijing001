@@ -41,7 +41,7 @@ replacement_block = """      // 优先渲染全息大课版本
         document.getElementById('btnNext').disabled = (idx === flatLessons.length - 1);
         const isDone = completedLessons.has(lesson.id);
         const btnDone = document.getElementById('btnDone');
-        btnDone.innerHTML = isDone ? '✓ 已掌握 (点击取消)' : '○ 标记已掌握 (空格)';
+        btnDone.innerHTML = isDone ? '✓ 已掌握 (点击取消)' : '○ 标记已掌握';
         btnDone.style.background = isDone ? 'var(--gold)' : 'var(--accent)';
         renderSidebar(document.getElementById('searchInput').value);
         return;
