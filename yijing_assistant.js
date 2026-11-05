@@ -11,21 +11,41 @@
   let activeVaultGuaId = null;
   let activeVaultTab = 'dialogues'; // dialogues | notes | review | feynman
 
-  // 全局通用文本框高度自适应核心函数 (支持文字删除精准回缩、单行还原、超限滚动)
-  window.adjustTextareaHeight = function(el, maxHeight = 120) {
+  // 全局通用文本框高度自适应核心函数 (支持多行自适应、删除文字精准回缩、彻底杜绝任何字迹裁切与压扁)
+  window.adjustTextareaHeight = function(el, customMaxHeight) {
     if (!el) return;
-    const minH = 28;
+
+    // 智能推断该文本框类型对应的合理最小舒适高度 (minH) 与最大高度 (maxH)
+    let minH = 82; // 默认给 3 行舒适阅读空间 (约 82px)
+    let maxH = customMaxHeight || 450;
+
+    if (el.id === 'feyFullText' || el.classList.contains('mentor-textarea') || el.classList.contains('yj-feynman-textarea')) {
+      minH = 120; // 费曼大白话全稿自述，至少 5 行从容空间
+      maxH = customMaxHeight || 600;
+    } else if (el.id === 'coachInput' || el.id === 'vaultQuickQInput' || (el.closest && el.closest('.yj-input-wrapper'))) {
+      minH = 42;  // 侧边栏与弹窗快速提问框，舒适单行
+      maxH = customMaxHeight || 160;
+    } else if (el.classList.contains('yj-inline-think-input')) {
+      minH = 82;  // 核心要义即读即思卡片，至少 3 行舒适空间
+      maxH = customMaxHeight || 450;
+    }
+
+    el.style.boxSizing = 'border-box';
+    el.style.lineHeight = '1.65';
+
     if (!el.value || !el.value.trim()) {
       el.style.height = minH + 'px';
       el.style.overflowY = 'hidden';
       return;
     }
-    // 强制先坍缩至 0px，彻底清除上一帧残留高度，准确计算删除文字后最新的 scrollHeight
-    el.style.height = '0px';
-    const scrollH = el.scrollHeight;
+
+    // 先重设为 auto，精准测量真实 scrollHeight (带 6px 弹性呼吸缓冲，彻底避免最后一行贴底裁切)
+    el.style.height = 'auto';
+    const scrollH = el.scrollHeight + 6;
     const targetH = Math.max(minH, scrollH);
-    if (targetH > maxHeight) {
-      el.style.height = maxHeight + 'px';
+
+    if (targetH > maxH) {
+      el.style.height = maxH + 'px';
       el.style.overflowY = 'auto';
     } else {
       el.style.height = targetH + 'px';
@@ -4626,15 +4646,17 @@
 
       card.innerHTML = `
         <div class="yj-inline-think-header">
-          <span class="yj-inline-think-tag">💡 ${escapeHtml(qItem.tag || '易道顿悟小憩 · 边读边思')}</span>
-          <span style="font-size:12px; color:var(--text-faint);">驻足自省 · 知行合一</span>
+          <span class="yj-inline-think-tag">💡 【${escapeHtml(qItem.tag || '核心要义 · 边读边思')}】</span>
+          <span style="font-size:12px; color:var(--text-faint);">👇 读完本节核心要义，请即刻驻足阐述 · 知行合一</span>
         </div>
         <div class="yj-inline-think-q">${qItem.question}</div>
-        <textarea class="yj-inline-think-input" id="${inputId}" rows="2" placeholder="在此敲下你读到此处的顿悟、现实反思或当下困惑...">${escapeHtml(savedAnswer)}</textarea>
+        <textarea class="yj-inline-think-input" id="${inputId}" rows="3" placeholder="在此敲下你读完本节核心要义的真实顿悟、现实反思或当下困惑...">${escapeHtml(savedAnswer)}</textarea>
         <div class="yj-inline-think-actions">
-          <button class="yj-btn-outline" style="font-size:12px; padding:5px 12px; border-color:var(--gold); color:var(--gold);" onclick="toggleHintDrawer('${hintId}')">☯️ 查看玄微先生点穴启发</button>
-          <button class="yj-btn-outline" id="${assessBtnId}" style="font-size:12px; padding:5px 14px; border-color:var(--purple, #a855f7); color:var(--purple, #a855f7); font-weight:700;" onclick="requestInlineThinkAssessment('${cur.id}', ${qIdx})">✨ 提请玄微先生 · 师承评估</button>
-          <button class="yj-btn-gold" style="font-size:12px; padding:5px 14px;" onclick="saveInlineThinkNote('${escapeHtml(qItem.tag || '边读边思')}', '${inputId}', '${cur.id}')">📝 存入本课随堂微笔记</button>
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <button class="yj-btn-outline" style="font-size:12.5px; padding:6px 14px; border-color:var(--gold); color:var(--gold);" onclick="toggleHintDrawer('${hintId}')">☯️ 查看玄微先生点穴启发</button>
+            <button class="yj-btn-gold" id="${assessBtnId}" style="font-size:12.5px; padding:6px 16px; background:linear-gradient(135deg, #a855f7 0%, #7c3aed 100%); color:#ffffff; border:none; font-weight:700; box-shadow:0 2px 8px rgba(124,58,237,0.35); cursor:pointer;" onclick="requestInlineThinkAssessment('${cur.id}', ${qIdx})">✨ 提请老师师承评估</button>
+          </div>
+          <button class="yj-btn-outline" style="font-size:12.5px; padding:6px 14px; border-color:var(--gold); color:var(--gold);" onclick="saveInlineThinkNote('${escapeHtml(qItem.tag || '边读边思')}', '${inputId}', '${cur.id}')">📝 存入本课随堂微笔记</button>
         </div>
         <div class="yj-inline-hint-box" id="${hintId}">
           ${qItem.hint || '在易道研学中，每一次驻足反思都是一次认知跃迁。'}
@@ -4658,6 +4680,11 @@
           readerContent.appendChild(card);
         }
       }
+
+      // 实时绑定多行自适应输入监听，彻底防字迹截断
+      setTimeout(() => {
+        setupAutoResizeTextarea(inputId, null, 450);
+      }, 30);
     });
   };
 
@@ -4912,7 +4939,7 @@
     }, 120);
   };
 
-  // 底部两大卡片渲染（复盘与费曼：自适应难易度与章节专属内容）
+  // 底部两大卡片渲染（阶段三：全课要义通关罗盘与全卷宗师总评；阶段四：费曼大白话工坊）
   window.renderBottomAssistantStages = function() {
     const readerContent = document.getElementById('readerContent');
     if (!readerContent) return;
@@ -4924,43 +4951,50 @@
     if (!cur) return;
 
     const cfg = getLessonAdaptiveConfig(cur.id, cur);
-    const bank = window.YijingInquiryBank && window.YijingInquiryBank[cur.id] ? window.YijingInquiryBank[cur.id] : [];
-    let questions = bank.slice(0, cfg.reviewCount);
-    if (!questions || questions.length === 0) {
-      questions = [
-        `结合《${cur.title}》的核心要义，你在现实中最深刻的印证或启发是什么？`,
-        `如果将本卦提炼为一条通俗易懂的处事心智底牌，会是什么？`
-      ];
-      if (cfg.reviewCount >= 3) {
-        questions.push(`在未来的具体生活或工作决策中，你将如何落地践行本卦智慧？`);
-      }
-    }
+    const questions = INLINE_THINK_BANK[cur.id] || [];
 
     const record = window.LearningVault ? window.LearningVault.getGuaRecord(cur.id, cur) : { review: {}, feynman: {} };
     const rev = record.review || {};
     const fey = record.feynman || {};
     const hasAnalysis = rev.ai_analysis && rev.ai_analysis.content;
 
-    const wrap = document.createElement('div');
-    wrap.className = 'yj-stage-card-wrap';
-    wrap.id = 'yjStageCardWrap';
+    const assessments = (window.LearningVault && window.LearningVault.getInlineAssessments)
+      ? window.LearningVault.getInlineAssessments(cur.id)
+      : {};
 
-    // 动态生成本课专属复盘题目 HTML
-    const reviewItemsHtml = questions.map((qText, idx) => {
-      let val = '';
-      if (rev.items && rev.items[idx]) {
-        val = rev.items[idx].answer || '';
-      } else if (idx === 0 && rev.q1_mirror) {
-        val = rev.q1_mirror;
-      } else if (idx === 1 && rev.q2_mindset) {
-        val = rev.q2_mindset;
-      } else if (idx === 2 && rev.q3_action) {
-        val = rev.q3_action;
+    // 统计本课核心要义即读即思的完成状态
+    let answeredCount = 0;
+    let assessedCount = 0;
+    const totalCount = questions.length || 1;
+
+    const compassItemsHtml = questions.map((qItem, idx) => {
+      const historyItem = assessments[idx] || {};
+      const savedAnswer = historyItem.user_answer || '';
+      const savedAssessment = historyItem.teacher_assessment || '';
+
+      if (savedAnswer.trim()) answeredCount++;
+      if (savedAssessment.trim()) assessedCount++;
+
+      let statusBadge = '';
+      if (savedAssessment.trim()) {
+        statusBadge = `<span class="yj-compass-status evaluated">🟢 师承已点穴</span>`;
+      } else if (savedAnswer.trim()) {
+        statusBadge = `<span class="yj-compass-status answered">🟡 已阐述待评估</span>`;
+      } else {
+        statusBadge = `<span class="yj-compass-status pending">⚪ 待驻足阐述</span>`;
       }
+
       return `
-        <div class="yj-review-item">
-          <label><span style="color:var(--gold); font-weight:800;">探问 ${idx + 1} ·</span> ${escapeHtml(qText)}</label>
-          <textarea id="revQ_${idx}" rows="2" placeholder="在此写下切合本章专属要旨的真实思考与个人认知算法...">${escapeHtml(val)}</textarea>
+        <div class="yj-compass-item" onclick="scrollToInlineThink('${cur.id}', ${idx})" title="点击直达正文本节位置阐述或查看评估">
+          <div class="yj-compass-title">
+            <span>💡</span>
+            <span>${escapeHtml(qItem.tag || `核心要义 ${idx + 1}`)}</span>
+          </div>
+          <div class="yj-compass-desc">${escapeHtml(qItem.question)}</div>
+          <div class="yj-compass-footer">
+            ${statusBadge}
+            <span class="yj-compass-action">直达本小节 ➔</span>
+          </div>
         </div>
       `;
     }).join('');
@@ -4974,51 +5008,46 @@
       </div>
     `).join('');
 
-    // 动态生成核心线索指引 HTML
-    const hintsHtml = (cfg.coreHints || []).map(h => `<li>${escapeHtml(h)}</li>`).join('');
+    const wrap = document.createElement('div');
+    wrap.className = 'yj-stage-card-wrap';
+    wrap.id = 'yjStageCardWrap';
 
     wrap.innerHTML = `
       <section class="yj-stage-card" id="stage3Card">
         <div class="yj-stage-header">
           <div class="yj-stage-info">
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap;">
-              <span class="yj-stage-tag" style="background:var(--gold-light, rgba(212,163,89,0.18)); color:var(--gold, #d4a359); margin-bottom:0;">阶段三 · 悟道复盘</span>
-              <span class="yj-difficulty-pill ${cfg.badgeClass}">${cfg.levelLabel}（精研 ${cfg.reviewCount} 问）</span>
+              <span class="yj-stage-tag" style="background:var(--gold-light, rgba(212,163,89,0.18)); color:var(--gold, #d4a359); margin-bottom:0;">阶段三 · 修学通关总览</span>
+              <span class="yj-difficulty-pill ${cfg.badgeClass}">本课共 ${totalCount} 处核心要义（已通关 ${assessedCount}/${totalCount}）</span>
             </div>
-            <h2>🧠 《${cur.title}》本章专属反思与认知提炼</h2>
-            <p>古圣人作易，“反身而诚”。以下针对本章核心卦义与时位拐点设计，回答问题将本课化为您脑海中的决策算法。</p>
+            <h2>🧠 《${cur.title}》核心要义知行通关矩阵与宗师总揽</h2>
+            <p>古圣人作易，“反身而诚”。本课核心探问已全部下沉至正文各核心要义下方，助您“即读即思即评”。下方为您的修学通关罗盘与玄微先生全课通盘把脉。</p>
           </div>
           <div class="yj-stage-actions">
             <button class="yj-btn-outline" onclick="openVaultModal('review')" style="padding:6px 14px; font-size:13px;">📜 展开修学档案</button>
-            <button class="yj-btn-outline" onclick="toggleHintDrawer('stage3HintDrawer')" style="padding:6px 14px; font-size:13px; border-color:var(--gold); color:var(--gold);">💡 核心线索指引</button>
-            <button class="yj-btn-outline" onclick="requestBottomMasterAgentReview()" style="padding:6px 14px; font-size:13px; border-color:var(--gold); color:var(--gold); font-weight:700;">✨ 提请玄微先生 · 深度剖析</button>
-            <button class="yj-btn-gold" onclick="saveBottomReview()" style="padding:6px 16px; font-size:13px;">💾 保存复盘心得</button>
+            <button class="yj-btn-gold" onclick="requestBottomMasterAgentReview()" style="padding:6px 16px; font-size:13px; font-weight:700;">✨ 提请玄微先生 · 全课易道通盘深度总评</button>
           </div>
         </div>
 
-        <div class="yj-hint-drawer" id="stage3HintDrawer">
-          <div style="font-weight:700; color:var(--gold); margin-bottom:6px;">💡 《${cur.title}》易理复盘核心启发线索：</div>
-          <ul style="margin:0; padding-left:18px; color:var(--text-sub); font-size:13px; line-height:1.65;">
-            ${hintsHtml || '<li>紧扣本卦主旨与时位转换，从身心体验与现实选择切入。</li>'}
-          </ul>
+        <div style="margin: 6px 0 2px 0; font-size:13.5px; font-weight:700; color:var(--text-sub);">
+          🧭 本课各核心要义“边读边思”通关进度（点击直达正文对应位置阐述与查看老师点穴）：
+        </div>
+        <div class="yj-compass-grid">
+          ${compassItemsHtml}
         </div>
 
-        <div class="yj-review-grid" style="grid-template-columns: 1fr;">
-          ${reviewItemsHtml}
-        </div>
-
-        <!-- 正文原生玄微先生四维易道深度点评卡片 -->
-        <div class="yj-review-analysis-card" id="bottomRevAnalysisCard" style="display:${hasAnalysis ? 'flex' : 'none'};">
+        <!-- 正文原生玄微先生全课易道深度点评卡片 -->
+        <div class="yj-review-analysis-card" id="bottomRevAnalysisCard" style="display:${hasAnalysis ? 'flex' : 'none'}; margin-top:14px;">
           <div class="yj-analysis-header">
             <div class="yj-analysis-title">
               <span>☯️</span>
-              <span>玄微先生 · 易道学术多维深度比对诊断</span>
+              <span>玄微先生 · 全课易道通盘学术与认知诊断</span>
             </div>
             <span id="bottomRevAnalysisTime" style="font-size:12px; color:var(--text-faint);">${rev.ai_analysis && rev.ai_analysis.updated_at ? '剖析于 ' + rev.ai_analysis.updated_at : ''}</span>
           </div>
           <div class="yj-analysis-body" id="bottomRevAnalysisContent">${(rev.ai_analysis && rev.ai_analysis.content ? (window.formatMasterAnalysisHtml ? window.formatMasterAnalysisHtml(rev.ai_analysis.content) : rev.ai_analysis.content.replace(/\n/g, '<br>')) : '')}</div>
           <div class="yj-analysis-actions">
-            <button class="yj-tool-btn" onclick="copyBottomAnalysisContent()">📋 复制点评</button>
+            <button class="yj-tool-btn" onclick="copyBottomAnalysisContent()">📋 复制总评</button>
             <button class="yj-tool-btn" style="color:var(--gold); border-color:var(--gold);" onclick="openCoachFromReview()">💬 转向玄微助教深入对话</button>
           </div>
         </div>
@@ -5063,18 +5092,38 @@
             <span>🗣️ 你的 3 分钟费曼大白话自述全稿：</span>
             <span style="font-size:12px; font-weight:400; color:var(--text-faint);">用生活比喻向外行朋友讲透本课精髓</span>
           </label>
-          <textarea id="feyFullText" class="mentor-textarea" rows="5" placeholder="假想你的外行朋友正坐在你对面，试着用生活大白话讲给他听：\n比如：“你知道吗？《${cur.title}》其实讲的是……”">${escapeHtml(fey.full_text || '')}</textarea>
+          <textarea id="feyFullText" class="mentor-textarea yj-feynman-textarea" rows="5" placeholder="假想你的外行朋友正坐在你对面，试着用生活大白话讲给他听：\n比如：“你知道吗？《${cur.title}》其实讲的是……”">${escapeHtml(fey.full_text || '')}</textarea>
         </div>
       </section>
     `;
 
     readerContent.appendChild(wrap);
 
-    // 绑定自适应多行输入
-    questions.forEach((_, idx) => {
-      setupAutoResizeTextarea(`revQ_${idx}`, null, 120);
-    });
-    setupAutoResizeTextarea('feyFullText', null, 200);
+    // 绑定费曼大白话文本框自适应（杜绝压扁截断）
+    setTimeout(() => {
+      setupAutoResizeTextarea('feyFullText', null, 600);
+    }, 40);
+  };
+
+  // 点击通关罗盘平滑滚动至正文对应核心要义
+  window.scrollToInlineThink = function(guaId, qIdx) {
+    const inputId = `inlineThinkInput_${guaId}_${qIdx}`;
+    const el = document.getElementById(inputId);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => {
+        el.focus();
+        const card = el.closest('.yj-inline-think-card');
+        if (card) {
+          card.style.transition = 'box-shadow 0.3s, border-color 0.3s';
+          card.style.borderColor = 'var(--gold)';
+          card.style.boxShadow = '0 0 0 3px var(--gold-light)';
+          setTimeout(() => {
+            card.style.boxShadow = '';
+          }, 1500);
+        }
+      }, 350);
+    }
   };
 
   window.saveBottomReview = function() {
@@ -5148,22 +5197,45 @@
     const bank = window.YijingInquiryBank && window.YijingInquiryBank[cur.id] ? window.YijingInquiryBank[cur.id] : [];
     const questions = bank.slice(0, cfg.reviewCount);
 
+    const thinkQuestions = INLINE_THINK_BANK[cur.id] || [];
+    const assessments = (window.LearningVault && window.LearningVault.getInlineAssessments)
+      ? window.LearningVault.getInlineAssessments(cur.id)
+      : {};
+
     const items = [];
-    for (let i = 0; i < Math.max(questions.length, cfg.reviewCount); i++) {
-      const el = document.getElementById(`revQ_${i}`);
-      const val = el ? el.value.trim() : '';
+    thinkQuestions.forEach((qItem, idx) => {
+      const el = document.getElementById(`inlineThinkInput_${cur.id}_${idx}`);
+      let val = el ? el.value.trim() : '';
+      if (!val && assessments[idx] && assessments[idx].user_answer) {
+        val = assessments[idx].user_answer.trim();
+      }
       if (val) {
         items.push({
-          question: questions[i] || `反思探问 ${i + 1}`,
+          question: qItem.question,
+          tag: qItem.tag || `核心要义 ${idx + 1}`,
           answer: val
         });
+      }
+    });
+
+    // 兜底提取旧 revQ
+    if (items.length === 0) {
+      for (let i = 0; i < Math.max(questions.length, cfg.reviewCount); i++) {
+        const el = document.getElementById(`revQ_${i}`);
+        const val = el ? el.value.trim() : '';
+        if (val) {
+          items.push({
+            question: questions[i] || `反思探问 ${i + 1}`,
+            answer: val
+          });
+        }
       }
     }
 
     const full_text = (document.getElementById('feyFullText') ? document.getElementById('feyFullText').value : '').trim();
 
     if (items.length === 0 && !full_text) {
-      alert('请先写下至少一条复盘反思或费曼大白话自述，玄微先生方能为您点穴辨正！');
+      alert('请先在上方任一核心要义处写下你的“边读边思”，或在下方写下费曼大白话自述，玄微先生方能为您通盘点穴把脉！');
       return;
     }
 
@@ -5250,7 +5322,7 @@
   };
 
   // 输入框自适应高度与键盘发送监听 (完美支持删除文字精准回缩、粘贴撑开、单行还原、超限滚动)
-  function setupAutoResizeTextarea(textareaId, submitFn, maxHeight = 120) {
+  function setupAutoResizeTextarea(textareaId, submitFn, maxHeight = null) {
     const el = typeof textareaId === 'string' ? document.getElementById(textareaId) : textareaId;
     if (!el) return;
 

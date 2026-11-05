@@ -359,21 +359,24 @@
   border-color: var(--gold);
   box-shadow: 0 0 0 1px var(--gold-light);
 }
+/* ========================================================
+   文本框防截断与自适应舒适尺寸核心规范 (杜绝文字挤压与裁切)
+   ======================================================== */
 .yj-input-wrapper textarea {
   flex: 1;
   background: transparent;
   border: none;
   outline: none;
   color: var(--text-m);
-  font-size: 13.5px;
-  line-height: 1.5;
-  padding: 4px 0;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  padding: 8px 10px !important;
   resize: none;
-  min-height: 28px;
-  max-height: 120px;
+  min-height: 42px !important;
+  max-height: 160px;
   overflow-y: hidden;
   font-family: inherit;
-  box-sizing: border-box;
+  box-sizing: border-box !important;
 }
 .yj-input-wrapper textarea::-webkit-scrollbar {
   width: 4px;
@@ -643,26 +646,28 @@
   width: 100%;
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 10px 14px;
-  font-size: 13.5px;
+  border-radius: 10px;
+  padding: 12px 14px !important;
+  font-size: 14px !important;
   color: var(--text-m);
-  line-height: 1.5;
-  box-sizing: border-box;
+  line-height: 1.65 !important;
+  box-sizing: border-box !important;
   outline: none;
   font-family: inherit;
   resize: vertical;
-  transition: border-color 0.2s;
+  min-height: 82px !important;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 .yj-inline-think-input:focus {
   border-color: var(--gold);
+  box-shadow: 0 0 0 2px var(--gold-light);
 }
 .yj-inline-think-actions {
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 12px;
 }
 .yj-inline-hint-box {
   background: var(--bg);
@@ -701,21 +706,105 @@
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 12px 14px;
+  padding: 12px 14px !important;
   color: var(--text-m);
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: 14px !important;
+  line-height: 1.65 !important;
   resize: vertical;
-  box-sizing: border-box;
+  box-sizing: border-box !important;
   outline: none;
   font-family: inherit;
+  min-height: 82px !important;
   transition: border-color 0.2s, box-shadow 0.2s;
+}
+#feyFullText,
+.mentor-textarea.yj-feynman-textarea {
+  min-height: 120px !important;
 }
 .yj-review-item textarea:focus,
 .yj-framework-box textarea:focus,
 .mentor-textarea:focus {
   border-color: var(--gold);
   box-shadow: 0 0 0 2px var(--gold-light);
+}
+
+/* ========================================================
+   阶段三：全课核心要义通关罗盘 / 索引矩阵现代卡片
+   ======================================================== */
+.yj-compass-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+  margin: 10px 0;
+}
+.yj-compass-item {
+  background: var(--bg-card, var(--bg));
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.22s ease-in-out;
+  position: relative;
+  overflow: hidden;
+}
+.yj-compass-item:hover {
+  border-color: var(--gold);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+}
+.yj-compass-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-m);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1.45;
+}
+.yj-compass-desc {
+  font-size: 12.5px;
+  color: var(--text-sub);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.yj-compass-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  border-top: 1px dashed var(--border-light);
+  padding-top: 8px;
+}
+.yj-compass-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
+  border-radius: 4px;
+  padding: 2px 8px;
+}
+.yj-compass-status.evaluated {
+  background: rgba(34, 197, 94, 0.12);
+  color: #16a34a;
+}
+.yj-compass-status.answered {
+  background: rgba(234, 179, 8, 0.12);
+  color: #ca8a04;
+}
+.yj-compass-status.pending {
+  background: var(--bg-hover, rgba(148, 163, 184, 0.12));
+  color: var(--text-faint);
+}
+.yj-compass-action {
+  color: var(--gold);
+  font-weight: 600;
 }
 
 .yj-framework-grid {
@@ -1146,6 +1235,26 @@
   gap: 10px;
   background: var(--card);
   border: 1px solid var(--border);
+}
+.yj-vault-inner-card textarea {
+  width: 100%;
+  box-sizing: border-box !important;
+  font-family: inherit;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  padding: 10px 14px !important;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-m);
+  min-height: 80px !important;
+  outline: none;
+  resize: vertical;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.yj-vault-inner-card textarea:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px var(--gold-light);
 }
 
 /* 弹窗底部操作条 */
