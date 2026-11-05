@@ -429,22 +429,55 @@
 }
 .yj-stage-header {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 16px;
   border-bottom: 1px solid var(--border-light);
-  padding-bottom: 16px;
+  padding-bottom: 18px;
 }
+@media (min-width: 1280px) {
+  .yj-stage-header {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+  }
+}
+.yj-stage-info {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.yj-stage-info h2,
 .yj-stage-header h2 {
   font-size: 18px;
   font-weight: 800;
   color: var(--text-m);
   margin: 6px 0 4px 0;
+  line-height: 1.45;
+  word-break: break-word;
 }
+.yj-stage-info p,
 .yj-stage-header p {
   font-size: 13px;
   color: var(--text-sub);
   margin: 0;
   line-height: 1.5;
+}
+.yj-stage-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+  justify-content: flex-start;
+}
+@media (min-width: 1280px) {
+  .yj-stage-actions {
+    justify-content: flex-end;
+    max-width: 620px;
+  }
+}
+.yj-stage-actions button {
+  white-space: nowrap;
 }
 .yj-stage-tag {
   font-size: 12px;

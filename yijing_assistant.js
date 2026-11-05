@@ -3524,31 +3524,31 @@
   const INLINE_THINK_BANK = {
   "p0-01": [
     {
-      "sectionKeyword": "伏羲画卦",
+      "sectionKeyword": "起源",
       "tag": "起源觉察 · 边读边思",
       "question": "“近取诸身，远取诸物”。反观你近期的生理体能信号（如睡眠、紧绷度）与周遭工作环境、人际氛围，它们之间是否呈现某种全息同构？如果用一种自然物象来形容你当下的心境与处境，你会选什么？",
       "hint": "💡 玄微先生点穴启发：身心与境遇同构，内焦则外困，神定则境安。学易的第一步是恢复对自身生理与微观环境的敏锐觉知，观物即是观心。"
     },
     {
-      "sectionKeyword": "三才",
+      "sectionKeyword": "极简算法",
       "tag": "三才模型 · 边读边思",
       "question": "读到“三才之道（初爻为地，中爻为人，上爻为天）”，停下来想一想：在你当前负责的一项重要工作或个人目标中，属于客观不可动的“地道（现实基础/组织约束）”和时代大势的“天道”分别是什么？身处中间的你，当前最该在哪一点发力？",
       "hint": "💡 玄微先生点穴启发：地道是看得见摸得着的资源配称、现金流或底层交付能力；天道是不可逆的行业周期、监管与用户心理演化。人在其中，既不能脱离地皮起高楼，也不能妄图逆天而行。人道的发力点在于“顺天应人”，在客观约束中做出最高胜率的行为抉择。"
     },
     {
-      "sectionKeyword": "八大自然原力",
+      "sectionKeyword": "八卦全息原型",
       "tag": "八大原力 · 边读边思",
       "question": "在乾（纯阳自驱）、坤（包容承载）、震（破土冲锋）、巽（润物渗透）、坎（履险求通）、离（洞察启明）、艮（止步风控）、兑（和悦沟通）中，审视你当前的性格或团队，哪一种原力严重过剩？哪一种原力极其匮乏？",
       "hint": "💡 玄微先生点穴启发：常人多犯“偏执一端”之误。冲锋破局过猛（震）而无止步风控（艮）必致翻车；一味默默承载（坤）而无创始意志（乾）易陷被动。知己之短，方知借势互补。"
     },
     {
-      "sectionKeyword": "后天八卦",
+      "sectionKeyword": "双螺旋",
       "tag": "节气时序 · 边读边思",
       "question": "文王后天八卦从“震东（春生破土）”流转到“离南（夏至极明）”、“兑西（秋收悦赏）”与“坎北（冬藏蓄力）”。把你手头最重要的业务代入后天时序，它当前处于哪一个节气？你当下的动作是拔苗助长，还是合拍顺时？",
       "hint": "💡 玄微先生点穴启发：不合时宜的努力是灾难。在“坎冬”盲目大扩张必然冻毙，在“震春”贪恋安逸必定颗粒无收。知时顺势，顺时而动，方能事半功倍。"
     },
     {
-      "sectionKeyword": "以象知意",
+      "sectionKeyword": "万物类象",
       "tag": "动力学取象 · 边读边思",
       "question": "“见动知震，见险知坎，见止知艮”。在你近期经历的事件中，有没有遇到一件表面看似是好事（和悦之兑），但其底层动力学实际上暗藏险坑（深陷之坎）？你是如何穿透表象识别其本质动力学的？",
       "hint": "💡 玄微先生点穴启发：外行被事物外在的名词和承诺所迷惑，易学家看穿底层能量动力学。甜言蜜语背后若是失控的深渊，那便是“兑外坎内”。透过表象看动力学，方能不被表象蒙蔽。"
@@ -3556,13 +3556,13 @@
   ],
   "p0-02": [
     {
-      "sectionKeyword": "穷天下之变",
+      "sectionKeyword": "为什么单卦",
       "tag": "复杂系统 · 边读边思",
       "question": "单卦三爻表征单一自然原力，而重卦六爻表征复杂系统相遇与互动。面对你手头的一个棘手矛盾，如果把它拆解为“系统 A”与“系统 B”的互动，矛盾的焦点究竟是出在输入输出，还是底层规则的冲突？",
       "hint": "💡 玄微先生点穴启发：单一力量没有吉凶，两相碰撞方生变数。读懂重卦，就是把生活从“非黑即白”升级为“系统动力学”的高维视角。"
     },
     {
-      "sectionKeyword": "贞（正也",
+      "sectionKeyword": "相对论",
       "tag": "内外博弈 · 边读边思",
       "question": "“内卦决定你能守多久，外卦决定你能走多远”。审视你当前的项目或职业状态，你的“内卦（团队实力、心智定力、底层现金流）”是否稳固？外部的“外卦（客场环境、市场大势）”又在施加怎样的引力？",
       "hint": "💡 玄微先生点穴启发：地天泰内刚外柔，天地否内弱外傲。内部不稳而急于向外扩张，必成天地否之困局；内固根本而外示谦逊，方为地天泰之通途。"
@@ -3582,7 +3582,7 @@
   ],
   "p0-03": [
     {
-      "sectionKeyword": "初爻（基层起步）",
+      "sectionKeyword": "时空相对论",
       "tag": "爻位阶梯 · 边读边思",
       "question": "初爻潜伏、二爻破土、三爻危地、四爻试错、五爻尊位、上爻退隐。对照这一人生与业务阶梯，你当前正处在哪一个爻位？在这个爻位上，最不该做的自杀式动作是什么？",
       "hint": "💡 玄微先生点穴启发：初爻勿用而妄动必折，三爻夹层而张扬必遭忌，上爻登峰而贪权必亢坠。认清自己的爻位，就拿到了避坑护身符。"
@@ -3594,7 +3594,7 @@
       "hint": "💡 玄微先生点穴启发：得位常关乎外在虚名与权力，而得中关乎内在时机的把握与分寸感。位不当而能守中，往往能逢凶化吉；居尊位而失中，最易滋生骄狂亢坠之险。"
     },
     {
-      "sectionKeyword": "应（对位共振）",
+      "sectionKeyword": "乘、承、比、应",
       "tag": "人际网络 · 边读边思",
       "question": "在“承（顺从支持）、乘（越权凌驾）、比（邻近协同）、应（遥相呼应）”的人际协同中，审视你与直属上级和核心搭档的关系，当前是“柔承刚”（吉），还是不自觉地陷入了“柔乘刚”（越位生隙）？",
       "hint": "💡 玄微先生点穴启发：职场博弈最忌“乘刚”，以弱凌强、不尊位分，必引反噬；反之，以柔承刚，辅佐成就大局，反而能建立不可替代的信任基石。"
@@ -3608,13 +3608,13 @@
   ],
   "p0-04": [
     {
-      "sectionKeyword": "一部书的千年演进",
+      "sectionKeyword": "经与传的边界",
       "tag": "经传演进 · 边读边思",
       "question": "孔子作《十翼》，使《周易》从占卜卜筮手册跃迁为人道哲学与心智模型。在你的认知中，过去是否也曾将易经误解为神秘算命？理解了经传分野后，你认为易经对现代人最大的实用价值何在？",
       "hint": "💡 玄微先生点穴启发：卜以决疑，易以断事；不占而已矣，玩辞而自得。易经是决策心法，而非宿命锁链。"
     },
     {
-      "sectionKeyword": "彖传",
+      "sectionKeyword": "十翼",
       "tag": "十翼导图 · 边读边思",
       "question": "《大象传》教人“效法天地立法建制”，《系辞传》教人“穷理尽性知宇宙大道”，《序卦传》揭示“事物相生演进链”。在这些视角中，哪一种最能启发你当下的领导力或业务架构？",
       "hint": "💡 玄微先生点穴启发：大象传是最高级的管理学，每一卦都在回答“身为管理者或君子，面对这种天象格局该如何行动”。"
@@ -4557,24 +4557,60 @@
       }
     }
 
-    // 寻找正文中插入锚点
-    const sections = readerContent.querySelectorAll('.step-header, .sub-sec-title, .step-section, h3, blockquote');
+    // 寻找正文中插入锚点（核心：插在当前核心要义正文读完之后、下一个核心要义标题之前）
     const assessments = (window.LearningVault && window.LearningVault.getInlineAssessments)
       ? window.LearningVault.getInlineAssessments(cur.id)
       : {};
 
+    // 提取正文中所有标题元素，严禁包含最外层 section
+    const allHeaders = Array.from(readerContent.querySelectorAll('.step-header, .yao-sub-title, h3, h4.sub-sec-title'));
+
     questions.forEach((qItem, qIdx) => {
-      let anchor = null;
-      if (qItem.sectionKeyword) {
-        for (let el of sections) {
-          if (el.textContent && el.textContent.includes(qItem.sectionKeyword)) {
-            anchor = el;
-            break;
+      let insertAnchor = null;
+      let insertBefore = false;
+
+      if (qItem.sectionKeyword && allHeaders.length > 0) {
+        const kw = qItem.sectionKeyword.replace(/\s+/g, '');
+        const headerIdx = allHeaders.findIndex(h => {
+          const t = (h.textContent || '').replace(/\s+/g, '');
+          return t.includes(kw);
+        });
+
+        if (headerIdx !== -1) {
+          const curH = allHeaders[headerIdx];
+          // 寻找下一个小节标题（即本核心要义正文读完的位置）
+          let nextH = null;
+          for (let i = headerIdx + 1; i < allHeaders.length; i++) {
+            const candidate = allHeaders[i];
+            if (curH.classList.contains('step-header')) {
+              if (candidate.classList.contains('step-header')) {
+                nextH = candidate;
+                break;
+              }
+            } else {
+              if (candidate.classList.contains('step-header') || candidate.className === curH.className || candidate.tagName === curH.tagName) {
+                nextH = candidate;
+                break;
+              }
+            }
+          }
+
+          if (nextH) {
+            insertAnchor = nextH;
+            insertBefore = true;
+          } else {
+            let p = curH.parentNode;
+            insertAnchor = p.lastElementChild || curH;
+            insertBefore = false;
           }
         }
       }
-      if (!anchor && sections.length > qIdx + 1) {
-        anchor = sections[Math.min(qIdx * 2 + 1, sections.length - 1)];
+
+      // 未匹配时，按索引均匀映射到各标题小节末尾
+      if (!insertAnchor && allHeaders.length > 0) {
+        const stepIndex = Math.min(Math.floor(((qIdx + 1) / (questions.length + 1)) * allHeaders.length), allHeaders.length - 1);
+        insertAnchor = allHeaders[stepIndex];
+        insertBefore = true;
       }
 
       const card = document.createElement('div');
@@ -4608,10 +4644,19 @@
         </div>
       `;
 
-      if (anchor && anchor.parentNode) {
-        anchor.parentNode.insertBefore(card, anchor.nextSibling);
+      if (insertAnchor && insertAnchor.parentNode) {
+        if (insertBefore) {
+          insertAnchor.parentNode.insertBefore(card, insertAnchor);
+        } else {
+          insertAnchor.parentNode.appendChild(card);
+        }
       } else {
-        readerContent.appendChild(card);
+        const stageWrap = document.getElementById('bottomStagesWrap');
+        if (stageWrap && stageWrap.parentNode) {
+          stageWrap.parentNode.insertBefore(card, stageWrap);
+        } else {
+          readerContent.appendChild(card);
+        }
       }
     });
   };
@@ -4935,7 +4980,7 @@
     wrap.innerHTML = `
       <section class="yj-stage-card" id="stage3Card">
         <div class="yj-stage-header">
-          <div>
+          <div class="yj-stage-info">
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap;">
               <span class="yj-stage-tag" style="background:var(--gold-light, rgba(212,163,89,0.18)); color:var(--gold, #d4a359); margin-bottom:0;">阶段三 · 悟道复盘</span>
               <span class="yj-difficulty-pill ${cfg.badgeClass}">${cfg.levelLabel}（精研 ${cfg.reviewCount} 问）</span>
@@ -4943,7 +4988,7 @@
             <h2>🧠 《${cur.title}》本章专属反思与认知提炼</h2>
             <p>古圣人作易，“反身而诚”。以下针对本章核心卦义与时位拐点设计，回答问题将本课化为您脑海中的决策算法。</p>
           </div>
-          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <div class="yj-stage-actions">
             <button class="yj-btn-outline" onclick="openVaultModal('review')" style="padding:6px 14px; font-size:13px;">📜 展开修学档案</button>
             <button class="yj-btn-outline" onclick="toggleHintDrawer('stage3HintDrawer')" style="padding:6px 14px; font-size:13px; border-color:var(--gold); color:var(--gold);">💡 核心线索指引</button>
             <button class="yj-btn-outline" onclick="requestBottomMasterAgentReview()" style="padding:6px 14px; font-size:13px; border-color:var(--gold); color:var(--gold); font-weight:700;">✨ 提请玄微先生 · 深度剖析</button>
@@ -4981,7 +5026,7 @@
 
       <section class="yj-stage-card" id="stage4Card">
         <div class="yj-stage-header">
-          <div>
+          <div class="yj-stage-info">
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap;">
               <span class="yj-stage-tag" style="background:var(--purple-light, rgba(168,85,247,0.18)); color:var(--purple, #a855f7); margin-bottom:0;">阶段四 · 费曼大白话精研输出</span>
               <span class="yj-difficulty-pill ${cfg.badgeClass}">${cfg.levelLabel}</span>
@@ -4989,7 +5034,7 @@
             <h2>📝 《${cur.title}》费曼通关自述与生活转译</h2>
             <p>费曼学习法核心：用最通俗易懂的大白话、生动的生活比喻，讲给完全不懂易经的外行听。能讲透，才算真懂！</p>
           </div>
-          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <div class="yj-stage-actions">
             <button class="yj-btn-outline" onclick="openVaultModal('feynman')" style="padding:6px 14px; font-size:13px;">📜 展开修学档案</button>
             <button class="yj-btn-outline" onclick="requestBottomMasterAgentReview()" style="padding:6px 14px; font-size:13px; border-color:var(--purple, #a855f7); color:var(--purple, #a855f7); font-weight:700;">✨ 提请玄微先生 · 费曼剖析</button>
             <button class="yj-btn-gold" onclick="saveBottomFeynman()" style="padding:6px 16px; font-size:13px;">🏆 提交保存费曼笔记</button>
