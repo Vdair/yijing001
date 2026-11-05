@@ -157,6 +157,21 @@ class VaultSyncHandler(http.server.SimpleHTTPRequestHandler):
                 f.write(f"### ☯️ 主 Agent 玄微先生 · 易道深度学术点评 ({ai_analysis.get('updated_at', '')})：\n\n")
                 f.write(f"{ai_analysis.get('content', '').strip()}\n\n")
 
+            # 3.2 边读边思 · 师承评估实录
+            inline_assessments = record.get('inline_assessments', {})
+            if inline_assessments:
+                f.write(f"## 💡 四、边读边思 · 师承点穴实录 ({len(inline_assessments)} 题)\n\n")
+                for k, item in inline_assessments.items():
+                    tag = item.get('tag', '边读边思')
+                    q = item.get('question', '')
+                    ua = item.get('user_answer', '（未填写）')
+                    ta = item.get('teacher_assessment', '（待评估）')
+                    time_str = item.get('updated_at', '')
+                    f.write(f"### {tag} ({time_str})\n\n")
+                    f.write(f"**【思考探问】**：{q}\n\n")
+                    f.write(f"**【学员作答】**：\n{ua}\n\n")
+                    f.write(f"**【玄微先生师承评估】**：\n{ta}\n\n---\n\n")
+
             # 4. 费曼通关
             fey = record.get('feynman', {})
             fw = fey.get('framework', {})

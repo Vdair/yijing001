@@ -1486,3 +1486,127 @@
   gap: 10px;
 }
 
+/* ==========================================================================
+   阶段十一：边读边思 · 宗师师承评估专用样式
+   ========================================================================== */
+.yj-inline-assessment-container {
+  display: none;
+  margin-top: 12px;
+  animation: fadeInAssess 0.25s ease-out;
+}
+.yj-inline-assessment-container.open {
+  display: block;
+}
+@keyframes fadeInAssess {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.yj-inline-assessment-card {
+  background: linear-gradient(135deg, rgba(212,163,89,0.06), rgba(168,85,247,0.04));
+  border: 1px solid rgba(212,163,89,0.3);
+  border-radius: 8px;
+  padding: 14px 16px;
+  position: relative;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+
+.yj-assess-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+  border-bottom: 1px dashed var(--border-light, #30363d);
+}
+
+.yj-assess-seal {
+  display: inline-block;
+  background: rgba(166, 43, 43, 0.12);
+  border: 1px solid #a62b2b;
+  color: #e06c75;
+  font-size: 11.5px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 1px;
+}
+
+.yj-assess-saved-pill {
+  font-size: 11px;
+  color: #4caf50;
+  background: rgba(76, 175, 80, 0.1);
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  padding: 2px 8px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.yj-assess-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.yj-assess-block {
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--text-m, #c9d1d9);
+}
+
+.yj-assess-block-title {
+  font-size: 13px;
+  font-weight: 800;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.yj-assess-block.affirm {
+  background: rgba(46, 160, 67, 0.08);
+  border-left: 3px solid #2ea043;
+}
+.yj-assess-block.affirm .yj-assess-block-title {
+  color: #3fb950;
+}
+
+.yj-assess-block.critique {
+  background: rgba(210, 153, 34, 0.08);
+  border-left: 3px solid #d29922;
+}
+.yj-assess-block.critique .yj-assess-block-title {
+  color: #e3b341;
+}
+
+.yj-assess-block.advice {
+  background: rgba(88, 166, 255, 0.08);
+  border-left: 3px solid #58a6ff;
+}
+.yj-assess-block.advice .yj-assess-block-title {
+  color: #79c0ff;
+}
+
+.yj-assess-loading {
+  padding: 24px 16px;
+  text-align: center;
+  background: rgba(212,163,89,0.04);
+  border: 1px dashed rgba(212,163,89,0.3);
+  border-radius: 8px;
+}
+.yj-assess-spinner {
+  display: inline-block;
+  font-size: 28px;
+  animation: spinTaiji 2s linear infinite;
+  margin-bottom: 8px;
+}
+@keyframes spinTaiji {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+

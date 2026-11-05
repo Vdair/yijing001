@@ -227,6 +227,44 @@
       return this.saveSingleGua(guaId, rec);
     },
 
+    // 5. 边读边思 · 师承评估保存与同步落盘
+    saveInlineAssessment(guaId, qIndex, question, tag, userAnswer, teacherAssessment, meta = {}) {
+      const rec = this.getGuaRecord(guaId, meta);
+      if (!rec.inline_assessments) rec.inline_assessments = {};
+      rec.inline_assessments[qIndex] = {
+        question: (question || '').trim(),
+        tag: (tag || '边读边思').trim(),
+        user_answer: (userAnswer || '').trim(),
+        teacher_assessment: (teacherAssessment || '').trim(),
+        updated_at: new Date().toLocaleString()
+      };
+
+      // 同步生成一条结构化随堂笔记，确保在笔记维度与修学档案中统一复盘
+      const noteTitle = `💡 边读边思师承评估 · ${tag || '核心要义'}`;
+      const noteContent = `【思考探问】：${question}\n\n【我的作答】：\n${userAnswer}\n\n【玄微先生师承评估】：\n${teacherAssessment}`;
+
+      if (!rec.notes) rec.notes = [];
+      const existingIdx = rec.notes.findIndex(n => n.title === noteTitle);
+      if (existingIdx !== -1) {
+        rec.notes[existingIdx].content = noteContent;
+        rec.notes[existingIdx].timestamp = new Date().toLocaleString();
+      } else {
+        rec.notes.unshift({
+          id: 'note_assess_' + Date.now(),
+          timestamp: new Date().toLocaleString(),
+          title: noteTitle,
+          content: noteContent
+        });
+      }
+
+      return this.saveSingleGua(guaId, rec);
+    },
+
+    getInlineAssessments(guaId) {
+      const rec = this.getGuaRecord(guaId);
+      return (rec && rec.inline_assessments) ? rec.inline_assessments : {};
+    },
+
     // 统计当前卦象的完成度
     getGuaStats(guaId) {
       const rec = this.getGuaRecord(guaId);
@@ -281,8 +319,20 @@
         md += `${rev.ai_analysis.content}\n\n`;
       }
 
-      // 4. 费曼通关
-      md += `## 🏆 四、费曼认知通关骨架\n\n`;
+      // 3.1 边读边思 · 师承评估实录
+      if (rec.inline_assessments && Object.keys(rec.inline_assessments).length > 0) {
+        md += `## 💡 四、边读边思 · 师承点穴实录 (${Object.keys(rec.inline_assessments).length} 题)\n\n`;
+        Object.keys(rec.inline_assessments).forEach(k => {
+          const item = rec.inline_assessments[k];
+          md += `### ${item.tag || '边读边思'} (${item.updated_at || ''})\n\n`;
+          md += `**【思考探问】**：${item.question}\n\n`;
+          md += `**【学员作答】**：\n${item.user_answer || '（未填写）'}\n\n`;
+          md += `**【玄微先生师承评估】**：\n${item.teacher_assessment || '（待评估）'}\n\n`;
+        });
+      }
+
+      // 5. 费曼通关
+      md += `## 🏆 五、费曼认知通关骨架\n\n`;
       const fey = rec.feynman || {};
       const fw = fey.framework || {};
       md += `- **1. 卦象时势核心判据**：${fw.core_trend || '（待输入）'}\n`;

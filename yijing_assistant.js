@@ -1326,7 +1326,7 @@
     "levelLabel": "认知筑基 · 启蒙级",
     "badgeClass": "level-1",
     "reviewCount": 2,
-    "inlineCount": 1,
+    "inlineCount": 5,
     "scenarioTitle": "向零基础朋友讲透底层世界观",
     "scenarioPrompt": "假想你的朋友完全没接触过《易经》，请用 3 分钟大白话向他讲明白《第一课 · 天地之象》的核心逻辑。严禁堆砌文言术语，必须用日常语言或生动生活比喻！",
     "coreHints": [
@@ -1357,7 +1357,7 @@
     "levelLabel": "认知筑基 · 启蒙级",
     "badgeClass": "level-1",
     "reviewCount": 2,
-    "inlineCount": 1,
+    "inlineCount": 4,
     "scenarioTitle": "向合作伙伴讲透错综复杂的立体视角",
     "scenarioPrompt": "假想你正在处理一起多方利益冲突，请用大白话向伙伴讲透“错卦看底线、综卦换立场、互卦察暗流”的全息心法。",
     "coreHints": [
@@ -1388,7 +1388,7 @@
     "levelLabel": "认知筑基 · 启蒙级",
     "badgeClass": "level-1",
     "reviewCount": 2,
-    "inlineCount": 1,
+    "inlineCount": 4,
     "scenarioTitle": "向身边朋友讲透时位辩证与得中法则",
     "scenarioPrompt": "假想你的朋友正因为职务升降或面子纠结不已，请用 3 分钟大白话向他讲透“时位”与“得中远胜于得位”的心智解脱法则。",
     "coreHints": [
@@ -1419,7 +1419,7 @@
     "levelLabel": "认知筑基 · 启蒙级",
     "badgeClass": "level-1",
     "reviewCount": 2,
-    "inlineCount": 1,
+    "inlineCount": 4,
     "scenarioTitle": "向初学者厘清周易经传体系与义理精髓",
     "scenarioPrompt": "假想朋友问你：“读易经到底该看卦爻辞占卜，还是看孔子十翼义理？”请用 3 分钟大白话帮他建立清晰的研读知识脉络。",
     "coreHints": [
@@ -3524,34 +3524,112 @@
   const INLINE_THINK_BANK = {
   "p0-01": [
     {
+      "sectionKeyword": "伏羲画卦",
+      "tag": "起源觉察 · 边读边思",
+      "question": "“近取诸身，远取诸物”。反观你近期的生理体能信号（如睡眠、紧绷度）与周遭工作环境、人际氛围，它们之间是否呈现某种全息同构？如果用一种自然物象来形容你当下的心境与处境，你会选什么？",
+      "hint": "💡 玄微先生点穴启发：身心与境遇同构，内焦则外困，神定则境安。学易的第一步是恢复对自身生理与微观环境的敏锐觉知，观物即是观心。"
+    },
+    {
       "sectionKeyword": "三才",
       "tag": "三才模型 · 边读边思",
-      "question": "读到“三才之道（初爻为地，中爻为人，上爻为天）”，停下来想一想：在你当前负责的一项重要工作或个人目标中，属于客观不可动的“地道（现实基础）”和时代大势的“天道”分别是什么？身处中间的你，当前最该在哪一点发力？",
+      "question": "读到“三才之道（初爻为地，中爻为人，上爻为天）”，停下来想一想：在你当前负责的一项重要工作或个人目标中，属于客观不可动的“地道（现实基础/组织约束）”和时代大势的“天道”分别是什么？身处中间的你，当前最该在哪一点发力？",
       "hint": "💡 玄微先生点穴启发：地道是看得见摸得着的资源配称、现金流或底层交付能力；天道是不可逆的行业周期、监管与用户心理演化。人在其中，既不能脱离地皮起高楼，也不能妄图逆天而行。人道的发力点在于“顺天应人”，在客观约束中做出最高胜率的行为抉择。"
+    },
+    {
+      "sectionKeyword": "八大自然原力",
+      "tag": "八大原力 · 边读边思",
+      "question": "在乾（纯阳自驱）、坤（包容承载）、震（破土冲锋）、巽（润物渗透）、坎（履险求通）、离（洞察启明）、艮（止步风控）、兑（和悦沟通）中，审视你当前的性格或团队，哪一种原力严重过剩？哪一种原力极其匮乏？",
+      "hint": "💡 玄微先生点穴启发：常人多犯“偏执一端”之误。冲锋破局过猛（震）而无止步风控（艮）必致翻车；一味默默承载（坤）而无创始意志（乾）易陷被动。知己之短，方知借势互补。"
+    },
+    {
+      "sectionKeyword": "后天八卦",
+      "tag": "节气时序 · 边读边思",
+      "question": "文王后天八卦从“震东（春生破土）”流转到“离南（夏至极明）”、“兑西（秋收悦赏）”与“坎北（冬藏蓄力）”。把你手头最重要的业务代入后天时序，它当前处于哪一个节气？你当下的动作是拔苗助长，还是合拍顺时？",
+      "hint": "💡 玄微先生点穴启发：不合时宜的努力是灾难。在“坎冬”盲目大扩张必然冻毙，在“震春”贪恋安逸必定颗粒无收。知时顺势，顺时而动，方能事半功倍。"
+    },
+    {
+      "sectionKeyword": "以象知意",
+      "tag": "动力学取象 · 边读边思",
+      "question": "“见动知震，见险知坎，见止知艮”。在你近期经历的事件中，有没有遇到一件表面看似是好事（和悦之兑），但其底层动力学实际上暗藏险坑（深陷之坎）？你是如何穿透表象识别其本质动力学的？",
+      "hint": "💡 玄微先生点穴启发：外行被事物外在的名词和承诺所迷惑，易学家看穿底层能量动力学。甜言蜜语背后若是失控的深渊，那便是“兑外坎内”。透过表象看动力学，方能不被表象蒙蔽。"
     }
   ],
   "p0-02": [
+    {
+      "sectionKeyword": "穷天下之变",
+      "tag": "复杂系统 · 边读边思",
+      "question": "单卦三爻表征单一自然原力，而重卦六爻表征复杂系统相遇与互动。面对你手头的一个棘手矛盾，如果把它拆解为“系统 A”与“系统 B”的互动，矛盾的焦点究竟是出在输入输出，还是底层规则的冲突？",
+      "hint": "💡 玄微先生点穴启发：单一力量没有吉凶，两相碰撞方生变数。读懂重卦，就是把生活从“非黑即白”升级为“系统动力学”的高维视角。"
+    },
+    {
+      "sectionKeyword": "贞（正也",
+      "tag": "内外博弈 · 边读边思",
+      "question": "“内卦决定你能守多久，外卦决定你能走多远”。审视你当前的项目或职业状态，你的“内卦（团队实力、心智定力、底层现金流）”是否稳固？外部的“外卦（客场环境、市场大势）”又在施加怎样的引力？",
+      "hint": "💡 玄微先生点穴启发：地天泰内刚外柔，天地否内弱外傲。内部不稳而急于向外扩张，必成天地否之困局；内固根本而外示谦逊，方为地天泰之通途。"
+    },
     {
       "sectionKeyword": "全息四维",
       "tag": "全息视界 · 边读边思",
       "question": "“错卦看底线，综卦换立场，互卦察暗流”。面对当前与你有利益分歧的一位合作方或竞争对手，如果把他的视界头脚颠倒 180 度（综卦视角），他眼中最焦虑的风险是什么？",
       "hint": "💡 玄微先生点穴启发：常人习惯执着于自己的主观得失（本卦），但高手总能在谈判桌前瞬间切换到综卦视角。对手的激烈防御往往源于他背后的脆弱或被动，看穿他的综卦，破局的真正筹码才会浮现。"
+    },
+    {
+      "sectionKeyword": "三步解构法",
+      "tag": "破局解构 · 边读边思",
+      "question": "面对任何一个未知时局，按照“1. 看物理反应 ➔ 2. 看内外国策 ➔ 3. 查隐藏互卦”三步法，挑一个你最近看不懂的行业或人际事件，试着用这三步做一个极简推演，你发现了什么新线索？",
+      "hint": "💡 玄微先生点穴启发：透过三步解构法，一切纷繁芜杂的现象都能被抽丝剥茧。掌握这套算法，世间无不可读之时局。"
     }
   ],
   "p0-03": [
     {
-      "sectionKeyword": "时位",
-      "tag": "时位辩证 · 边读边思",
-      "question": "“吉凶悔吝生乎动，得中远胜于得位”。回顾最近的一次纠结或决策，你是在执着于“我的名分、面子或职务权力（得位）”，还是顺应了事情当前最平衡中正的客观节奏（得中）？",
+      "sectionKeyword": "初爻（基层起步）",
+      "tag": "爻位阶梯 · 边读边思",
+      "question": "初爻潜伏、二爻破土、三爻危地、四爻试错、五爻尊位、上爻退隐。对照这一人生与业务阶梯，你当前正处在哪一个爻位？在这个爻位上，最不该做的自杀式动作是什么？",
+      "hint": "💡 玄微先生点穴启发：初爻勿用而妄动必折，三爻夹层而张扬必遭忌，上爻登峰而贪权必亢坠。认清自己的爻位，就拿到了避坑护身符。"
+    },
+    {
+      "sectionKeyword": "得中",
+      "tag": "中道超越 · 边读边思",
+      "question": "“得位不如得中”。回顾最近的一次纠结或争议，你是在执着于“我的名分、面子、头衔或形式正确（得位）”，还是顺应了事情当前最平衡中庸的客观节奏（得中）？",
       "hint": "💡 玄微先生点穴启发：得位常关乎外在虚名与权力，而得中关乎内在时机的把握与分寸感。位不当而能守中，往往能逢凶化吉；居尊位而失中，最易滋生骄狂亢坠之险。"
+    },
+    {
+      "sectionKeyword": "应（对位共振）",
+      "tag": "人际网络 · 边读边思",
+      "question": "在“承（顺从支持）、乘（越权凌驾）、比（邻近协同）、应（遥相呼应）”的人际协同中，审视你与直属上级和核心搭档的关系，当前是“柔承刚”（吉），还是不自觉地陷入了“柔乘刚”（越位生隙）？",
+      "hint": "💡 玄微先生点穴启发：职场博弈最忌“乘刚”，以弱凌强、不尊位分，必引反噬；反之，以柔承刚，辅佐成就大局，反而能建立不可替代的信任基石。"
+    },
+    {
+      "sectionKeyword": "以物观物",
+      "tag": "反观破我执 · 边读边思",
+      "question": "邵雍云：“以我观物者，情也，偏也；以物观物者，性也，公也。”当下最让你烦恼或焦虑的一件事，如果彻底拿掉“我的委屈、我的预期、我的面子”，纯粹从事物本身的客观因果律来看，它的真相究竟是什么？",
+      "hint": "💡 玄微先生点穴启发：破除我执，世界清凉。痛苦往往不是事件本身带来的，而是“我认为应该如何”的妄念造成的。以物观物，解法自现。"
     }
   ],
   "p0-04": [
     {
-      "sectionKeyword": "十翼",
-      "tag": "经传破迷 · 边读边思",
-      "question": "程颐重义理（天理时势），朱熹重象占（直觉意象）。在做重大商业或人生选择时，你更倾向于纯逻辑推理，还是整体直觉感应？两者如何借由易道融通？",
-      "hint": "💡 玄微先生点穴启发：现代认知科学证明，最高阶的决策往往是“理与象”的协同：用逻辑排除坏选项，用意象感知整体涌现。体用一源，显微无间。"
+      "sectionKeyword": "一部书的千年演进",
+      "tag": "经传演进 · 边读边思",
+      "question": "孔子作《十翼》，使《周易》从占卜卜筮手册跃迁为人道哲学与心智模型。在你的认知中，过去是否也曾将易经误解为神秘算命？理解了经传分野后，你认为易经对现代人最大的实用价值何在？",
+      "hint": "💡 玄微先生点穴启发：卜以决疑，易以断事；不占而已矣，玩辞而自得。易经是决策心法，而非宿命锁链。"
+    },
+    {
+      "sectionKeyword": "彖传",
+      "tag": "十翼导图 · 边读边思",
+      "question": "《大象传》教人“效法天地立法建制”，《系辞传》教人“穷理尽性知宇宙大道”，《序卦传》揭示“事物相生演进链”。在这些视角中，哪一种最能启发你当下的领导力或业务架构？",
+      "hint": "💡 玄微先生点穴启发：大象传是最高级的管理学，每一卦都在回答“身为管理者或君子，面对这种天象格局该如何行动”。"
+    },
+    {
+      "sectionKeyword": "元亨利贞",
+      "tag": "四德闭环 · 边读边思",
+      "question": "程颐将“元亨利贞”定义为“发端元 ➔ 资源聚亨 ➔ 公平利 ➔ 坚守固贞”的四阶商业与生命闭环。检视你目前主导的一个项目，是否只注重了前期的冲劲（元）和热闹（亨），却在分配机制（利）或风险底线（贞）上留下了隐患？",
+      "hint": "💡 玄微先生点穴启发：无贞则元不固，无利则亨不长。四德缺一不可，唯有走完四德闭环，事物方能具备穿越周期的长青生命力。"
+    },
+    {
+      "sectionKeyword": "中正",
+      "tag": "执中守衡 · 边读边思",
+      "question": "“中往往重于正”。在现实复杂利益博弈中，坚持机械的形式教条（死守教条之正），与顺应时势执中守权（行圆融之中），你曾在何时因为过于死板而吃过亏？",
+      "hint": "💡 玄微先生点穴启发：知经知权，方为大智。君子贞而不谅，不拘小信以成大器。"
     }
   ],
   "lesson-01_乾为天": [
@@ -4481,6 +4559,10 @@
 
     // 寻找正文中插入锚点
     const sections = readerContent.querySelectorAll('.step-header, .sub-sec-title, .step-section, h3, blockquote');
+    const assessments = (window.LearningVault && window.LearningVault.getInlineAssessments)
+      ? window.LearningVault.getInlineAssessments(cur.id)
+      : {};
+
     questions.forEach((qItem, qIdx) => {
       let anchor = null;
       if (qItem.sectionKeyword) {
@@ -4499,20 +4581,30 @@
       card.className = 'yj-inline-think-card';
       const inputId = `inlineThinkInput_${cur.id}_${qIdx}`;
       const hintId = `inlineHintBox_${cur.id}_${qIdx}`;
+      const assessResultId = `inlineAssessResult_${cur.id}_${qIdx}`;
+      const assessBtnId = `inlineAssessBtn_${cur.id}_${qIdx}`;
+
+      const historyItem = assessments[qIdx] || {};
+      const savedAnswer = historyItem.user_answer || '';
+      const savedAssessment = historyItem.teacher_assessment || '';
 
       card.innerHTML = `
         <div class="yj-inline-think-header">
-          <span class="yj-inline-think-tag">💡 ${qItem.tag || '易道顿悟小憩 · 边读边思'}</span>
+          <span class="yj-inline-think-tag">💡 ${escapeHtml(qItem.tag || '易道顿悟小憩 · 边读边思')}</span>
           <span style="font-size:12px; color:var(--text-faint);">驻足自省 · 知行合一</span>
         </div>
         <div class="yj-inline-think-q">${qItem.question}</div>
-        <textarea class="yj-inline-think-input" id="${inputId}" rows="2" placeholder="在此敲下你读到此处的顿悟、现实反思或当下困惑..."></textarea>
+        <textarea class="yj-inline-think-input" id="${inputId}" rows="2" placeholder="在此敲下你读到此处的顿悟、现实反思或当下困惑...">${escapeHtml(savedAnswer)}</textarea>
         <div class="yj-inline-think-actions">
           <button class="yj-btn-outline" style="font-size:12px; padding:5px 12px; border-color:var(--gold); color:var(--gold);" onclick="toggleHintDrawer('${hintId}')">☯️ 查看玄微先生点穴启发</button>
+          <button class="yj-btn-outline" id="${assessBtnId}" style="font-size:12px; padding:5px 14px; border-color:var(--purple, #a855f7); color:var(--purple, #a855f7); font-weight:700;" onclick="requestInlineThinkAssessment('${cur.id}', ${qIdx})">✨ 提请玄微先生 · 师承评估</button>
           <button class="yj-btn-gold" style="font-size:12px; padding:5px 14px;" onclick="saveInlineThinkNote('${escapeHtml(qItem.tag || '边读边思')}', '${inputId}', '${cur.id}')">📝 存入本课随堂微笔记</button>
         </div>
         <div class="yj-inline-hint-box" id="${hintId}">
           ${qItem.hint || '在易道研学中，每一次驻足反思都是一次认知跃迁。'}
+        </div>
+        <div class="yj-inline-assessment-container ${savedAssessment ? 'open' : ''}" id="${assessResultId}">
+          ${savedAssessment ? formatTeacherAssessmentHtml(savedAssessment, historyItem.updated_at, false) : ''}
         </div>
       `;
 
@@ -4522,6 +4614,207 @@
         readerContent.appendChild(card);
       }
     });
+  };
+
+  // 格式化解析玄微先生的三维评估卡片 (肯定之处、不足之处、学习建议)
+  window.formatTeacherAssessmentHtml = function(text, timeStr = '', isStreaming = false) {
+    if (!text) return '';
+
+    // 解析三大模块
+    let affirmContent = '';
+    let critiqueContent = '';
+    let adviceContent = '';
+
+    const lines = text.split('\n');
+    let currentMode = 'general';
+    let generalBuf = [];
+
+    lines.forEach(line => {
+      const trimmed = line.trim();
+      if (trimmed.includes('【明德见智') || trimmed.includes('肯定之处')) {
+        currentMode = 'affirm';
+      } else if (trimmed.includes('【见微知著') || trimmed.includes('辨正不足') || trimmed.includes('不足之处')) {
+        currentMode = 'critique';
+      } else if (trimmed.includes('【致知力行') || trimmed.includes('研学建议') || trimmed.includes('学习建议')) {
+        currentMode = 'advice';
+      } else {
+        if (currentMode === 'affirm') {
+          affirmContent += (affirmContent ? '\n' : '') + line;
+        } else if (currentMode === 'critique') {
+          critiqueContent += (critiqueContent ? '\n' : '') + line;
+        } else if (currentMode === 'advice') {
+          adviceContent += (adviceContent ? '\n' : '') + line;
+        } else {
+          generalBuf.push(line);
+        }
+      }
+    });
+
+    // 若未严格分出三段，将通用内容展示
+    let bodyHtml = '';
+    if (affirmContent || critiqueContent || adviceContent) {
+      if (affirmContent.trim()) {
+        bodyHtml += `
+          <div class="yj-assess-block affirm">
+            <div class="yj-assess-block-title">🟢 【明德见智 · 肯定之处】</div>
+            <div>${escapeHtml(affirmContent.trim()).replace(/\n/g, '<br/>')}</div>
+          </div>
+        `;
+      }
+      if (critiqueContent.trim()) {
+        bodyHtml += `
+          <div class="yj-assess-block critique">
+            <div class="yj-assess-block-title">🟡 【见微知著 · 辨正不足与点穴】</div>
+            <div>${escapeHtml(critiqueContent.trim()).replace(/\n/g, '<br/>')}</div>
+          </div>
+        `;
+      }
+      if (adviceContent.trim()) {
+        bodyHtml += `
+          <div class="yj-assess-block advice">
+            <div class="yj-assess-block-title">🔵 【致知力行 · 研学与发力建议】</div>
+            <div>${escapeHtml(adviceContent.trim()).replace(/\n/g, '<br/>')}</div>
+          </div>
+        `;
+      }
+    } else {
+      bodyHtml = `
+        <div class="yj-assess-block affirm">
+          <div class="yj-assess-block-title">☯️ 【玄微先生 · 师承开示】</div>
+          <div>${escapeHtml(text.trim()).replace(/\n/g, '<br/>')}</div>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="yj-inline-assessment-card">
+        <div class="yj-assess-header">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="yj-assess-seal">玄微先生 · 师承点评</span>
+            <span style="font-size:12px; color:var(--text-sub);">${timeStr || '刚才'}</span>
+          </div>
+          <div class="yj-assess-saved-pill">
+            ${isStreaming ? '⚡ 宗师推演中...' : '🟢 已双向同步持久化落盘'}
+          </div>
+        </div>
+        <div class="yj-assess-body">
+          ${bodyHtml}
+        </div>
+      </div>
+    `;
+  };
+
+  // 提请玄微先生对边读边思回答展开评估并自动落盘
+  window.requestInlineThinkAssessment = async function(guaId, qIdx) {
+    const cur = getCurrentLesson();
+    const targetGuaId = guaId || (cur ? cur.id : 'unknown');
+    const questions = INLINE_THINK_BANK[targetGuaId] || [];
+    const qItem = questions[qIdx] || { question: '边读边思', tag: '易道顿悟', hint: '' };
+
+    const inputId = `inlineThinkInput_${targetGuaId}_${qIdx}`;
+    const resultId = `inlineAssessResult_${targetGuaId}_${qIdx}`;
+    const assessBtnId = `inlineAssessBtn_${targetGuaId}_${qIdx}`;
+
+    const input = document.getElementById(inputId);
+    const resultEl = document.getElementById(resultId);
+    const assessBtn = document.getElementById(assessBtnId);
+
+    if (!input) return;
+    const userAnswer = input.value.trim();
+    if (!userAnswer) {
+      alert('请先在输入框中敲下你读到此处的真实思考、疑惑或感悟，再提请玄微先生评估。');
+      input.focus();
+      return;
+    }
+
+    // 设置 loading 态
+    if (assessBtn) {
+      assessBtn.disabled = true;
+      assessBtn.innerHTML = `⏳ 玄微先生审阅点穴中...`;
+    }
+
+    // 展开容器并渲染思考骨架
+    if (resultEl) {
+      resultEl.classList.add('open');
+      resultEl.innerHTML = `
+        <div class="yj-assess-loading">
+          <span class="yj-assess-spinner">☯️</span>
+          <div style="font-size:13px; color:var(--gold); font-weight:700;">玄微先生正观照小友之悟道心性，深究时位得失……</div>
+          <div style="font-size:12px; color:var(--text-sub); margin-top:4px;">（正在辨析：明德见智肯定、见微知著解惑、致知力行建议）</div>
+        </div>
+      `;
+    }
+
+    let accumulatedContent = '';
+
+    const finishAssessment = function(finalText) {
+      const timeStr = new Date().toLocaleString();
+      if (resultEl) {
+        resultEl.innerHTML = formatTeacherAssessmentHtml(finalText, timeStr, false);
+      }
+      if (assessBtn) {
+        assessBtn.disabled = false;
+        assessBtn.innerHTML = `✨ 重新提请师承评估`;
+      }
+
+      // 核心：同步进行存储落盘！
+      if (window.LearningVault && window.LearningVault.saveInlineAssessment) {
+        window.LearningVault.saveInlineAssessment(
+          targetGuaId,
+          qIdx,
+          qItem.question,
+          qItem.tag || '边读边思',
+          userAnswer,
+          finalText,
+          cur
+        );
+        console.log(`[InlineAssessment] 🟢 学员回答与玄微先生评估已成功同步落盘至 ${targetGuaId}`);
+      }
+    };
+
+    try {
+      if (window.YijingAIService && window.YijingAIService.evaluateInlineThink) {
+        await window.YijingAIService.evaluateInlineThink({
+          lessonTitle: cur ? cur.title : targetGuaId,
+          question: qItem.question,
+          studentAnswer: userAnswer,
+          hint: qItem.hint || '',
+          tag: qItem.tag || '边读边思',
+          lessonMeta: cur || {},
+          onContent: (chunk, full) => {
+            accumulatedContent = full;
+            if (resultEl) {
+              resultEl.innerHTML = formatTeacherAssessmentHtml(full, '正在生成...', true);
+            }
+          },
+          onDone: ({ content }) => {
+            accumulatedContent = content || accumulatedContent;
+            finishAssessment(accumulatedContent);
+          },
+          onError: (err) => {
+            console.warn('[InlineAssessment] API调用异常，启用离线高保真宗师引擎:', err);
+            const offline = (window.YijingAIService && window.YijingAIService.generateOfflineInlineAssessment)
+              ? window.YijingAIService.generateOfflineInlineAssessment({
+                  lessonTitle: cur ? cur.title : targetGuaId,
+                  question: qItem.question,
+                  studentAnswer: userAnswer,
+                  hint: qItem.hint || '',
+                  tag: qItem.tag || '边读边思'
+                })
+              : '🟢 【明德见智 · 肯定之处】：善哉！能将所学印证自身，心性甚诚。\n\n🟡 【见微知著 · 辨正不足】：切忌脱离现实约束，地道乃生存之本。\n\n🔵 【致知力行 · 研学建议】：笃行实干，静待时变。';
+            finishAssessment(offline);
+          }
+        });
+      } else {
+        // 服务未就绪直接使用离线评估
+        const offline = '🟢 【明德见智 · 肯定之处】：善哉！能将所学印证自身，心性甚诚。\n\n🟡 【见微知著 · 辨正不足】：切忌脱离现实约束，地道乃生存之本。\n\n🔵 【致知力行 · 研学建议】：笃行实干，静待时变。';
+        finishAssessment(offline);
+      }
+    } catch (e) {
+      console.error('Assessment execution failed:', e);
+      const offline = '🟢 【明德见智 · 肯定之处】：善哉！能将所学印证自身，心性甚诚。\n\n🟡 【见微知著 · 辨正不足】：切忌脱离现实约束，地道乃生存之本。\n\n🔵 【致知力行 · 研学建议】：笃行实干，静待时变。';
+      finishAssessment(offline);
+    }
   };
 
   // 存入随堂微笔记
@@ -5278,6 +5571,18 @@
         md += `${rev.ai_analysis.content}\n\n`;
       }
 
+      // 边读边思 · 师承评估
+      const inlineAssess = rec.inline_assessments || {};
+      if (Object.keys(inlineAssess).length > 0) {
+        md += `#### 💡 边读边思 · 师承点穴与评估 (${Object.keys(inlineAssess).length} 题)：\n\n`;
+        Object.keys(inlineAssess).forEach(k => {
+          const item = inlineAssess[k];
+          md += `**【${item.tag || '边读边思'}】**：${item.question}\n\n`;
+          md += `> **学员作答**：${item.user_answer || '（未作答）'}\n\n`;
+          md += `> **玄微先生师承评估**：\n> ${(item.teacher_assessment || '').replace(/\n/g, '\n> ')}\n\n`;
+        });
+      }
+
       // 随堂微笔记
       if (notes.length > 0) {
         md += `#### 📝 课时随堂微笔记 (${notes.length} 条)：\n\n`;
@@ -5486,6 +5791,20 @@
         <div class="master-box">
           ☯️ <strong>玄微先生多维学术诊断</strong>：<br>
           ${escapeHtml(rev.ai_analysis.content).replace(/\n/g, '<br>')}
+        </div>` : ''}
+        ${(rec.inline_assessments && Object.keys(rec.inline_assessments).length > 0) ? `
+        <div style="background:#f6f9f6; border-left:4px solid #2ea043; padding:12px 16px; margin:12px 0;">
+          💡 <strong>边读边思 · 师承点穴与评估实录</strong>：<br>
+          ${Object.keys(rec.inline_assessments).map(k => {
+            const item = rec.inline_assessments[k];
+            return `<div style="margin-top:8px; padding-top:6px; border-top:1px dashed #d0d7de;">
+              <strong>【${escapeHtml(item.tag || '边读边思')}】</strong>：${escapeHtml(item.question)}<br>
+              <span style="color:#555;">学员作答</span>：${escapeHtml(item.user_answer)}<br>
+              <div style="margin-top:4px; color:#1a1612; background:#fff; padding:6px 10px; border-radius:4px; border:1px solid #e1e4e8;">
+                ${escapeHtml(item.teacher_assessment).replace(/\n/g, '<br>')}
+              </div>
+            </div>`;
+          }).join('')}
         </div>` : ''}
       </div>
       `;

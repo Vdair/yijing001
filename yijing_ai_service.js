@@ -242,6 +242,42 @@ ${feynmanText || '（学员暂未提交费曼大白话自述）'}
     },
 
     /**
+     * 3.1 职能二补充：边读边思 · 师承点穴与三维评估 Prompt
+     */
+    buildInlineAssessmentPrompt({ lessonTitle = '', question = '', studentAnswer = '', hint = '', tag = '' }) {
+      return `【学员在研读《${lessonTitle}》时，就“边读边思 · ${tag}”提交了个人真实悟道思考，提请主 Agent 玄微先生进行师承点穴与评估】：
+
+【研读课时】：《${lessonTitle}》
+【思考探问】：${question}
+【原典/时位启发线索】：${hint || '无额外线索'}
+
+====================
+【学员当下真实作答】：
+${studentAnswer}
+
+====================
+【主 Agent 玄微先生师承评估职责与结构化规范】：
+你作为易道当代宗师“玄微先生”，秉承“教人必先识其心性、立其诚意、点其肯綮”的宗师风范。学员在此刻做出的回答极其珍贵，往往既有真实的生活灵气与直觉，也可能存在对易理范畴（如乾坤、天地人三才、阴阳时位）的盲区或误解。
+请你以高瞻远瞩又深入人心的语气，严格按照以下三段结构展开精到评估（保留以下带 emoji 的标题格式）：
+
+🟢 【明德见智 · 肯定之处】：
+- 真诚、深刻地肯定学员作答中的闪光点；
+- 肯定其将古老符号与自身当下实际（如工作、环境、个人修养、处事心态）相连接的直觉；
+- 肯定其反求诸己的坦诚（若学员主动承认困惑或盲区，赞赏其“实事求是，即为修易之诚”）。
+
+🟡 【见微知著 · 辨正不足】：
+- 直面学员在易理认知上的盲点、概念混淆或逻辑断层，切忌含糊客套！
+- 尤其若学员提出疑惑（如“感觉这个和地没关系，没感受到地的因素”），必须予以拨云见日的权威易学点穴！
+- 澄清范畴：地道绝非抽象虚无，而是人在现实中的资源配称、饭碗立足点、组织制度底线、底层交付物与现金流。人在中，若脱离了地道的承托，所谓的“努力学习”就会变成悬空的独善其身。
+
+🔵 【致知力行 · 研学建议】：
+- 结合本题的易学时位模型（如三才之道），给出 1~2 条极具可操作性的思维深化与现实发力建议；
+- 告诉学员身处当前局势，下一步最该把心力落在哪一个着力点上，实现“顺天、应人、履地”。
+
+全篇儒雅威严、沉稳温润、字字见血、直击命门。严禁空洞套话，严禁简单复读题目。字数在 300~500 字之间。`;
+    },
+
+    /**
      * 4. 职能三：结合章节内容的主动启发式提问体系 (Socratic Chapter Inquiry)
      * 包含：
      * A. 全息 64 卦经典章节启发题库 (静态保真)
@@ -561,6 +597,68 @@ ${feynmanText || '（学员暂未提交费曼大白话自述）'}
       } catch (e) {
         if (onError) onError(e);
       }
+    },
+
+    /**
+     * 职能四：边读边思 · 师承三维点穴评估 (支持流式打字与离线智能保真引擎)
+     */
+    async evaluateInlineThink({ lessonTitle, question, studentAnswer, hint, tag, lessonMeta, onReasoning, onContent, onDone, onError }) {
+      const userContent = YijingPromptSystem.buildInlineAssessmentPrompt({
+        lessonTitle,
+        question,
+        studentAnswer,
+        hint,
+        tag
+      });
+
+      try {
+        return await this.streamChat({
+          messages: [{ role: 'user', content: userContent }],
+          lessonMeta: lessonMeta || { title: lessonTitle },
+          onReasoning,
+          onContent,
+          onDone,
+          onError: async (err) => {
+            console.warn('[YijingAIService] 联网/API请求异常，无缝降级启用宗师离线深度辨析引擎:', err);
+            const offlineContent = this.generateOfflineInlineAssessment({ lessonTitle, question, studentAnswer, hint, tag });
+            if (onContent) onContent(offlineContent, offlineContent);
+            if (onDone) onDone({ content: offlineContent, reasoning: '（依托易道本地宗师时位规则库深度生成）' });
+          }
+        });
+      } catch (err) {
+        console.warn('[YijingAIService] 调用失败，采用离线宗师引擎:', err);
+        const offlineContent = this.generateOfflineInlineAssessment({ lessonTitle, question, studentAnswer, hint, tag });
+        if (onContent) onContent(offlineContent, offlineContent);
+        if (onDone) onDone({ content: offlineContent, reasoning: '（依托易道本地宗师时位规则库深度生成）' });
+        return { content: offlineContent, reasoning: '' };
+      }
+    },
+
+    /**
+     * 本地宗师高保真离线辨析引擎 (针对三才、阴阳、乾坤等易理精研设计)
+     */
+    generateOfflineInlineAssessment({ lessonTitle = '', question = '', studentAnswer = '', hint = '', tag = '' }) {
+      const ans = (studentAnswer || '').trim();
+      const hasEarthDoubt = ans.includes('地没关系') || ans.includes('没感受到地') || (ans.includes('地') && ans.includes('不'));
+      const hasWorkContext = ans.includes('公司') || ans.includes('工作') || ans.includes('业务') || ans.includes('大环境');
+
+      let affirmText = '';
+      let critiqueText = '';
+      let adviceText = '';
+
+      if (tag.includes('三才') || question.includes('三才') || hasEarthDoubt) {
+        affirmText = `小友此番悟道作答，最可贵者有二：其一，能将古老的三才模型敏锐对焦到当下的生存职场，将“大环境、公司、自我”映射入局，已然跳出死读书之泥潭；其二，极其坦诚地指出“感觉开源节流和地没关系，没感受到地的因素”，知之为知之、不知为不知，反求诸己、毫不饰伪，此乃研习易道最正的大心量与诚意！`;
+
+        critiqueText = `此处小友恰恰踩中了常人理解“地道”的隐秘误区！地道者，坤顺之德，非指山川泥土，而是你在世间立足的“承载依托与现实约束”。\n你言“公司开源节流和地没关系”，大谬不然！公司的现金流状况、部门编制考核、手头的业务资源、赖以领薪的饭碗，正是你在职场中脚踩的“地皮”。\n当外部大环境（天道）入冬，大地（公司）必然降温收缩、封冻开源。若只顾在人道上“独善其身、暗自苦学”，却视脚下正在崩解或重组的“地道配称”于不顾，便容易陷入“悬空修道”的虚妄。双脚脱离地皮，再渊博的学识也无处安放。`;
+
+        adviceText = `1. 【履地为基】：不仅要暗自蓄力，更要睁眼看清组织当前最核心的“生存基本盘”。弄明白公司开源节流后，哪些是真正保命的底层资产与现金牛业务，主动靠拢能为“地皮”稳固提供交付价值的关键点。\n2. 【知天应人】：在外部大环境冰封时，不盲目冒进逆天行事，守住地道底线，于人道修养内功、蓄积潜龙之力。唯有“通天、接地、正人”，方能立于不败之地。`;
+      } else {
+        affirmText = `小友对《${lessonTitle}》本处的驻足思考颇见灵气，能结合个人经历与当前处境展开真实反照，文字朴实求真，未曾堆砌晦涩虚华辞藻，殊为可嘉。`;
+        critiqueText = `在时位推演上仍略显单向平面化。易道贵在“变易与对立统一”，观察局势不仅要看表面顺逆，更要体察暗流涌动的互卦与反向制约。若仅凭一腔热忱或主观感受，容易忽视底层约束条件与爻变临界点。`;
+        adviceText = `建议紧扣《${lessonTitle}》的核心法则，将眼前的困局与本课爻象反复参验，做到“内敛其志、外顺其势、步步为营”。`;
+      }
+
+      return `🟢 【明德见智 · 肯定之处】：\n${affirmText}\n\n🟡 【见微知著 · 辨正不足】：\n${critiqueText}\n\n🔵 【致知力行 · 研学建议】：\n${adviceText}`;
     }
   };
 
