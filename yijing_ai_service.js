@@ -413,14 +413,14 @@ ${studentAnswer}
   // 三、易道 AI 服务引擎客户端 (YijingAIService)
   // ==========================================================================
   const DEFAULT_CONFIG = {
-    apiUrl: 'https://chatgpt.58corp.com/api/v3/chat/completions',
-    apiKey: '9974be9c04c8457ca18db178c2042464',
-    model: 'deepseek-v4-pro',
-    temperature: 0.6,
-    max_tokens: 2200
+    apiUrl: 'https://api.moonshot.cn/v1/chat/completions',
+    apiKey: 'sk-WVlLfffPTdVw55NqUX8hKerIn7juqsk6oaE8f9jyVoDAQR2U',
+    model: 'kimi-k3',
+    reasoning_effort: 'low', // 场景不需要强思考，设置为 low 极速响应并大幅节约推理 token
+    max_tokens: 4096
   };
 
-  const STORAGE_KEY_CONFIG = 'yijing_ai_config_v1';
+  const STORAGE_KEY_CONFIG = 'yijing_ai_config_v2';
 
   const YijingAIService = {
     getConfig() {
@@ -468,19 +468,30 @@ ${studentAnswer}
       ];
 
       try {
+        const reqBody = {
+          model: config.model,
+          messages: fullMessages,
+          stream: true
+        };
+
+        // 针对 kimi-k3 思考模型进行精准适配：
+        // 1. 设置推理强度 reasoning_effort: "low"，免去冗长思维链，轻量推理即出回答
+        // 2. 避免传非 1 的 temperature（Kimi 思考模型限制仅允许 temperature=1，不传则使用默认值）
+        if (config.model && (config.model.includes('kimi') || config.model.includes('moonshot'))) {
+          reqBody.reasoning_effort = config.reasoning_effort || 'low';
+          reqBody.max_tokens = config.max_tokens || 4096;
+        } else {
+          if (config.temperature !== undefined) reqBody.temperature = config.temperature;
+          if (config.max_tokens !== undefined) reqBody.max_tokens = config.max_tokens;
+        }
+
         const response = await fetch(config.apiUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${config.apiKey}`
           },
-          body: JSON.stringify({
-            model: config.model,
-            messages: fullMessages,
-            temperature: config.temperature,
-            max_tokens: config.max_tokens,
-            stream: true
-          })
+          body: JSON.stringify(reqBody)
         });
 
         if (!response.ok) {
