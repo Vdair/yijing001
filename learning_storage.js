@@ -421,7 +421,7 @@
     },
 
     /**
-     * 初始化时自动从项目 data/learning_vault 拉取已有档案融合
+     * 初始化时自动从项目 data/learning_vault 拉取已有档案深度融合
      */
     async pullFromProjectVault() {
       const endpoints = ['/api/vault/list', 'http://127.0.0.1:8090/api/vault/list', 'http://localhost:8090/api/vault/list', 'http://127.0.0.1:8089/api/vault/list'];
@@ -434,20 +434,64 @@
               const localAll = this.getAllRecords();
               let mergedCount = 0;
               for (let gid in remoteRecords) {
-                if (!localAll[gid] || (remoteRecords[gid].updated_at && remoteRecords[gid].updated_at > (localAll[gid].updated_at || ''))) {
-                  localAll[gid] = remoteRecords[gid];
+                const rem = remoteRecords[gid];
+                const loc = localAll[gid];
+                if (!loc) {
+                  localAll[gid] = rem;
                   mergedCount++;
+                } else {
+                  // 智能字段级深度融合：无论时间戳如何，只要云端有作答、点评或全课诊断，无条件合入本地！
+                  let needSave = false;
+
+                  // 1. 融合 5 道边读边思作答与师承评估
+                  const remAssess = rem.inline_assessments || {};
+                  loc.inline_assessments = loc.inline_assessments || {};
+                  for (let qk in remAssess) {
+                    const rItem = remAssess[qk];
+                    const lItem = loc.inline_assessments[qk];
+                    if (!lItem || !lItem.user_answer || (rItem.user_answer && rItem.user_answer.length >= (lItem.user_answer || '').length)) {
+                      loc.inline_assessments[qk] = rItem;
+                      needSave = true;
+                    }
+                  }
+
+                  // 2. 融合全课学术与认知诊断 (review.ai_analysis)
+                  if (rem.review && rem.review.ai_analysis && rem.review.ai_analysis.content) {
+                    loc.review = loc.review || {};
+                    if (!loc.review.ai_analysis || !loc.review.ai_analysis.content || rem.review.ai_analysis.content.length >= (loc.review.ai_analysis.content || '').length) {
+                      loc.review.ai_analysis = rem.review.ai_analysis;
+                      needSave = true;
+                    }
+                  }
+
+                  // 3. 融合复盘三问与费曼自述
+                  if (rem.feynman && rem.feynman.full_text && (!loc.feynman || !loc.feynman.full_text)) {
+                    loc.feynman = rem.feynman;
+                    needSave = true;
+                  }
+
+                  // 4. 融合笔记
+                  if (rem.notes && rem.notes.length > (loc.notes || []).length) {
+                    loc.notes = rem.notes;
+                    needSave = true;
+                  }
+
+                  if (needSave) {
+                    loc.updated_at = rem.updated_at || loc.updated_at;
+                    mergedCount++;
+                  }
                 }
               }
-              if (mergedCount > 0) {
-                this.saveAllRecords(localAll);
-                console.log(`[LearningVault] 🟢 成功从项目目录融合 ${mergedCount} 篇修学档案！`);
-                // 自动刷新页面穿插卡片与底部阶段总览，确保首屏异步对齐
-                try {
-                  if (typeof window.renderInlineThinkPrompts === 'function') window.renderInlineThinkPrompts();
-                  if (typeof window.renderBottomAssistantStages === 'function') window.renderBottomAssistantStages();
-                } catch (reErr) {}
-              }
+
+              this.saveAllRecords(localAll);
+              console.log(`[LearningVault] 🟢 成功从项目目录融合 ${mergedCount} 篇修学档案！`);
+
+              // 关键：拉取并融合完成后，立刻强制唤醒 UI 重新绘制！
+              try {
+                if (typeof window.renderInlineThinkPrompts === 'function') window.renderInlineThinkPrompts();
+                if (typeof window.renderBottomAssistantStages === 'function') window.renderBottomAssistantStages();
+              } catch (reErr) {}
+
               return true;
             }
           }
@@ -457,13 +501,16 @@
     }
   };
 
-  // 暴露到全局，并在加载时自动检测服务与双向融合
+  // 暴露到全局，并在加载时立即发起双向检测与极速拉取
   window.LearningVault = LearningVault;
+  // 零延迟立即触发首次拉取
+  LearningVault.pullFromProjectVault();
+  // 300ms 后再次确认，彻底消除一切初始化时序偶发差
   setTimeout(() => {
     LearningVault.checkServerStatus().then(online => {
       if (online) {
         LearningVault.pullFromProjectVault();
       }
     });
-  }, 600);
+  }, 300);
 })(window);
