@@ -5017,6 +5017,7 @@
     const record = window.LearningVault ? window.LearningVault.getGuaRecord(cur.id, cur) : { review: {}, feynman: {} };
     const rev = record.review || {};
     const fey = record.feynman || {};
+    const fw = fey.framework || {};
     const hasAnalysis = rev.ai_analysis && rev.ai_analysis.content;
 
     const assessments = (window.LearningVault && window.LearningVault.getInlineAssessments)
@@ -5141,11 +5142,43 @@
           </div>
         </div>
 
-        <div style="margin: 14px 0 8px 0; font-size:13px; font-weight:700; color:var(--text-sub);">
-          💡 费曼通俗自述脚手架（点击即可填入参考引导模板）：
+        <div style="margin: 14px 0 8px 0; font-size:13px; font-weight:700; color:var(--text-sub); display:flex; justify-content:space-between; align-items:center;">
+          <span>💡 费曼通俗自述脚手架（点击下方卡片即可填入参考引导模板至全稿）：</span>
+          <span style="font-size:11.5px; font-weight:normal; color:var(--text-faint);">启发引导 · 辅助行文</span>
         </div>
         <div class="yj-feynman-scaffolds">
           ${scaffoldsHtml}
+        </div>
+
+        <!-- 四维费曼底层心智认知框架（已持久归档） -->
+        <div style="margin: 18px 0 10px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+          <div style="font-size:13px; font-weight:800; color:var(--text-m); display:flex; align-items:center; gap:6px;">
+            <span>🧠 四维易道认知底牌与生活映射（修学档案归档项）：</span>
+            <span style="font-size:11.5px; padding:2px 8px; border-radius:10px; background:rgba(212,163,89,0.15); color:var(--gold); font-weight:600;">已安全存档</span>
+          </div>
+          <span style="font-size:11.5px; color:var(--text-faint);">可在输入框内直接优化修改，保存即自动落盘</span>
+        </div>
+        <div class="yj-framework-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:10px; margin-bottom:14px;">
+          <div class="yj-framework-box" style="background:var(--bg); border:1px solid var(--border-light); border-radius:8px; padding:10px 12px; display:flex; flex-direction:column; gap:4px;">
+            <div class="yj-box-title" style="font-size:13px; font-weight:800; color:var(--gold);">📌 1. 卦象时势核心判据</div>
+            <div class="yj-box-desc" style="font-size:11.5px; color:var(--text-faint);">内外卦象数表征与当前大势判断依据</div>
+            <textarea id="feyCoreTrend" class="mentor-textarea" rows="2" style="width:100%; font-size:12.5px; padding:6px 8px; border-radius:6px; resize:vertical; background:var(--surface);" placeholder="输入大势判断依据...">${escapeHtml(fw.core_trend || '')}</textarea>
+          </div>
+          <div class="yj-framework-box" style="background:var(--bg); border:1px solid var(--border-light); border-radius:8px; padding:10px 12px; display:flex; flex-direction:column; gap:4px;">
+            <div class="yj-box-title" style="font-size:13px; font-weight:800; color:var(--gold);">⚡ 2. 核心爻变拐点攻防</div>
+            <div class="yj-box-desc" style="font-size:11.5px; color:var(--text-faint);">吉凶转折关键枢纽爻与攻防要诀</div>
+            <textarea id="feyKeyYao" class="mentor-textarea" rows="2" style="width:100%; font-size:12.5px; padding:6px 8px; border-radius:6px; resize:vertical; background:var(--surface);" placeholder="输入核心爻位转折攻防要诀...">${escapeHtml(fw.key_yao_turn || '')}</textarea>
+          </div>
+          <div class="yj-framework-box" style="background:var(--bg); border:1px solid var(--border-light); border-radius:8px; padding:10px 12px; display:flex; flex-direction:column; gap:4px;">
+            <div class="yj-box-title" style="font-size:13px; font-weight:800; color:var(--gold);">🏢 3. 现实生活/商业案例映射</div>
+            <div class="yj-box-desc" style="font-size:11.5px; color:var(--text-faint);">商业竞争、团队管理或生活处境映射</div>
+            <textarea id="feyRealCase" class="mentor-textarea" rows="2" style="width:100%; font-size:12.5px; padding:6px 8px; border-radius:6px; resize:vertical; background:var(--surface);" placeholder="输入真实场景演练...">${escapeHtml(fw.real_case || '')}</textarea>
+          </div>
+          <div class="yj-framework-box" style="background:var(--bg); border:1px solid var(--border-light); border-radius:8px; padding:10px 12px; display:flex; flex-direction:column; gap:4px;">
+            <div class="yj-box-title" style="font-size:13px; font-weight:800; color:var(--gold);">🧘 4. 反常识易道心智底牌</div>
+            <div class="yj-box-desc" style="font-size:11.5px; color:var(--text-faint);">颠覆直觉常态的一条深层心法</div>
+            <textarea id="feyAntiCommon" class="mentor-textarea" rows="2" style="width:100%; font-size:12.5px; padding:6px 8px; border-radius:6px; resize:vertical; background:var(--surface);" placeholder="输入反常识心智底牌...">${escapeHtml(fw.anti_common_rule || '')}</textarea>
+          </div>
         </div>
 
         <div style="margin-top:14px; display:flex; flex-direction:column; gap:8px;">
@@ -5233,20 +5266,40 @@
     if (!cur || !window.LearningVault) return;
     const full_text = (document.getElementById('feyFullText') ? document.getElementById('feyFullText').value : '').trim();
 
-    // 依然保留旧 framework 数据避免丢失
+    // 提取四维底层认知框架
     const record = window.LearningVault.getGuaRecord(cur.id, cur);
-    const prevFw = (record.feynman && record.feynman.framework) ? record.feynman.framework : {};
+    const prevFw = (record.feynman && record.feynman.framework) ? { ...record.feynman.framework } : {};
+
+    const elCore = document.getElementById('feyCoreTrend');
+    const elKey = document.getElementById('feyKeyYao');
+    const elReal = document.getElementById('feyRealCase');
+    const elAnti = document.getElementById('feyAntiCommon');
+
+    const fw = {
+      core_trend: elCore ? elCore.value.trim() : (prevFw.core_trend || ''),
+      key_yao_turn: elKey ? elKey.value.trim() : (prevFw.key_yao_turn || ''),
+      real_case: elReal ? elReal.value.trim() : (prevFw.real_case || ''),
+      anti_common_rule: elAnti ? elAnti.value.trim() : (prevFw.anti_common_rule || '')
+    };
 
     window.LearningVault.saveFeynman(cur.id, {
-      framework: prevFw,
+      framework: fw,
       full_text: full_text
     }, cur);
 
-    // 同步给弹窗
+    // 同步给弹窗中的输入框
     const ff = document.getElementById('vFeyFullText');
     if (ff) ff.value = full_text;
+    const vc = document.getElementById('vFeyCoreTrend');
+    const vk = document.getElementById('vFeyKeyYao');
+    const vr = document.getElementById('vFeyRealCase');
+    const va = document.getElementById('vFeyAntiCommon');
+    if (vc) vc.value = fw.core_trend;
+    if (vk) vk.value = fw.key_yao_turn;
+    if (vr) vr.value = fw.real_case;
+    if (va) va.value = fw.anti_common_rule;
 
-    alert(`🎉 《${cur.title}》费曼通关笔记已持久归档并自动落盘！`);
+    alert(`🎉 《${cur.title}》费曼通关笔记与四维心智框架已持久归档并自动落盘！`);
   };
 
   // 正文原生卡片：提请玄微先生深度学术剖析
@@ -5318,7 +5371,18 @@
       q2_mindset: items[1] ? items[1].answer : '',
       q3_action: items[2] ? items[2].answer : ''
     };
+    const elCore = document.getElementById('feyCoreTrend');
+    const elKey = document.getElementById('feyKeyYao');
+    const elReal = document.getElementById('feyRealCase');
+    const elAnti = document.getElementById('feyAntiCommon');
+
     const feynmanData = {
+      framework: {
+        core_trend: elCore ? elCore.value.trim() : '',
+        key_yao_turn: elKey ? elKey.value.trim() : '',
+        real_case: elReal ? elReal.value.trim() : '',
+        anti_common_rule: elAnti ? elAnti.value.trim() : ''
+      },
       full_text: full_text
     };
 

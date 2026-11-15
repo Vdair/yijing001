@@ -464,10 +464,28 @@
                     }
                   }
 
-                  // 3. 融合复盘三问与费曼自述
-                  if (rem.feynman && rem.feynman.full_text && (!loc.feynman || !loc.feynman.full_text)) {
-                    loc.feynman = rem.feynman;
-                    needSave = true;
+                  // 3. 智能字段级融合费曼自述与四维认知框架
+                  if (rem.feynman) {
+                    loc.feynman = loc.feynman || {};
+                    // 3.1 融合四维心智框架 (framework)
+                    if (rem.feynman.framework) {
+                      loc.feynman.framework = loc.feynman.framework || {};
+                      ['core_trend', 'key_yao_turn', 'real_case', 'anti_common_rule'].forEach(k => {
+                        const remVal = (rem.feynman.framework[k] || '').trim();
+                        const locVal = (loc.feynman.framework[k] || '').trim();
+                        if (!locVal || (remVal && remVal.length >= locVal.length)) {
+                          loc.feynman.framework[k] = remVal;
+                          needSave = true;
+                        }
+                      });
+                    }
+                    // 3.2 融合费曼通关大白话自述全稿 (full_text)
+                    const remText = (rem.feynman.full_text || '').trim();
+                    const locText = (loc.feynman.full_text || '').trim();
+                    if (!locText || (remText && remText.length >= locText.length)) {
+                      loc.feynman.full_text = remText;
+                      needSave = true;
+                    }
                   }
 
                   // 4. 融合笔记
