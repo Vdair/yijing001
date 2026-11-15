@@ -1258,10 +1258,31 @@
     openAssistantWithQuery(query, false);
   };
 
+  // 全局 Markdown 格式化解析器 (优先采用离线 marked.min.js，支持极简降级)
+  window.renderMarkdown = function(mdText) {
+    if (!mdText) return '';
+    if (window.marked) {
+      try {
+        const rawHtml = typeof window.marked.parse === 'function' ? window.marked.parse(mdText) : window.marked(mdText);
+        return rawHtml;
+      } catch (e) {
+        console.warn('[renderMarkdown] marked parse failed:', e);
+      }
+    }
+    // 稳健轻量降级解析
+    let html = escapeHtml(mdText);
+    html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+    html = html.replace(/^[\s]*[-*]\s+([^\n]+)/gm, '<li style="margin-left:20px; list-style-type:disc;">$1</li>');
+    html = html.replace(/^---$/gm, '<hr/>');
+    return html.replace(/\n/g, '<br/>');
+  };
+
   // 格式化玄微先生多维学术点评渲染视图 (阶段三：通俗度评级、比喻辨正、盲区探针卡片与箴言横幅)
   window.formatMasterAnalysisHtml = function(content) {
     if (!content) return '';
-    let text = content;
+    let text = content.trim();
 
     // 1. 提取【玄微追问探针】
     let probeHtml = '';
@@ -1284,23 +1305,56 @@
       `;
     }
 
-    // 2. 基础转义
-    let safe = escapeHtml(text);
-
-    // 3. 强调大白话脱水评级
-    safe = safe.replace(/(【大白话脱水评级】[：:]?\s*)([^\n<]+)/g, '<span class="yj-feynman-score-tag">$1<strong>$2</strong></span>');
-
-    // 4. 维度大标题样式
-    safe = safe.replace(/(\d+[\.、]\s*【[^】]+】[：:]?)/g, '<div class="yj-analysis-dim-title">$1</div>');
-
-    // 5. 知行箴言突出展示
-    safe = safe.replace(/(【玄微知行箴言】[：:]?\s*)([^\n<]+)/g, '<div class="yj-motto-banner"><span class="yj-motto-tag">📜 知行箴言</span><div class="yj-motto-text">“$2”</div></div>');
-
-    let html = safe.replace(/\n/g, '<br>');
-    if (probeHtml) {
-      html += probeHtml;
+    // 2. 彻底解决“5、这里感觉被截断了没有内容”的问题：
+    // 大模型常输出 **5. 📜【知行箴言】**\n雷声宜藏于地...，旧正则只替换了后面部分导致行首残留 **5. 📜 成为空标题
+    let mottoText = '';
+    const mottoBlockRegex = /(?:\*{0,2}5[\.、]\s*📜?\s*【?(?:玄微)?知行箴言】?\*{0,2}[：:]?\s*)([\s\S]*?)(?=$|\n{3,}|\*{0,2}\d[\.、])/i;
+    const mottoMatch = text.match(mottoBlockRegex);
+    if (mottoMatch && mottoMatch[1]) {
+      mottoText = mottoMatch[1].trim().replace(/^["“'”]+|["“'”]+$/g, '').trim();
+      text = text.replace(mottoBlockRegex, `\n\n:::YJ_MOTTO_BLOCK:::\n\n`);
+    } else {
+      // 容错单行箴言匹配
+      const singleMottoRegex = /(?:【(?:玄微)?知行箴言】[：:]?\s*)([^\n<]+)/;
+      const sMatch = text.match(singleMottoRegex);
+      if (sMatch && sMatch[1]) {
+        mottoText = sMatch[1].trim().replace(/^["“'”]+|["“'”]+$/g, '').trim();
+        text = text.replace(/(?:\*{0,2}5[\.、]\s*📜?\s*)?【(?:玄微)?知行箴言】[：:]?\s*[^\n<]+/g, `:::YJ_MOTTO_BLOCK:::`);
+      }
     }
-    return html;
+    // 清理残留的孤立空标题（如 **5. 📜**）
+    text = text.replace(/\*{0,2}5[\.、]\s*📜\*{0,2}\s*(?:\n+|$)/g, '');
+
+    // 3. 增强大白话脱水评级标签
+    text = text.replace(/(【大白话脱水评级】[：:]?\s*)([⭐★\d\.\/\s分]+)/g, '<span class="yj-feynman-score-tag">$1<strong>$2</strong></span>');
+
+    // 4. 将各维度标题标准化（便于 Markdown 渲染后生成统一卡片头）
+    text = text.replace(/\*\*(\d+[\.、]\s*[^*\n]+)\*\*/g, '### $1');
+
+    // 5. 调用 Markdown 解析引擎解析全文（将 **、-、---、引用等完整转为排版优雅的 HTML）
+    let parsedHtml = window.renderMarkdown ? window.renderMarkdown(text) : escapeHtml(text).replace(/\n/g, '<br/>');
+
+    // 6. 还原知行箴言卡片，与第 5 维度完美融合
+    if (mottoText) {
+      const mottoCardHtml = `
+        <div class="yj-analysis-dim-title">5. 📜 【玄微知行箴言】</div>
+        <div class="yj-motto-banner">
+          <span class="yj-motto-tag">📜 知行箴言</span>
+          <div class="yj-motto-text">“${escapeHtml(mottoText)}”</div>
+        </div>
+      `;
+      parsedHtml = parsedHtml.replace(':::YJ_MOTTO_BLOCK:::', mottoCardHtml);
+    }
+
+    // 7. 将 h3 标题转为专属维度标题样式
+    parsedHtml = parsedHtml.replace(/<h3>(.*?)<\/h3>/g, '<div class="yj-analysis-dim-title">$1</div>');
+
+    // 8. 挂载底部追问探针卡片
+    if (probeHtml) {
+      parsedHtml += probeHtml;
+    }
+
+    return parsedHtml;
   };
 
   // 持久化写入项目文件 (双轨保障：优先无感落盘 + 离线另存兜底)
@@ -4726,34 +4780,38 @@
     let bodyHtml = '';
     if (affirmContent || critiqueContent || adviceContent) {
       if (affirmContent.trim()) {
+        const aHtml = window.renderMarkdown ? window.renderMarkdown(affirmContent.trim()) : escapeHtml(affirmContent.trim()).replace(/\n/g, '<br/>');
         bodyHtml += `
           <div class="yj-assess-block affirm">
             <div class="yj-assess-block-title">🟢 【明德见智 · 肯定之处】</div>
-            <div>${escapeHtml(affirmContent.trim()).replace(/\n/g, '<br/>')}</div>
+            <div>${aHtml}</div>
           </div>
         `;
       }
       if (critiqueContent.trim()) {
+        const cHtml = window.renderMarkdown ? window.renderMarkdown(critiqueContent.trim()) : escapeHtml(critiqueContent.trim()).replace(/\n/g, '<br/>');
         bodyHtml += `
           <div class="yj-assess-block critique">
             <div class="yj-assess-block-title">🟡 【见微知著 · 辨正不足与点穴】</div>
-            <div>${escapeHtml(critiqueContent.trim()).replace(/\n/g, '<br/>')}</div>
+            <div>${cHtml}</div>
           </div>
         `;
       }
       if (adviceContent.trim()) {
+        const adHtml = window.renderMarkdown ? window.renderMarkdown(adviceContent.trim()) : escapeHtml(adviceContent.trim()).replace(/\n/g, '<br/>');
         bodyHtml += `
           <div class="yj-assess-block advice">
             <div class="yj-assess-block-title">🔵 【致知力行 · 研学与发力建议】</div>
-            <div>${escapeHtml(adviceContent.trim()).replace(/\n/g, '<br/>')}</div>
+            <div>${adHtml}</div>
           </div>
         `;
       }
     } else {
-      bodyHtml = `
+      const gHtml = window.renderMarkdown ? window.renderMarkdown(text.trim()) : escapeHtml(text.trim()).replace(/\n/g, '<br/>');
+      bodyHtml += `
         <div class="yj-assess-block affirm">
           <div class="yj-assess-block-title">☯️ 【玄微先生 · 师承开示】</div>
-          <div>${escapeHtml(text.trim()).replace(/\n/g, '<br/>')}</div>
+          <div>${gHtml}</div>
         </div>
       `;
     }
