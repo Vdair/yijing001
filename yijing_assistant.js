@@ -4841,6 +4841,9 @@
           cur
         );
         console.log(`[InlineAssessment] 🟢 学员回答与玄微先生评估已成功同步落盘至 ${targetGuaId}`);
+        try {
+          if (typeof window.renderBottomAssistantStages === 'function') window.renderBottomAssistantStages();
+        } catch (e) {}
       }
     };
 

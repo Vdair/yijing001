@@ -442,6 +442,11 @@
               if (mergedCount > 0) {
                 this.saveAllRecords(localAll);
                 console.log(`[LearningVault] 🟢 成功从项目目录融合 ${mergedCount} 篇修学档案！`);
+                // 自动刷新页面穿插卡片与底部阶段总览，确保首屏异步对齐
+                try {
+                  if (typeof window.renderInlineThinkPrompts === 'function') window.renderInlineThinkPrompts();
+                  if (typeof window.renderBottomAssistantStages === 'function') window.renderBottomAssistantStages();
+                } catch (reErr) {}
               }
               return true;
             }
