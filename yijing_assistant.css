@@ -1915,8 +1915,47 @@
     width: 92vw !important;
     max-width: 92vw !important;
     max-height: 85dvh !important;
+    overflow-y: auto !important;
     padding: 18px 16px !important;
     border-radius: 16px !important;
+  }
+
+  /* 5. 修学档案库 (Vault) 弹窗在移动端的精致自适应 */
+  .yj-vault-modal {
+    width: 96vw !important;
+    max-width: 96vw !important;
+    height: 92dvh !important;
+    max-height: 92dvh !important;
+    border-radius: 16px !important;
+  }
+  .yj-vault-header {
+    padding: 12px 14px !important;
+  }
+  .yj-vault-desc-row {
+    display: none !important; /* 手机端精简副标题 */
+  }
+  .yj-vault-tabs-bar {
+    padding: 0 8px !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+  }
+  .yj-vault-tabs-bar::-webkit-scrollbar {
+    display: none;
+  }
+  .yj-vtab-item {
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+    white-space: nowrap !important;
+  }
+  .yj-vault-body-content {
+    padding: 14px 12px !important;
+  }
+  .yj-vault-inner-card {
+    padding: 14px 12px !important;
+  }
+  .yj-vault-footer {
+    padding: 10px 14px calc(10px + env(safe-area-inset-bottom)) 14px !important;
   }
 }
 
