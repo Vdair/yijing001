@@ -97,6 +97,8 @@
           gua_symbol: meta.symbol || '☯️',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
+          mastered: false,
+          mastered_at: null,
           dialogues: [],
           notes: [],
           review: {
@@ -117,6 +119,13 @@
           }
         };
         this.saveAllRecords(all);
+      } else {
+        // 确保字段完整性
+        if (typeof all[guaId].mastered !== 'boolean') {
+          const completedList = this.getCompletedLessonsList();
+          all[guaId].mastered = completedList.includes(guaId);
+          all[guaId].mastered_at = all[guaId].mastered ? (all[guaId].updated_at || new Date().toISOString()) : null;
+        }
       }
       return all[guaId];
     },
@@ -142,6 +151,101 @@
       this.syncToProjectFile(guaId, record);
 
       return record;
+    },
+
+    // 0. 课时已掌握状态维度操作 (双向持久化、自动落盘与跨端同步)
+    toggleLessonMastered(guaId, meta = {}) {
+      const rec = this.getGuaRecord(guaId, meta);
+      const nextState = !Boolean(rec.mastered);
+      return this.setLessonMastered(guaId, nextState, meta);
+    },
+
+    setLessonMastered(guaId, isMastered, meta = {}) {
+      const rec = this.getGuaRecord(guaId, meta);
+      rec.mastered = Boolean(isMastered);
+      rec.mastered_at = isMastered ? new Date().toLocaleString() : null;
+      
+      // 保存单卦记录并自动触发落盘同步到本地项目文件 (.json & .md)
+      this.saveSingleGua(guaId, rec);
+
+      // 同步更新全局 localStorage['yijing_completed'] 保持兼容
+      try {
+        let completed = this.getCompletedLessonsList();
+        if (isMastered) {
+          if (!completed.includes(guaId)) completed.push(guaId);
+        } else {
+          completed = completed.filter(id => id !== guaId);
+        }
+        localStorage.setItem('yijing_completed', JSON.stringify(completed));
+      } catch (e) {}
+
+      // 同步全局进度备份到服务端
+      this.syncProgressToProjectVault();
+
+      // 发出全局广播事件通知 UI 刷新
+      try {
+        window.dispatchEvent(new CustomEvent('yijing_mastered_changed', {
+          detail: { guaId, isMastered, completedList: this.getCompletedLessonsList() }
+        }));
+      } catch (e) {}
+
+      return rec;
+    },
+
+    isLessonMastered(guaId) {
+      if (!guaId) return false;
+      const rec = this.getGuaRecord(guaId);
+      if (rec && typeof rec.mastered === 'boolean') {
+        return rec.mastered;
+      }
+      return this.getCompletedLessonsList().includes(guaId);
+    },
+
+    getCompletedLessonsList() {
+      const set = new Set();
+      // 1. 从 localStorage['yijing_completed'] 读取
+      try {
+        const raw = localStorage.getItem('yijing_completed');
+        if (raw) {
+          JSON.parse(raw).forEach(id => set.add(id));
+        }
+      } catch (e) {}
+
+      // 2. 从全量单卦记录中聚合 mastered === true 的项
+      try {
+        const all = this.getAllRecords();
+        for (let gid in all) {
+          if (all[gid] && all[gid].mastered) {
+            set.add(gid);
+          }
+        }
+      } catch (e) {}
+
+      return Array.from(set);
+    },
+
+    async syncProgressToProjectVault() {
+      const completedList = this.getCompletedLessonsList();
+      const endpoints = [
+        '/api/vault/progress',
+        'http://127.0.0.1:8090/api/vault/progress',
+        'http://localhost:8090/api/vault/progress',
+        'http://127.0.0.1:8089/api/vault/progress'
+      ];
+      for (let url of endpoints) {
+        try {
+          const resp = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              completed_lessons: completedList,
+              total_completed: completedList.length,
+              updated_at: new Date().toLocaleString()
+            })
+          });
+          if (resp.ok) break;
+        } catch (e) {}
+      }
     },
 
     // 1. 对话维度保存
@@ -494,6 +598,15 @@
                     needSave = true;
                   }
 
+                  // 5. 融合已掌握状态 (mastered)
+                  if (typeof rem.mastered === 'boolean') {
+                    if (typeof loc.mastered !== 'boolean' || rem.mastered) {
+                      loc.mastered = rem.mastered;
+                      loc.mastered_at = rem.mastered_at || loc.mastered_at;
+                      needSave = true;
+                    }
+                  }
+
                   if (needSave) {
                     loc.updated_at = rem.updated_at || loc.updated_at;
                     mergedCount++;
@@ -504,10 +617,29 @@
               this.saveAllRecords(localAll);
               console.log(`[LearningVault] 🟢 成功从项目目录融合 ${mergedCount} 篇修学档案！`);
 
+              // 聚合全量已掌握课时列表，保持跨端与全局严格一致
+              const allCompleted = new Set(this.getCompletedLessonsList());
+              for (let gid in localAll) {
+                if (localAll[gid] && localAll[gid].mastered) {
+                  allCompleted.add(gid);
+                }
+              }
+              const completedArr = Array.from(allCompleted);
+              localStorage.setItem('yijing_completed', JSON.stringify(completedArr));
+
               // 关键：拉取并融合完成后，立刻强制唤醒 UI 重新绘制！
               try {
                 if (typeof window.renderInlineThinkPrompts === 'function') window.renderInlineThinkPrompts();
                 if (typeof window.renderBottomAssistantStages === 'function') window.renderBottomAssistantStages();
+                if (typeof window.updateProgress === 'function') window.updateProgress();
+                if (typeof window.syncMasteredStateFromVault === 'function') window.syncMasteredStateFromVault();
+                if (typeof window.renderSidebar === 'function') {
+                  const sInp = document.getElementById('searchInput');
+                  window.renderSidebar(sInp ? sInp.value : '');
+                }
+                window.dispatchEvent(new CustomEvent('yijing_mastered_changed', {
+                  detail: { completedList: completedArr }
+                }));
               } catch (reErr) {}
 
               return true;

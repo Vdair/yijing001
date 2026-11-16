@@ -73,11 +73,15 @@
 
     function init() {
       try {
-        const saved = localStorage.getItem('yijing_completed');
-        if (saved) completedLessons = new Set(JSON.parse(saved));
         const theme = localStorage.getItem('yijing_theme') || 'dark';
         document.documentElement.setAttribute('data-theme', theme);
       } catch(e) {}
+
+      // 优先从 LearningVault 深度同步全量已掌握记录
+      syncMasteredStateFromVault();
+
+      // 监听跨端/本地落盘数据更新广播
+      window.addEventListener('yijing_mastered_changed', syncMasteredStateFromVault);
 
       flatLessons = [];
       if (window.COURSE && window.COURSE.parts) {
@@ -501,17 +505,80 @@
       if (currentLessonIndex < flatLessons.length - 1) loadLesson(currentLessonIndex + 1);
     }
 
+    function syncMasteredStateFromVault() {
+      if (window.LearningVault && typeof window.LearningVault.getCompletedLessonsList === 'function') {
+        const list = window.LearningVault.getCompletedLessonsList();
+        completedLessons = new Set(list);
+      } else {
+        try {
+          const saved = localStorage.getItem('yijing_completed');
+          if (saved) completedLessons = new Set(JSON.parse(saved));
+        } catch(e) {}
+      }
+      updateProgress();
+      if (flatLessons && flatLessons.length > 0 && typeof currentLessonIndex === 'number') {
+        const cur = flatLessons[currentLessonIndex];
+        if (cur) {
+          const isDone = completedLessons.has(cur.id);
+          const btn = document.getElementById('btnDone');
+          if (btn) {
+            btn.innerHTML = isDone ? '✓ 已掌握 (点击取消)' : '○ 标记已掌握';
+            btn.style.background = isDone ? 'var(--gold)' : 'var(--accent)';
+          }
+        }
+      }
+    }
+
     function toggleCurrentDone() {
       const lesson = flatLessons[currentLessonIndex];
       if (!lesson) return;
-      if (completedLessons.has(lesson.id)) {
-        completedLessons.delete(lesson.id);
+
+      let isDone = false;
+      if (window.LearningVault && typeof window.LearningVault.toggleLessonMastered === 'function') {
+        const rec = window.LearningVault.toggleLessonMastered(lesson.id, lesson);
+        isDone = Boolean(rec.mastered);
       } else {
-        completedLessons.add(lesson.id);
+        if (completedLessons.has(lesson.id)) {
+          completedLessons.delete(lesson.id);
+          isDone = false;
+        } else {
+          completedLessons.add(lesson.id);
+          isDone = true;
+        }
+        localStorage.setItem('yijing_completed', JSON.stringify(Array.from(completedLessons)));
       }
-      localStorage.setItem('yijing_completed', JSON.stringify(Array.from(completedLessons)));
+
+      if (isDone) completedLessons.add(lesson.id);
+      else completedLessons.delete(lesson.id);
+
+      const btnDone = document.getElementById('btnDone');
+      if (btnDone) {
+        btnDone.innerHTML = isDone ? '✓ 已掌握 (点击取消)' : '○ 标记已掌握';
+        btnDone.style.background = isDone ? 'var(--gold)' : 'var(--accent)';
+      }
       updateProgress();
-      loadLesson(currentLessonIndex);
+      const sInp = document.getElementById('searchInput');
+      renderSidebar(sInp ? sInp.value : '');
+
+      showToast(isDone ? `✅ 已掌握《${lesson.navTitle || lesson.title}》，已自动落盘同步！` : `○ 已取消《${lesson.navTitle || lesson.title}》掌握标记`);
+    }
+
+    function showToast(msg) {
+      let toast = document.getElementById('yjGlobalToast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'yjGlobalToast';
+        toast.style.cssText = 'position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:rgba(20,20,25,0.92); color:#fff; padding:10px 22px; border-radius:30px; border:1px solid var(--gold); box-shadow:0 8px 24px rgba(0,0,0,0.35); font-size:14px; font-weight:700; z-index:999999; pointer-events:none; transition:all 0.3s ease; opacity:0;';
+        document.body.appendChild(toast);
+      }
+      toast.innerText = msg;
+      toast.style.opacity = '1';
+      toast.style.transform = 'translateX(-50%) translateY(0)';
+      clearTimeout(toast._timer);
+      toast._timer = setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(-50%) translateY(10px)';
+      }, 2500);
     }
 
     function updateProgress() {
@@ -551,7 +618,7 @@
 
     window.onload = init;
   </script>
-  <script src="learning_storage.js?v=20261115_1715"></script>
+  <script src="learning_storage.js?v=20261116_mastered_sync"></script>
   <script src="yijing_natural_trigrams.js?v=20261027_nature_v1"></script>
   <script src="yijing_inquiry_bank.js?v=20261027_prompt_v2"></script>
   <script src="yijing_ai_service.js?v=20261115_force_v1"></script>

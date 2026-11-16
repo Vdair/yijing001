@@ -56,6 +56,20 @@ class VaultSyncHandler(http.server.SimpleHTTPRequestHandler):
             records = self.get_all_vault_records()
             self.wfile.write(json.dumps(records, ensure_ascii=False).encode('utf-8'))
             return
+        elif self.path == '/api/vault/progress':
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            progress_file = os.path.join(VAULT_DIR, 'progress.json')
+            progress_data = {'completed_lessons': [], 'total_completed': 0}
+            if os.path.exists(progress_file):
+                try:
+                    with open(progress_file, 'r', encoding='utf-8') as f:
+                        progress_data = json.load(f)
+                except Exception:
+                    pass
+            self.wfile.write(json.dumps(progress_data, ensure_ascii=False).encode('utf-8'))
+            return
         # 其他静态文件交给父类处理
         super().do_GET()
 
@@ -102,6 +116,31 @@ class VaultSyncHandler(http.server.SimpleHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(json.dumps({'status': 'error', 'message': str(e)}).encode('utf-8'))
                 return
+        elif self.path == '/api/vault/progress':
+            content_length = int(self.headers.get('Content-Length', 0))
+            post_data = self.rfile.read(content_length)
+            try:
+                payload = json.loads(post_data.decode('utf-8'))
+                os.makedirs(VAULT_DIR, exist_ok=True)
+                progress_file = os.path.join(VAULT_DIR, 'progress.json')
+                with open(progress_file, 'w', encoding='utf-8') as f:
+                    json.dump(payload, f, ensure_ascii=False, indent=2)
+
+                # 同步回写 index.json
+                self.sync_progress_to_index(payload.get('completed_lessons', []))
+
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'status': 'success', 'message': '已同步研习进度至 progress.json'}).encode('utf-8'))
+                print(f"[Vault Sync] 🟢 成功同步全库研习掌握进度: 共 {payload.get('total_completed', 0)} 课已掌握")
+                return
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'status': 'error', 'message': str(e)}).encode('utf-8'))
+                return
         else:
             self.send_response(404)
             self.end_headers()
@@ -111,10 +150,14 @@ class VaultSyncHandler(http.server.SimpleHTTPRequestHandler):
         gua_title = record.get('gua_title', gua_id)
         symbol = record.get('gua_symbol', '☯️')
         updated_at = record.get('updated_at', datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        is_mastered = record.get('mastered', False)
+        mastered_time = record.get('mastered_at', '')
+        status_text = f"✅ 已掌握 ({mastered_time})" if is_mastered else "⏳ 研习中"
 
         with open(md_path, 'w', encoding='utf-8') as f:
             f.write(f"# {symbol} 《{gua_title}》个人修学档案\n\n")
             f.write(f"> **最近归档时间**：{updated_at}  \n")
+            f.write(f"> **研习掌握状态**：{status_text}  \n")
             f.write(f"> **所属体系**：易道认知工坊 · 64 卦全息自修档案库  \n\n---\n\n")
 
             # 1. 伴读对话
@@ -207,6 +250,7 @@ class VaultSyncHandler(http.server.SimpleHTTPRequestHandler):
         has_rev = bool(rev.get('q1_mirror') or rev.get('q2_mindset') or rev.get('q3_action'))
         has_fey = bool(fey.get('full_text') or (fey.get('framework', {}).get('core_trend')))
 
+        is_mastered = bool(record.get('mastered', False))
         index_data['records'][gua_id] = {
             'gua_id': gua_id,
             'gua_title': record.get('gua_title', gua_id),
@@ -216,15 +260,40 @@ class VaultSyncHandler(http.server.SimpleHTTPRequestHandler):
             'has_review': has_rev,
             'has_feynman': has_fey,
             'has_ai_analysis': bool(rev.get('ai_analysis', {}).get('content')),
+            'is_completed': is_mastered,
+            'mastered_at': record.get('mastered_at'),
             'updated_at': record.get('updated_at', datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')),
             'json_file': f"{safe_name}.json",
             'md_file': f"{safe_name}.md"
         }
 
+        # 维护全库掌握进度
+        completed_list = [gid for gid, r in index_data['records'].items() if r.get('is_completed')]
         index_data['total_saved_guas'] = len(index_data['records'])
+        index_data['completed_count'] = len(completed_list)
+        index_data['completed_lessons'] = completed_list
         index_data['last_sync_time'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
         with open(INDEX_FILE, 'w', encoding='utf-8') as f:
+            json.dump(index_data, f, ensure_ascii=False, indent=2)
+
+    def sync_progress_to_index(self, completed_list):
+        """将全局掌握进度同步回 index.json"""
+        if not os.path.exists(INDEX_FILE):
+            return
+        try:
+            with open(INDEX_FILE, 'r', encoding='utf-8') as f:
+                index_data = json.load(f)
+            if 'records' in index_data:
+                for gid, rec in index_data['records'].items():
+                    rec['is_completed'] = gid in completed_list
+            index_data['completed_count'] = len(completed_list)
+            index_data['completed_lessons'] = completed_list
+            index_data['last_sync_time'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            with open(INDEX_FILE, 'w', encoding='utf-8') as f:
+                json.dump(index_data, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            print(f"[Vault Sync] ⚠️ 同步进度到 index.json 异常: {e}")
             json.dump(index_data, f, ensure_ascii=False, indent=2)
 
     def get_all_vault_records(self):
