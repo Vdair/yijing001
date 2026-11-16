@@ -425,7 +425,7 @@ ${studentAnswer}
       ],
       apiKey: '',
       temperature: 0.7,
-      max_tokens: 3000,
+      max_tokens: 4096,
       supportsCache: true
     },
     kimi: {
@@ -592,71 +592,80 @@ ${studentAnswer}
     },
 
     /**
-     * 极速连通性与模型可用性测试
+     * 极速连通性与模型可用性测试（支持本地安全代理与直接连接）
      */
     async testConnection(testApiKey = null, providerId = null, modelId = null) {
       const cfg = this.getConfig();
       const pId = providerId || cfg.activeProvider;
       const p = PROVIDERS[pId] || PROVIDERS.zhipu;
-      const key = testApiKey || (pId === cfg.activeProvider ? cfg.apiKey : (cfg.providersState?.[pId]?.apiKey || p.apiKey));
+      const key = testApiKey || (pId === cfg.activeProvider ? cfg.apiKey : (cfg.providersState?.[pId]?.apiKey || p.apiKey || ''));
       const model = modelId || (pId === cfg.activeProvider ? cfg.model : p.defaultModel);
 
-      if (!key) {
-        return {
-          success: false,
-          message: `未配置【${p.name}】的 API Key，请先输入密钥。`
-        };
+      const reqBody = {
+        provider: pId,
+        model: model,
+        apiKey: key,
+        messages: [
+          { role: 'system', content: '你是周易学术助教玄微先生。请简要回应，不超过20字。' },
+          { role: 'user', content: '请说一句乾卦的卦训。' }
+        ],
+        stream: false,
+        max_tokens: 60
+      };
+      if (pId === 'kimi') {
+        reqBody.reasoning_effort = 'low';
       }
 
-      try {
-        const reqBody = {
-          model: model,
-          messages: [
-            { role: 'system', content: '你是周易学术助教玄微先生。请简要回应，不超过20字。' },
-            { role: 'user', content: '请说一句乾卦的卦训。' }
-          ],
-          stream: false,
-          max_tokens: 60
-        };
-        if (pId === 'kimi') {
-          reqBody.reasoning_effort = 'low';
-        }
+      const endpoints = [
+        '/api/ai/chat',
+        'http://127.0.0.1:8090/api/ai/chat',
+        'http://localhost:8090/api/ai/chat'
+      ];
+      if (key) {
+        endpoints.push(p.apiUrl);
+      }
 
-        const res = await fetch(p.apiUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${key}`
-          },
-          body: JSON.stringify(reqBody)
-        });
+      for (let url of endpoints) {
+        try {
+          const isDirect = url === p.apiUrl;
+          const headers = { 'Content-Type': 'application/json' };
+          if (isDirect && key) headers['Authorization'] = `Bearer ${key}`;
 
-        if (!res.ok) {
-          const errText = await res.text();
+          const res = await fetch(url, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(reqBody)
+          });
+
+          if (!res.ok) {
+            const errText = await res.text();
+            if (url !== endpoints[endpoints.length - 1]) continue;
+            return {
+              success: false,
+              status: res.status,
+              message: `API 连接失败 [${res.status}]: ${errText.slice(0, 200)}`
+            };
+          }
+
+          const data = await res.json();
+          const reply = data.choices?.[0]?.message?.content || '连通正常';
+          const cached = data.usage?.prompt_tokens_details?.cached_tokens || 0;
+
+          return {
+            success: true,
+            provider: pId,
+            model: model,
+            reply: reply.trim(),
+            cachedTokens: cached,
+            message: `🎉 连接成功！模型【${model}】响应正常。`
+          };
+        } catch (err) {
+          if (url !== endpoints[endpoints.length - 1]) continue;
           return {
             success: false,
-            status: res.status,
-            message: `API 连接失败 [${res.status}]: ${errText.slice(0, 200)}`
+            message: `网络或服务连接异常: ${err.message}`
           };
         }
-
-        const data = await res.json();
-        const reply = data.choices?.[0]?.message?.content || '连通正常';
-        const cached = data.usage?.prompt_tokens_details?.cached_tokens || 0;
-
-        return {
-          success: true,
-          provider: pId,
-          model: model,
-          reply: reply.trim(),
-          cachedTokens: cached,
-          message: `🎉 连接成功！模型【${model}】响应正常。`
-        };
-      } catch (err) {
-        return {
-          success: false,
-          message: `网络或跨域异常: ${err.message}`
-        };
       }
     },
 
@@ -680,14 +689,6 @@ ${studentAnswer}
       const isZhipu = config.activeProvider === 'zhipu' || (config.model && config.model.startsWith('glm-'));
       const isKimi = config.activeProvider === 'kimi' || (config.model && config.model.includes('kimi'));
 
-      if (!config.apiKey) {
-        const pName = isZhipu ? '智谱 AI (GLM)' : 'Kimi';
-        const errMsg = `⚠️ 未配置 ${pName} 的 API Key。请在界面右上角点击【⚙️ 模型】填入您的 Key，或一键切换回 Kimi。`;
-        const err = new Error(errMsg);
-        if (onError) onError(err);
-        throw err;
-      }
-
       // 提取外接知识库上下文（确保静态前缀，零动态时间注入，最大化缓存命中率）
       const knowledgeContext = YijingKnowledgeRetriever.extractKnowledgeContext(lessonMeta);
 
@@ -710,13 +711,11 @@ ${studentAnswer}
           // 智谱 GLM-5.3 规范适配：
           // 1. 支持采样温度与最大 Token
           reqBody.temperature = config.temperature !== undefined ? config.temperature : 0.7;
-          reqBody.max_tokens = config.max_tokens || 3000;
+          reqBody.max_tokens = config.max_tokens || 4096;
           // 2. 开启逐块/最终 usage 统计，支持读取 cached_tokens
           reqBody.stream_options = { chunk_include_usage: true };
-          // 3. 若使用 GLM-5.3 旗舰且需要思考模式
-          if (config.model === 'glm-5.3' && config.enable_thinking) {
-            reqBody.thinking = { type: 'enabled', clear_thinking: true };
-          }
+          // 3. 约束思考级别为 low，保障极速省流并杜绝正文被长思考截断
+          reqBody.thinking = { type: 'enabled', level: 'low' };
         } else if (isKimi) {
           // Kimi-k3 规范适配：
           reqBody.reasoning_effort = config.reasoning_effort || 'low';
@@ -726,18 +725,51 @@ ${studentAnswer}
           if (config.max_tokens !== undefined) reqBody.max_tokens = config.max_tokens;
         }
 
-        const response = await fetch(config.apiUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${config.apiKey}`
-          },
-          body: JSON.stringify(reqBody)
-        });
+        const endpoints = [
+          '/api/ai/chat',
+          'http://127.0.0.1:8090/api/ai/chat',
+          'http://localhost:8090/api/ai/chat'
+        ];
+        if (config.apiKey) {
+          endpoints.push(config.apiUrl);
+        }
 
-        if (!response.ok) {
-          const errText = await response.text();
-          throw new Error(`API 请求失败 [${response.status}]: ${errText}`);
+        let response = null;
+        let lastErr = null;
+
+        for (let url of endpoints) {
+          try {
+            const isDirect = url === config.apiUrl;
+            const headers = { 'Content-Type': 'application/json' };
+            if (isDirect && config.apiKey) headers['Authorization'] = `Bearer ${config.apiKey}`;
+
+            const res = await fetch(url, {
+              method: 'POST',
+              headers,
+              body: JSON.stringify({
+                ...reqBody,
+                provider: config.activeProvider,
+                apiKey: config.apiKey || ''
+              })
+            });
+
+            if (res.ok) {
+              response = res;
+              break;
+            } else {
+              const errTxt = await res.text();
+              lastErr = new Error(`接口响应异常 [${res.status}]: ${errTxt}`);
+              if (url === endpoints[endpoints.length - 1]) throw lastErr;
+            }
+          } catch (fetchErr) {
+            lastErr = fetchErr;
+            if (url === endpoints[endpoints.length - 1]) throw lastErr;
+          }
+        }
+
+        if (!response) {
+          const pName = isZhipu ? '智谱 AI (GLM)' : 'Kimi';
+          throw lastErr || new Error(`⚠️ 无法连接到 ${pName} 服务。请检查后台本地守护服务是否正在运行，或在右上角【⚙️ 模型】设置有效 API Key。`);
         }
 
         const reader = response.body.getReader();

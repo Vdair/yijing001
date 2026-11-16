@@ -2,35 +2,73 @@
 <html lang="zh-CN" data-theme="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
   <title>易道认知工坊 · 现代沉浸式自修课堂</title>
   <!-- 引入课程全息数据库（添加版本号防止本地开发环境浏览器静态文件强缓存） -->
   <script src="course_data.js?v=20261026_1715"></script>
-  <link rel="stylesheet" href="lesson.css?v=20261027_nature_v1">
-  <link rel="stylesheet" href="yijing_assistant.css?v=20261115_force_v1">
+  <link rel="stylesheet" href="lesson.css?v=20261116_mobile_v1">
+  <link rel="stylesheet" href="yijing_assistant.css?v=20261116_mobile_v1">
   <script src="assets/libs/marked.min.js"></script>
 </head>
 <body>
   <!-- 顶栏 -->
   <header class="topbar">
     <div class="brand">
-      <span>☯️ 易道认知工坊</span>
+      <span onclick="location.href='index.html'" style="cursor:pointer;" title="返回总目录">☯️ 易道认知工坊</span>
       <span class="brand-badge">自修精进版</span>
     </div>
     <div class="top-actions">
       <select id="routeFilter" class="route-selector" onchange="filterRoute(this.value)">
-        <option value="all">🗺️ 完整全修路线 (68节)</option>
+        <option value="all">🗺️ 完整全修 (68节)</option>
         <option value="growth">🚀 个人成长与晋升</option>
         <option value="crisis">🛡️ 逆境生存与破局</option>
         <option value="leadership">👑 领导力与组织博弈</option>
         <option value="wisdom">🧘 易理哲学与心智修炼</option>
       </select>
-      <a href="eco_sphere.html" class="btn-action" style="background:linear-gradient(135deg, rgba(212,175,55,0.25), rgba(212,175,55,0.08)); border-color:var(--gold); color:var(--gold); text-decoration:none; font-weight:600; display:inline-flex; align-items:center; gap:4px;" title="打开 3D 六十四卦全息生态圈">🌌 3D 生态圈</a>
-      <button class="btn-action" onclick="openVaultModal()" style="background:var(--gold-light); color:var(--gold); border-color:var(--gold); font-weight:700;">📜 本卦修学档案</button>
-      <button class="btn-action" onclick="toggleTheme()" id="themeBtn" title="切换暗黑/宣纸浅色">🌓 主题</button>
+      <a href="eco_sphere.html" class="btn-action desktop-only" style="background:linear-gradient(135deg, rgba(212,175,55,0.25), rgba(212,175,55,0.08)); border-color:var(--gold); color:var(--gold); text-decoration:none; font-weight:600; display:inline-flex; align-items:center; gap:4px;" title="打开 3D 六十四卦全息生态圈">🌌 3D 生态圈</a>
+      <button class="btn-action desktop-only" onclick="openVaultModal()" style="background:var(--gold-light); color:var(--gold); border-color:var(--gold); font-weight:700;">📜 本卦修学档案</button>
+      <button class="btn-action desktop-only" onclick="toggleTheme()" id="themeBtn" title="切换暗黑/宣纸浅色">🌓 主题</button>
+      <!-- 移动端专属更多功能按钮 -->
+      <button class="btn-action mobile-only" onclick="toggleMobileMoreMenu()" id="mobileMoreBtn" title="更多功能">✨ 功能</button>
       <button class="btn-action" onclick="toggleSidebar()" id="toggleSidebarBtn">☰ 目录</button>
     </div>
   </header>
+
+  <!-- 移动端侧边栏与表单遮罩 -->
+  <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar(false)"></div>
+  <div class="sidebar-backdrop" id="mobileSheetBackdrop" onclick="toggleMobileMoreMenu(false)"></div>
+
+  <!-- 移动端专属行动功能抽屉 (Action Sheet) -->
+  <div class="mobile-action-sheet" id="mobileActionSheet">
+    <div class="mobile-sheet-drag-handle" onclick="toggleMobileMoreMenu(false)"></div>
+    <div class="mobile-sheet-title">易道工坊 · 快捷功能</div>
+    <div class="mobile-sheet-grid">
+      <a href="eco_sphere.html" class="mobile-sheet-btn">
+        <span class="sheet-icon">🌌</span>
+        <span>3D 生态圈</span>
+      </a>
+      <button class="mobile-sheet-btn" onclick="toggleMobileMoreMenu(false); openVaultModal();">
+        <span class="sheet-icon">📜</span>
+        <span>修学档案</span>
+      </button>
+      <button class="mobile-sheet-btn" onclick="toggleMobileMoreMenu(false); toggleTheme();">
+        <span class="sheet-icon">🌓</span>
+        <span>切换主题</span>
+      </button>
+      <button class="mobile-sheet-btn" onclick="toggleMobileMoreMenu(false); if(window.openAISettingsModal) window.openAISettingsModal();">
+        <span class="sheet-icon">⚙️</span>
+        <span>模型设置</span>
+      </button>
+      <a href="index.html" class="mobile-sheet-btn">
+        <span class="sheet-icon">🏠</span>
+        <span>总目录</span>
+      </a>
+      <button class="mobile-sheet-btn" onclick="toggleMobileMoreMenu(false); if(window.toggleAssistantDrawer) window.toggleAssistantDrawer(true);">
+        <span class="sheet-icon">🧙‍♂️</span>
+        <span>玄微助教</span>
+      </button>
+    </div>
+  </div>
 
   <!-- 工作区 -->
   <div class="main-wrapper">
@@ -173,6 +211,11 @@
       currentLessonIndex = idx;
       window.currentLessonIndex = idx;
       localStorage.setItem('yijing_last_idx', idx);
+
+      // 移动端切换课时后，自动平滑收起侧边栏抽屉
+      if (window.innerWidth <= 768) {
+        toggleSidebar(false);
+      }
 
       const lesson = flatLessons[idx];
       window.currentLesson = lesson;
@@ -611,8 +654,32 @@
       localStorage.setItem('yijing_theme', next);
     }
 
-    function toggleSidebar() {
-      document.getElementById('sidebar').classList.toggle('open');
+    function toggleSidebar(forceState) {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('sidebarBackdrop');
+      if (!sidebar) return;
+      const shouldOpen = forceState !== undefined ? forceState : !sidebar.classList.contains('open');
+      if (shouldOpen) {
+        sidebar.classList.add('open');
+        if (backdrop) backdrop.classList.add('visible');
+      } else {
+        sidebar.classList.remove('open');
+        if (backdrop) backdrop.classList.remove('visible');
+      }
+    }
+
+    function toggleMobileMoreMenu(forceState) {
+      const sheet = document.getElementById('mobileActionSheet');
+      const backdrop = document.getElementById('mobileSheetBackdrop');
+      if (!sheet) return;
+      const shouldOpen = forceState !== undefined ? forceState : !sheet.classList.contains('open');
+      if (shouldOpen) {
+        sheet.classList.add('open');
+        if (backdrop) backdrop.classList.add('visible');
+      } else {
+        sheet.classList.remove('open');
+        if (backdrop) backdrop.classList.remove('visible');
+      }
     }
 
     window.onload = init;
@@ -620,7 +687,7 @@
   <script src="learning_storage.js?v=20261116_mastered_sync"></script>
   <script src="yijing_natural_trigrams.js?v=20261027_nature_v1"></script>
   <script src="yijing_inquiry_bank.js?v=20261027_prompt_v2"></script>
-  <script src="yijing_ai_service.js?v=20261116_glm_switch"></script>
-  <script src="yijing_assistant.js?v=20261116_glm_switch"></script>
+  <script src="yijing_ai_service.js?v=20261116_proxy_v2"></script>
+  <script src="yijing_assistant.js?v=20261116_mobile_v1"></script>
 </body>
 </html>

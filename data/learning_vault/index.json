@@ -4,20 +4,20 @@
       "gua_id": "p0-01",
       "gua_title": "第一课 · 天地之象 —— 八卦全息原型与能量建模",
       "gua_symbol": "☰",
-      "dialogues_count": 1,
+      "dialogues_count": 3,
       "notes_count": 5,
-      "has_review": true,
+      "has_review": false,
       "has_feynman": true,
       "has_ai_analysis": true,
       "is_completed": true,
       "mastered_at": "11/16/2026, 3:14:02 PM",
-      "updated_at": "2026/11/15 16:27:00",
+      "updated_at": "2026/11/16 16:50:07",
       "json_file": "p0-01.json",
       "md_file": "p0-01.md"
     }
   },
   "total_saved_guas": 1,
-  "last_sync_time": "2026-11-16 15:14:02",
+  "last_sync_time": "2026-11-16 16:50:07",
   "completed_count": 1,
   "completed_lessons": [
     "p0-01"

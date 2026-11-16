@@ -263,12 +263,24 @@
   });
 
   // ==========================================================================
-  // 2. 右侧伴学助教面板 (轻量问答与快捷引导)
+  // 2. 右侧伴学助教面板 (移动端底部抽屉 / 桌面端右侧面板)
   // ==========================================================================
+  // 注入遮罩
+  let assistantBackdrop = document.getElementById('yjAssistantBackdrop');
+  if (!assistantBackdrop) {
+    assistantBackdrop = document.createElement('div');
+    assistantBackdrop.id = 'yjAssistantBackdrop';
+    assistantBackdrop.className = 'yj-assistant-backdrop';
+    assistantBackdrop.onclick = () => window.toggleAssistantPanel(false);
+    document.body.appendChild(assistantBackdrop);
+  }
+
   const panel = document.createElement('div');
   panel.className = 'yj-assistant-panel';
   panel.id = 'yjAssistantPanel';
   panel.innerHTML = `
+    <!-- 移动端下拉手柄 -->
+    <div class="yj-bottom-sheet-handle mobile-only" onclick="window.toggleAssistantPanel(false)" title="下滑收起"></div>
     <div class="yj-panel-header">
       <div class="yj-coach-info">
         <div class="yj-coach-avatar">☯️</div>
@@ -307,19 +319,27 @@
   `;
   document.body.appendChild(panel);
 
-  window.toggleAssistantPanel = function() {
+  window.toggleAssistantPanel = function(forceState) {
     const p = document.getElementById('yjAssistantPanel');
+    const b = document.getElementById('yjAssistantBackdrop');
     if (!p) return;
-    p.classList.toggle('open');
-    if (p.classList.contains('open')) {
+    const shouldOpen = forceState !== undefined ? forceState : !p.classList.contains('open');
+    if (shouldOpen) {
+      p.classList.add('open');
+      if (b) b.classList.add('visible');
       syncCoachCurrentGua();
+    } else {
+      p.classList.remove('open');
+      if (b) b.classList.remove('visible');
     }
   };
 
   window.openAssistantWithQuery = function(q, autoSubmit = false) {
     const p = document.getElementById('yjAssistantPanel');
+    const b = document.getElementById('yjAssistantBackdrop');
     if (p && !p.classList.contains('open')) {
       p.classList.add('open');
+      if (b) b.classList.add('visible');
     }
     syncCoachCurrentGua();
     const input = document.getElementById('coachInput');
@@ -999,6 +1019,11 @@
       window.YijingAIService.answerQuestion({
         question: q,
         lessonMeta: meta,
+        onReasoning: (chunk, full) => {
+          if (contentBox && !contentBox.innerHTML.includes('开示')) {
+            contentBox.innerHTML = '<span style="color:#8b949e; font-size:12px;">🧠 玄微先生正在推演卦象时势...</span>';
+          }
+        },
         onContent: (chunk, fullContent) => {
           if (contentBox) {
             contentBox.innerHTML = fullContent.replace(/\n/g, '<br>');
@@ -1190,6 +1215,11 @@
           lessonMeta: meta,
           reviewData,
           feynmanData,
+          onReasoning: (chunk, full) => {
+            if (body && !body.innerHTML.includes('诊断')) {
+              body.innerHTML = '<span style="color:#8b949e; font-size:13px;">🧠 玄微先生正在多维考订时位演变与生活比喻神韵...</span>';
+            }
+          },
           onContent: (chunk, fullContent) => {
             if (body) {
               body.innerHTML = window.formatMasterAnalysisHtml(fullContent);
@@ -4918,6 +4948,11 @@
           hint: qItem.hint || '',
           tag: qItem.tag || '边读边思',
           lessonMeta: cur || {},
+          onReasoning: (chunk, full) => {
+            if (resultEl && !resultEl.innerHTML.includes('明德见智')) {
+              resultEl.innerHTML = formatTeacherAssessmentHtml('🧠 宗师正在深察时位与爻变机制...', '正在推演...', true);
+            }
+          },
           onContent: (chunk, full) => {
             accumulatedContent = full;
             if (resultEl) {
@@ -5396,6 +5431,11 @@
           lessonMeta: cur,
           reviewData,
           feynmanData,
+          onReasoning: (chunk, full) => {
+            if (body && !body.innerHTML.includes('诊断')) {
+              body.innerHTML = '<span style="color:#8b949e; font-size:13px;">🧠 玄微先生正在多维考订时位演变与生活比喻神韵...</span>';
+            }
+          },
           onContent: (chunk, fullContent) => {
             if (body) {
               body.innerHTML = window.formatMasterAnalysisHtml ? window.formatMasterAnalysisHtml(fullContent) : fullContent.replace(/\n/g, '<br>');

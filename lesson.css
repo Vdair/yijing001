@@ -869,3 +869,297 @@ body {
   color: var(--text-sub);
   text-align: justify;
 }
+
+/* ==========================================================================
+   📱 易道认知工坊 · 移动端手机全屏响应式适配标准系统 (Mobile Responsive Standard)
+   涵盖：视口适配、iOS 安全区域、抽屉侧边栏、移动端顶栏精简、单列大字原典流与触控防误触
+   ========================================================================== */
+
+/* 移动端侧边栏全屏遮罩 */
+.sidebar-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 1050;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.sidebar-backdrop.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* 移动端行动表单抽屉 (Action Sheet) */
+.mobile-action-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: -100%;
+  background: var(--side);
+  border-top: 1px solid var(--border);
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -12px 36px rgba(0, 0, 0, 0.4);
+  z-index: 1350;
+  padding: 16px 20px calc(20px + env(safe-area-inset-bottom)) 20px;
+  transition: bottom 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.mobile-action-sheet.open {
+  bottom: 0;
+}
+.mobile-sheet-drag-handle {
+  width: 42px;
+  height: 5px;
+  background: var(--border);
+  border-radius: 99px;
+  margin: 0 auto 10px auto;
+}
+.mobile-sheet-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.mobile-sheet-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.mobile-sheet-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 8px;
+  color: var(--text-m);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  min-height: 64px;
+  transition: background 0.15s;
+}
+.mobile-sheet-btn:active {
+  background: var(--card-hover);
+  border-color: var(--gold);
+}
+.mobile-sheet-btn .sheet-icon {
+  font-size: 22px;
+}
+
+/* 移动端隐藏/展示通用辅助类 */
+.mobile-only {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  .mobile-only {
+    display: inline-flex !important;
+  }
+  .desktop-only {
+    display: none !important;
+  }
+
+  /* 1. 顶栏精简化与安全区适配 */
+  .topbar {
+    height: calc(56px + env(safe-area-inset-top));
+    padding: env(safe-area-inset-top) 12px 0 12px;
+  }
+  .brand {
+    font-size: 17px;
+    gap: 6px;
+  }
+  .brand-badge {
+    display: none; /* 手机端隐藏副标，留出横向空间 */
+  }
+  .top-actions {
+    gap: 8px;
+  }
+  .route-selector {
+    max-width: 130px;
+    padding: 6px 10px;
+    font-size: 13px;
+    text-overflow: ellipsis;
+  }
+  .top-actions .btn-action {
+    padding: 6px 12px;
+    font-size: 13.5px;
+    min-height: 38px;
+  }
+
+  /* 2. 侧边栏真·抽屉化 (Drawer) */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 84vw;
+    max-width: 330px;
+    z-index: 1100;
+    transform: translateX(-100%);
+    box-shadow: none;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .sidebar.open {
+    transform: translateX(0);
+    box-shadow: 12px 0 36px rgba(0, 0, 0, 0.65);
+  }
+
+  /* 3. 阅读主视区自适应 */
+  .reader-container {
+    width: 100vw;
+  }
+  .reader-content {
+    padding: 16px 14px calc(92px + env(safe-area-inset-bottom)) 14px;
+    width: 100%;
+  }
+
+  /* 4. 标题头与大字排版适配 */
+  .lesson-header {
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+  }
+  .header-top {
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .gua-symbol-badge {
+    font-size: 34px;
+    padding: 8px 14px;
+  }
+  .header-meta h1 {
+    font-size: 22px;
+    line-height: 1.35;
+  }
+  .header-meta .motto {
+    font-size: 14.5px;
+    margin-top: 4px;
+  }
+  .header-tags {
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .pill-tag {
+    font-size: 12px;
+    padding: 4px 10px;
+  }
+
+  /* 5. 六爻天梯在手机端单列化 */
+  .yao-ladder-container {
+    flex-direction: column;
+    padding: 16px 14px;
+    gap: 16px;
+    margin-top: 16px;
+  }
+  .yao-ladder {
+    width: 100%;
+    padding: 12px;
+  }
+  .yao-ladder-rung {
+    min-height: 44px; /* 触控达标 */
+    padding: 9px 12px;
+  }
+  .yao-pos-name {
+    font-size: 13px;
+    width: 70px;
+  }
+  .yao-ladder-intro h4 {
+    font-size: 16px;
+  }
+  .yao-ladder-intro p {
+    font-size: 14px;
+  }
+
+  /* 6. 核心教学步骤与各大卡片流 */
+  .step-section {
+    padding: 18px 14px;
+    margin-bottom: 20px;
+    border-radius: var(--radius-sm);
+  }
+  .step-header {
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .step-title {
+    font-size: 17px;
+  }
+
+  /* 网格布局在移动端强制垂直单列流 */
+  .four-masters-grid,
+  .masters-grid,
+  .comparison-grid,
+  .nature-grid,
+  .card-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* 7. 底部控制栏锁定与安全区防误触 */
+  .footbar {
+    height: auto;
+    padding: 10px 14px calc(12px + env(safe-area-inset-bottom)) 14px;
+    background: var(--side);
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.2);
+  }
+  .footbar .btn-action {
+    min-height: 44px;
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+  #btnDone {
+    flex: 1.4; /* 居中突出核心掌握按钮 */
+  }
+
+  /* 8. 弹窗类在移动端全宽化 */
+  .modal-dialog,
+  .vault-modal-content,
+  .mind-map-dialog {
+    width: 94vw !important;
+    max-width: 94vw !important;
+    max-height: 88dvh !important;
+    padding: 18px 16px !important;
+    border-radius: var(--radius) !important;
+  }
+}
+
+/* 针对小屏手机 (如 iPhone SE / 375px) 的极限优化 */
+@media (max-width: 480px) {
+  body {
+    font-size: 15.5px;
+  }
+  .topbar {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+  .brand span:first-child {
+    font-size: 16px;
+  }
+  .route-selector {
+    max-width: 105px;
+    font-size: 12px;
+    padding: 4px 6px;
+  }
+  .reader-content {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .mobile-sheet-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

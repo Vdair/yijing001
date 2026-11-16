@@ -16,6 +16,9 @@ import json
 import os
 import sys
 import datetime
+import urllib.request
+import urllib.error
+import ssl
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VAULT_DIR = os.path.join(BASE_DIR, 'data', 'learning_vault')
@@ -23,6 +26,8 @@ INDEX_FILE = os.path.join(VAULT_DIR, 'index.json')
 PORT = int(os.environ.get('PORT', 8090))
 
 class VaultSyncHandler(http.server.SimpleHTTPRequestHandler):
+    protocol_version = 'HTTP/1.1'
+
     def __init__(self, *args, **kwargs):
         # 将根目录设为项目根目录，以便托管整个前端
         super().__init__(*args, directory=BASE_DIR, **kwargs)
@@ -30,36 +35,36 @@ class VaultSyncHandler(http.server.SimpleHTTPRequestHandler):
     def end_headers(self):
         self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With')
         super().end_headers()
+
+    def send_json(self, status, data):
+        body = json.dumps(data, ensure_ascii=False).encode('utf-8')
+        self.send_response(status)
+        self.send_header('Content-Type', 'application/json; charset=utf-8')
+        self.send_header('Content-Length', str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
 
     def do_OPTIONS(self):
         self.send_response(200)
+        self.send_header('Content-Length', '0')
         self.end_headers()
 
     def do_GET(self):
         if self.path == '/api/vault/status':
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json')
-            self.end_headers()
             status_data = {
                 'status': 'online',
                 'vault_dir': VAULT_DIR,
                 'time': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             }
-            self.wfile.write(json.dumps(status_data).encode('utf-8'))
+            self.send_json(200, status_data)
             return
         elif self.path == '/api/vault/list':
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json')
-            self.end_headers()
             records = self.get_all_vault_records()
-            self.wfile.write(json.dumps(records, ensure_ascii=False).encode('utf-8'))
+            self.send_json(200, records)
             return
         elif self.path == '/api/vault/progress':
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json')
-            self.end_headers()
             progress_file = os.path.join(VAULT_DIR, 'progress.json')
             progress_data = {'completed_lessons': [], 'total_completed': 0}
             if os.path.exists(progress_file):
@@ -68,12 +73,9 @@ class VaultSyncHandler(http.server.SimpleHTTPRequestHandler):
                         progress_data = json.load(f)
                 except Exception:
                     pass
-            self.wfile.write(json.dumps(progress_data, ensure_ascii=False).encode('utf-8'))
+            self.send_json(200, progress_data)
             return
         elif self.path == '/api/ai/config':
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json')
-            self.end_headers()
             local_keys_file = os.path.join(BASE_DIR, 'config', 'local_ai_keys.json')
             keys_data = {}
             if os.path.exists(local_keys_file):
@@ -82,7 +84,7 @@ class VaultSyncHandler(http.server.SimpleHTTPRequestHandler):
                         keys_data = json.load(f)
                 except Exception:
                     pass
-            self.wfile.write(json.dumps(keys_data, ensure_ascii=False).encode('utf-8'))
+            self.send_json(200, keys_data)
             return
         # 其他静态文件交给父类处理
         super().do_GET()
@@ -111,9 +113,6 @@ class VaultSyncHandler(http.server.SimpleHTTPRequestHandler):
                 # 3. 更新总索引 index.json
                 self.update_vault_index(gua_id, safe_name, record)
 
-                self.send_response(200)
-                self.send_header('Content-Type', 'application/json')
-                self.end_headers()
                 response = {
                     'status': 'success',
                     'message': f'已落盘至 {json_path}',
@@ -121,14 +120,11 @@ class VaultSyncHandler(http.server.SimpleHTTPRequestHandler):
                     'md_file': md_path,
                     'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 }
-                self.wfile.write(json.dumps(response, ensure_ascii=False).encode('utf-8'))
+                self.send_json(200, response)
                 print(f"[Vault Sync] 🟢 成功自动落盘: {safe_name}.json 与 {safe_name}.md")
                 return
             except Exception as e:
-                self.send_response(500)
-                self.send_header('Content-Type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps({'status': 'error', 'message': str(e)}).encode('utf-8'))
+                self.send_json(500, {'status': 'error', 'message': str(e)})
                 return
         elif self.path == '/api/vault/progress':
             content_length = int(self.headers.get('Content-Length', 0))
@@ -143,17 +139,11 @@ class VaultSyncHandler(http.server.SimpleHTTPRequestHandler):
                 # 同步回写 index.json
                 self.sync_progress_to_index(payload.get('completed_lessons', []))
 
-                self.send_response(200)
-                self.send_header('Content-Type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps({'status': 'success', 'message': '已同步研习进度至 progress.json'}).encode('utf-8'))
+                self.send_json(200, {'status': 'success', 'message': '已同步研习进度至 progress.json'})
                 print(f"[Vault Sync] 🟢 成功同步全库研习掌握进度: 共 {payload.get('total_completed', 0)} 课已掌握")
                 return
             except Exception as e:
-                self.send_response(500)
-                self.send_header('Content-Type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps({'status': 'error', 'message': str(e)}).encode('utf-8'))
+                self.send_json(500, {'status': 'error', 'message': str(e)})
                 return
         elif self.path == '/api/ai/config':
             content_length = int(self.headers.get('Content-Length', 0))
@@ -164,7 +154,7 @@ class VaultSyncHandler(http.server.SimpleHTTPRequestHandler):
                 os.makedirs(config_dir, exist_ok=True)
                 local_keys_file = os.path.join(config_dir, 'local_ai_keys.json')
                 
-                # 增量融合已有配置
+                # 增量融合已有配置，严禁空串冲掉已有合法 Key
                 existing_data = {}
                 if os.path.exists(local_keys_file):
                     try:
@@ -172,26 +162,148 @@ class VaultSyncHandler(http.server.SimpleHTTPRequestHandler):
                             existing_data = json.load(f)
                     except Exception:
                         pass
-                existing_data.update(payload)
+                
+                if payload.get('activeProvider'):
+                    existing_data['activeProvider'] = payload['activeProvider']
+
+                for p_name in ['zhipu', 'kimi']:
+                    if p_name in payload and isinstance(payload[p_name], dict):
+                        p_val = payload[p_name]
+                        if p_name not in existing_data:
+                            existing_data[p_name] = {}
+                        if p_val.get('apiKey'):
+                            existing_data[p_name]['apiKey'] = p_val['apiKey']
+                        if p_val.get('model'):
+                            existing_data[p_name]['model'] = p_val['model']
 
                 with open(local_keys_file, 'w', encoding='utf-8') as f:
                     json.dump(existing_data, f, ensure_ascii=False, indent=2)
 
-                self.send_response(200)
-                self.send_header('Content-Type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps({'status': 'success', 'message': '已持久化保存至本地 config/local_ai_keys.json'}).encode('utf-8'))
+                self.send_json(200, {'status': 'success', 'message': '已持久化保存至本地 config/local_ai_keys.json'})
                 print("[AI Config] 🔒 本地私有 API 配置已更新（受 gitignore 保护，不会上传 Git）")
                 return
             except Exception as e:
-                self.send_response(500)
-                self.send_header('Content-Type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps({'status': 'error', 'message': str(e)}).encode('utf-8'))
+                self.send_json(500, {'status': 'error', 'message': str(e)})
                 return
+        elif self.path == '/api/ai/chat':
+            self.handle_ai_chat_proxy()
+            return
         else:
             self.send_response(404)
             self.end_headers()
+
+    def handle_ai_chat_proxy(self):
+        """本地 AI 流式中继代理，解决浏览器 CORS 限制并保护本地私有 Key"""
+        content_length = int(self.headers.get('Content-Length', 0))
+        post_data = self.rfile.read(content_length)
+        try:
+            client_payload = json.loads(post_data.decode('utf-8'))
+        except Exception:
+            client_payload = {}
+
+        # 1. 读取本地私有配置文件中的 Key 与 Provider
+        local_keys_file = os.path.join(BASE_DIR, 'config', 'local_ai_keys.json')
+        config_data = {}
+        if os.path.exists(local_keys_file):
+            try:
+                with open(local_keys_file, 'r', encoding='utf-8') as f:
+                    config_data = json.load(f)
+            except Exception:
+                pass
+
+        active_provider = client_payload.get('provider') or config_data.get('activeProvider') or 'zhipu'
+
+        # 2. 确定目标地址与 Key（优先信任本地私有配置文件 config/local_ai_keys.json，严防前端脏数据覆盖）
+        local_provider_key = config_data.get(active_provider, {}).get('apiKey', '')
+        client_key = client_payload.get('apiKey', '')
+        api_key = local_provider_key or client_key
+
+        if active_provider == 'zhipu':
+            target_url = "https://open.bigmodel.cn/api/paas/v4/chat/completions"
+            default_model = "glm-5.3-flash"
+        else:
+            target_url = "https://api.moonshot.cn/v1/chat/completions"
+            default_model = "kimi-k3"
+
+        if not api_key:
+            self.send_json(400, {'error': f'未在 config/local_ai_keys.json 或请求中配置【{active_provider}】的 API Key'})
+            return
+
+        model = client_payload.get('model') or default_model
+        messages = client_payload.get('messages', [])
+        stream = client_payload.get('stream', True)
+
+        req_body = {
+            'model': model,
+            'messages': messages,
+            'stream': stream
+        }
+        if active_provider == 'zhipu':
+            if 'temperature' in client_payload:
+                req_body['temperature'] = client_payload['temperature']
+            req_body['max_tokens'] = client_payload.get('max_tokens') or 4096
+            req_body['stream_options'] = {'chunk_include_usage': True}
+            
+            # 智谱 GLM 思考等级适配：默认启用极速省流 low 思考，避免思考耗尽 tokens 导致正文截断
+            if client_payload.get('thinking'):
+                req_body['thinking'] = client_payload['thinking']
+            else:
+                req_body['thinking'] = {'type': 'enabled', 'level': 'low'}
+        else:
+            req_body['reasoning_effort'] = client_payload.get('reasoning_effort', 'low')
+            req_body['max_tokens'] = client_payload.get('max_tokens', 4096)
+
+        try:
+            req_bytes = json.dumps(req_body).encode('utf-8')
+            req = urllib.request.Request(target_url, data=req_bytes, headers={
+                'Content-Type': 'application/json',
+                'Authorization': f'Bearer {api_key}',
+                'User-Agent': 'YijingAIService/3.0'
+            })
+            ctx = ssl.create_default_context()
+            resp = urllib.request.urlopen(req, context=ctx, timeout=60)
+
+            if stream:
+                self.send_response(200)
+                self.send_header('Content-Type', 'text/event-stream; charset=utf-8')
+                self.send_header('Cache-Control', 'no-cache')
+                self.send_header('Connection', 'keep-alive')
+                self.send_header('Transfer-Encoding', 'chunked')
+                self.send_header('X-Accel-Buffering', 'no')
+                self.end_headers()
+
+                try:
+                    while True:
+                        line = resp.readline()
+                        if not line:
+                            break
+                        hex_len = hex(len(line))[2:].encode('ascii')
+                        self.wfile.write(hex_len + b'\r\n' + line + b'\r\n')
+                        self.wfile.flush()
+                    self.wfile.write(b'0\r\n\r\n')
+                    self.wfile.flush()
+                    self.close_connection = True
+                except (BrokenPipeError, ConnectionResetError):
+                    # 客户端主动断开连接，优雅退出
+                    pass
+            else:
+                resp_data = resp.read()
+                try:
+                    parsed_json = json.loads(resp_data.decode('utf-8'))
+                    self.send_json(200, parsed_json)
+                except Exception:
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'application/json')
+                    self.send_header('Content-Length', str(len(resp_data)))
+                    self.end_headers()
+                    self.wfile.write(resp_data)
+        except (BrokenPipeError, ConnectionResetError):
+            pass
+        except urllib.error.HTTPError as e:
+            err_content = e.read().decode('utf-8', errors='ignore')
+            self.send_json(e.code, {'error': f"大模型接口返回错误 [{e.code}]: {err_content}"})
+        except Exception as e:
+            self.send_json(500, {'error': f"本地服务代理转发异常: {str(e)}"})
 
     def write_markdown_file(self, md_path, gua_id, record):
         """生成符合学术规范的 Markdown 修学档案"""
