@@ -70,6 +70,20 @@ class VaultSyncHandler(http.server.SimpleHTTPRequestHandler):
                     pass
             self.wfile.write(json.dumps(progress_data, ensure_ascii=False).encode('utf-8'))
             return
+        elif self.path == '/api/ai/config':
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            local_keys_file = os.path.join(BASE_DIR, 'config', 'local_ai_keys.json')
+            keys_data = {}
+            if os.path.exists(local_keys_file):
+                try:
+                    with open(local_keys_file, 'r', encoding='utf-8') as f:
+                        keys_data = json.load(f)
+                except Exception:
+                    pass
+            self.wfile.write(json.dumps(keys_data, ensure_ascii=False).encode('utf-8'))
+            return
         # 其他静态文件交给父类处理
         super().do_GET()
 
@@ -134,6 +148,40 @@ class VaultSyncHandler(http.server.SimpleHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(json.dumps({'status': 'success', 'message': '已同步研习进度至 progress.json'}).encode('utf-8'))
                 print(f"[Vault Sync] 🟢 成功同步全库研习掌握进度: 共 {payload.get('total_completed', 0)} 课已掌握")
+                return
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'status': 'error', 'message': str(e)}).encode('utf-8'))
+                return
+        elif self.path == '/api/ai/config':
+            content_length = int(self.headers.get('Content-Length', 0))
+            post_data = self.rfile.read(content_length)
+            try:
+                payload = json.loads(post_data.decode('utf-8'))
+                config_dir = os.path.join(BASE_DIR, 'config')
+                os.makedirs(config_dir, exist_ok=True)
+                local_keys_file = os.path.join(config_dir, 'local_ai_keys.json')
+                
+                # 增量融合已有配置
+                existing_data = {}
+                if os.path.exists(local_keys_file):
+                    try:
+                        with open(local_keys_file, 'r', encoding='utf-8') as f:
+                            existing_data = json.load(f)
+                    except Exception:
+                        pass
+                existing_data.update(payload)
+
+                with open(local_keys_file, 'w', encoding='utf-8') as f:
+                    json.dump(existing_data, f, ensure_ascii=False, indent=2)
+
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'status': 'success', 'message': '已持久化保存至本地 config/local_ai_keys.json'}).encode('utf-8'))
+                print("[AI Config] 🔒 本地私有 API 配置已更新（受 gitignore 保护，不会上传 Git）")
                 return
             except Exception as e:
                 self.send_response(500)

@@ -31,3 +31,10 @@ data/*.json
 data/*.txt
 data/*.html
 data/slices/
+
+# 本地私有 API Key 与环境配置（严禁提交远程 Git）
+config/local_ai_keys.json
+config/*.local.json
+.env
+.env.local
+*.local.key

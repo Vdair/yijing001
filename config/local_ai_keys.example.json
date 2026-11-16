@@ -1,0 +1,13 @@
+{
+  "activeProvider": "zhipu",
+  "zhipu": {
+    "apiKey": "",
+    "model": "glm-5.3-flash",
+    "apiUrl": "https://open.bigmodel.cn/api/paas/v4/chat/completions"
+  },
+  "kimi": {
+    "apiKey": "",
+    "model": "kimi-k3",
+    "apiUrl": "https://api.moonshot.cn/v1/chat/completions"
+  }
+}

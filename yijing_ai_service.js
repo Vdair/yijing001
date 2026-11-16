@@ -437,7 +437,7 @@ ${studentAnswer}
         { id: 'kimi-k3', name: 'Kimi-k3 (深度思考旗舰)', desc: '输入 20元/M, 缓存命中 2元/M, 输出 100元/M' },
         { id: 'kimi-k2.6', name: 'Kimi-k2.6 (通用思考)', desc: '支持保留思考链路' }
       ],
-      apiKey: 'sk-WVlLfffPTdVw55NqUX8hKerIn7juqsk6oaE8f9jyVoDAQR2U',
+      apiKey: '', // 密钥已解耦！统一由本地私有配置文件 config/local_ai_keys.json 或浏览器端维护，严防泄露至 Git
       reasoning_effort: 'low',
       max_tokens: 4096,
       supportsCache: true
@@ -495,9 +495,77 @@ ${studentAnswer}
         }
         localStorage.setItem(STORAGE_KEY_CONFIG, JSON.stringify(updated));
         console.log(`[YijingAIService] ⚙️ AI 配置已更新: 渠道=${updated.activeProvider}, 模型=${updated.model}`);
+        // 异步持久化到本地私有配置文件 config/local_ai_keys.json (不入 git)
+        this.saveToLocalConfigFile(updated);
         return updated;
       } catch (e) {
         console.error('[YijingAIService] 保存配置失败:', e);
+      }
+    },
+
+    /**
+     * 自动从本地私有配置文件 config/local_ai_keys.json 拉取密钥
+     */
+    async pullLocalConfigFile() {
+      const endpoints = ['/api/ai/config', 'http://127.0.0.1:8090/api/ai/config', 'http://localhost:8090/api/ai/config'];
+      for (const url of endpoints) {
+        try {
+          const res = await fetch(url);
+          if (res.ok) {
+            const data = await res.json();
+            if (data && (data.zhipu || data.kimi || data.activeProvider)) {
+              const cur = this.getConfig();
+              cur.providersState = cur.providersState || {};
+              if (data.zhipu && data.zhipu.apiKey) {
+                cur.providersState.zhipu = cur.providersState.zhipu || {};
+                cur.providersState.zhipu.apiKey = data.zhipu.apiKey;
+              }
+              if (data.kimi && data.kimi.apiKey) {
+                cur.providersState.kimi = cur.providersState.kimi || {};
+                cur.providersState.kimi.apiKey = data.kimi.apiKey;
+              }
+              if (data.activeProvider) cur.activeProvider = data.activeProvider;
+              const curP = cur.activeProvider || 'zhipu';
+              if (cur.providersState[curP] && cur.providersState[curP].apiKey) {
+                cur.apiKey = cur.providersState[curP].apiKey;
+              }
+              localStorage.setItem(STORAGE_KEY_CONFIG, JSON.stringify(cur));
+              console.log('[YijingAIService] 🔒 成功从本地私有配置文件同步 API 密钥！');
+              if (typeof window.updateAIModelBadge === 'function') window.updateAIModelBadge();
+              return true;
+            }
+          }
+        } catch (e) {}
+      }
+      return false;
+    },
+
+    /**
+     * 异步持久化到本地私有配置文件
+     */
+    async saveToLocalConfigFile(cfg) {
+      const endpoints = ['/api/ai/config', 'http://127.0.0.1:8090/api/ai/config', 'http://localhost:8090/api/ai/config'];
+      const payload = {
+        activeProvider: cfg.activeProvider,
+        zhipu: {
+          apiKey: cfg.providersState?.zhipu?.apiKey || (cfg.activeProvider === 'zhipu' ? cfg.apiKey : ''),
+          model: cfg.activeProvider === 'zhipu' ? cfg.model : 'glm-5.3-flash'
+        },
+        kimi: {
+          apiKey: cfg.providersState?.kimi?.apiKey || (cfg.activeProvider === 'kimi' ? cfg.apiKey : ''),
+          model: cfg.activeProvider === 'kimi' ? cfg.model : 'kimi-k3'
+        }
+      };
+
+      for (const url of endpoints) {
+        try {
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          if (res.ok) break;
+        } catch (e) {}
       }
     },
 
@@ -916,4 +984,6 @@ ${studentAnswer}
   window.YijingKnowledgeRetriever = YijingKnowledgeRetriever;
   window.YijingPromptSystem = YijingPromptSystem;
   window.YijingAIService = YijingAIService;
+  // 页面加载时自动从本地私有配置文件拉取密钥，避免在 Git 中硬编码
+  YijingAIService.pullLocalConfigFile();
 })(window);
