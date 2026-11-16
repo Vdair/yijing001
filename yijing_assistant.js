@@ -273,11 +273,15 @@
       <div class="yj-coach-info">
         <div class="yj-coach-avatar">☯️</div>
         <div class="yj-coach-meta">
-          <h3>玄微先生 · 易道助教</h3>
-          <p>经传宗本 · 四大宗师义理陪练</p>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <h3 style="margin:0;">玄微先生 · 易道助教</h3>
+            <span id="aiModelBadge" class="yj-model-badge" onclick="openAISettingsModal()" title="点击切换 AI 渠道/模型" style="font-size:10px; padding:1px 6px; border-radius:10px; background:rgba(212,175,55,0.15); color:var(--gold, #d4af37); border:1px solid rgba(212,175,55,0.4); cursor:pointer; font-weight:600;">⚡ GLM-5.3-Flash</span>
+          </div>
+          <p style="margin:2px 0 0 0;">经传宗本 · 四大宗师义理陪练</p>
         </div>
       </div>
       <div class="yj-panel-tools">
+        <button class="yj-tool-btn" onclick="openAISettingsModal()" title="AI 模型与渠道动态切换">⚙️ 模型</button>
         <button class="yj-tool-btn" onclick="clearCoachChat()" title="开启新话题">+ 新对话</button>
         <button class="yj-tool-btn" onclick="toggleAssistantPanel()" title="收起">✕</button>
       </div>
@@ -6064,5 +6068,240 @@
       alert('请允许浏览器弹出窗口以查看典藏打印预览。');
     }
   };
+
+  // ==========================================================================
+  // 四、AI 渠道与模型可视化动态控制中心 (AI Settings Modal)
+  // ==========================================================================
+  window.updateAIModelBadge = function() {
+    const badge = document.getElementById('aiModelBadge');
+    if (!badge || !window.YijingAIService) return;
+    const cfg = window.YijingAIService.getConfig();
+    const isZhipu = cfg.activeProvider === 'zhipu';
+    if (isZhipu) {
+      badge.innerHTML = cfg.model === 'glm-5.3' ? '🟣 GLM-5.3 (旗舰)' : '⚡ GLM-5.3-Flash (省流)';
+      badge.style.borderColor = 'rgba(78, 140, 255, 0.4)';
+      badge.style.color = '#388bfd';
+      badge.style.background = 'rgba(56, 139, 253, 0.12)';
+    } else {
+      badge.innerHTML = '🧠 Kimi-k3 (思考)';
+      badge.style.borderColor = 'rgba(212, 175, 55, 0.4)';
+      badge.style.color = 'var(--gold, #d4af37)';
+      badge.style.background = 'rgba(212, 175, 55, 0.15)';
+    }
+  };
+
+  window.openAISettingsModal = function() {
+    let modal = document.getElementById('yjAISettingsModal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'yjAISettingsModal';
+      modal.className = 'yj-modal-backdrop';
+      modal.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.6); z-index:99999; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(3px);';
+      document.body.appendChild(modal);
+    }
+
+    if (!window.YijingAIService) {
+      alert('YijingAIService 尚未就绪');
+      return;
+    }
+
+    const cfg = window.YijingAIService.getConfig();
+    const providers = window.YijingAIService.PROVIDERS;
+
+    modal.innerHTML = `
+      <div style="background:var(--bg-card, #1c1815); border:1px solid var(--gold, #d4af37); border-radius:12px; width:92%; max-width:540px; box-shadow:0 12px 36px rgba(0,0,0,0.5); padding:24px; color:var(--text, #e6edf3); font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; border-bottom:1px solid rgba(212,175,55,0.2); padding-bottom:12px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:20px;">⚙️</span>
+            <h3 style="margin:0; font-size:17px; font-weight:700; color:var(--gold, #d4af37);">AI 大模型与渠道动态控制中心</h3>
+          </div>
+          <button onclick="closeAISettingsModal()" style="background:none; border:none; color:#8b949e; font-size:18px; cursor:pointer;">✕</button>
+        </div>
+
+        <!-- 渠道选择 -->
+        <div style="margin-bottom:16px;">
+          <label style="display:block; font-size:13px; font-weight:600; margin-bottom:8px; color:var(--text-sec, #8b949e);">1. 选择 AI 服务厂商：</label>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <label style="display:flex; align-items:center; gap:8px; padding:10px 14px; border-radius:8px; border:1px solid ${cfg.activeProvider === 'zhipu' ? 'var(--gold, #d4af37)' : '#30363d'}; background:${cfg.activeProvider === 'zhipu' ? 'rgba(212,175,55,0.1)' : 'transparent'}; cursor:pointer;">
+              <input type="radio" name="aiProvider" value="zhipu" ${cfg.activeProvider === 'zhipu' ? 'checked' : ''} onchange="onSwitchProviderChange('zhipu')">
+              <div>
+                <div style="font-size:13px; font-weight:700; color:#58a6ff;">⚡ 智谱 AI (GLM)</div>
+                <div style="font-size:11px; color:#8b949e;">极低资费 · 0.23元/M缓存</div>
+              </div>
+            </label>
+            <label style="display:flex; align-items:center; gap:8px; padding:10px 14px; border-radius:8px; border:1px solid ${cfg.activeProvider === 'kimi' ? 'var(--gold, #d4af37)' : '#30363d'}; background:${cfg.activeProvider === 'kimi' ? 'rgba(212,175,55,0.1)' : 'transparent'}; cursor:pointer;">
+              <input type="radio" name="aiProvider" value="kimi" ${cfg.activeProvider === 'kimi' ? 'checked' : ''} onchange="onSwitchProviderChange('kimi')">
+              <div>
+                <div style="font-size:13px; font-weight:700; color:var(--gold, #d4af37);">🧠 Moonshot Kimi</div>
+                <div style="font-size:11px; color:#8b949e;">深度思考 · 原样保留</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- 模型选择 -->
+        <div style="margin-bottom:16px;">
+          <label style="display:block; font-size:13px; font-weight:600; margin-bottom:8px; color:var(--text-sec, #8b949e);">2. 选择模型版本：</label>
+          <select id="modalModelSelect" style="width:100%; padding:9px 12px; border-radius:6px; background:#0d1117; color:#e6edf3; border:1px solid #30363d; font-size:13px;">
+          </select>
+          <div id="modalModelDesc" style="font-size:11.5px; color:#58a6ff; margin-top:5px;"></div>
+        </div>
+
+        <!-- API Key 配置 -->
+        <div style="margin-bottom:18px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <label style="font-size:13px; font-weight:600; color:var(--text-sec, #8b949e);">3. API Key 认证密钥：</label>
+            <span id="keyHintBadge" style="font-size:11px; color:#8b949e;"></span>
+          </div>
+          <div style="position:relative;">
+            <input type="password" id="modalApiKeyInput" placeholder="请输入对应渠道的 API Key (Bearer Token)" style="width:100%; box-sizing:border-box; padding:9px 40px 9px 12px; border-radius:6px; background:#0d1117; color:#e6edf3; border:1px solid #30363d; font-size:12.5px; font-family:monospace;">
+            <button type="button" onclick="toggleApiKeyVisibility()" style="position:absolute; right:8px; top:8px; background:none; border:none; color:#8b949e; cursor:pointer; font-size:14px;" title="查看/隐藏">👁️</button>
+          </div>
+          <div style="font-size:11px; color:#8b949e; margin-top:4px;">* 密钥仅保存在本地浏览器端，端到端直接向模型厂商发起安全请求。</div>
+        </div>
+
+        <!-- 测试连通状态 -->
+        <div id="modalTestResult" style="display:none; padding:10px 12px; border-radius:6px; font-size:12px; margin-bottom:16px;"></div>
+
+        <!-- 底部按钮 -->
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+          <button type="button" onclick="testCurrentAIConnection()" id="modalTestBtn" style="padding:8px 16px; border-radius:6px; background:transparent; border:1px solid #388bfd; color:#58a6ff; font-size:12.5px; font-weight:600; cursor:pointer;">
+            🔍 连通性测试
+          </button>
+          <div style="display:flex; gap:10px;">
+            <button type="button" onclick="closeAISettingsModal()" style="padding:8px 16px; border-radius:6px; background:transparent; border:1px solid #30363d; color:#8b949e; font-size:12.5px; cursor:pointer;">取消</button>
+            <button type="button" onclick="saveAISettingsFromModal()" style="padding:8px 20px; border-radius:6px; background:var(--gold, #d4af37); border:none; color:#1a1612; font-size:12.5px; font-weight:700; cursor:pointer;">💾 保存并应用</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    modal.style.display = 'flex';
+    renderModalModelOptions(cfg.activeProvider, cfg.model);
+    renderModalApiKey(cfg.activeProvider);
+  };
+
+  window.closeAISettingsModal = function() {
+    const modal = document.getElementById('yjAISettingsModal');
+    if (modal) modal.style.display = 'none';
+  };
+
+  window.renderModalModelOptions = function(providerId, selectedModel = null) {
+    const sel = document.getElementById('modalModelSelect');
+    const desc = document.getElementById('modalModelDesc');
+    if (!sel || !window.YijingAIService) return;
+
+    const p = window.YijingAIService.PROVIDERS[providerId];
+    if (!p) return;
+
+    sel.innerHTML = p.models.map(m => `
+      <option value="${m.id}" ${(selectedModel === m.id || (!selectedModel && m.id === p.defaultModel)) ? 'selected' : ''}>
+        ${m.name}
+      </option>
+    `).join('');
+
+    const updateDesc = () => {
+      const curM = p.models.find(m => m.id === sel.value);
+      if (desc && curM) desc.innerText = `💡 资费说明: ${curM.desc || ''}`;
+    };
+    sel.onchange = updateDesc;
+    updateDesc();
+  };
+
+  window.renderModalApiKey = function(providerId) {
+    const input = document.getElementById('modalApiKeyInput');
+    const hint = document.getElementById('keyHintBadge');
+    if (!input || !window.YijingAIService) return;
+
+    const cfg = window.YijingAIService.getConfig();
+    const p = window.YijingAIService.PROVIDERS[providerId];
+    const key = (cfg.providersState?.[providerId]?.apiKey) || (providerId === cfg.activeProvider ? cfg.apiKey : (p.apiKey || ''));
+    
+    input.value = key;
+    if (hint) {
+      hint.innerText = key ? (key.startsWith('sk-') ? `已配置 (${key.slice(0, 6)}...${key.slice(-4)})` : '已配置密钥') : '尚未配置';
+      hint.style.color = key ? '#3fb950' : '#d29922';
+    }
+  };
+
+  window.onSwitchProviderChange = function(newProviderId) {
+    renderModalModelOptions(newProviderId);
+    renderModalApiKey(newProviderId);
+  };
+
+  window.toggleApiKeyVisibility = function() {
+    const input = document.getElementById('modalApiKeyInput');
+    if (input) input.type = input.type === 'password' ? 'text' : 'password';
+  };
+
+  window.testCurrentAIConnection = async function() {
+    const btn = document.getElementById('modalTestBtn');
+    const resBox = document.getElementById('modalTestResult');
+    const provRad = document.querySelector('input[name="aiProvider"]:checked');
+    const providerId = provRad ? provRad.value : 'zhipu';
+    const model = document.getElementById('modalModelSelect')?.value;
+    const apiKey = document.getElementById('modalApiKeyInput')?.value?.trim();
+
+    if (!apiKey) {
+      resBox.style.display = 'block';
+      resBox.style.background = 'rgba(218, 54, 51, 0.15)';
+      resBox.style.color = '#f85149';
+      resBox.style.border = '1px solid rgba(218, 54, 51, 0.4)';
+      resBox.innerText = '❌ 请先输入 API Key 再进行测试！';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerText = '⏳ 测试连通中...';
+    resBox.style.display = 'block';
+    resBox.style.background = 'rgba(56, 139, 253, 0.1)';
+    resBox.style.color = '#58a6ff';
+    resBox.style.border = '1px solid rgba(56, 139, 253, 0.3)';
+    resBox.innerText = '正在向模型发起极速握手探测...';
+
+    const res = await window.YijingAIService.testConnection(apiKey, providerId, model);
+    btn.disabled = false;
+    btn.innerText = '🔍 连通性测试';
+
+    if (res.success) {
+      resBox.style.background = 'rgba(46, 160, 67, 0.15)';
+      resBox.style.color = '#3fb950';
+      resBox.style.border = '1px solid rgba(46, 160, 67, 0.4)';
+      resBox.innerHTML = `✅ <strong>连通成功！</strong><br>模型回应：“${res.reply}”<br><span style="font-size:11px; color:#8b949e;">渠道: ${providerId} | 模型: ${model}</span>`;
+    } else {
+      resBox.style.background = 'rgba(218, 54, 51, 0.15)';
+      resBox.style.color = '#f85149';
+      resBox.style.border = '1px solid rgba(218, 54, 51, 0.4)';
+      resBox.innerHTML = `❌ <strong>连接失败</strong>：${res.message}`;
+    }
+  };
+
+  window.saveAISettingsFromModal = function() {
+    const provRad = document.querySelector('input[name="aiProvider"]:checked');
+    const providerId = provRad ? provRad.value : 'zhipu';
+    const model = document.getElementById('modalModelSelect')?.value;
+    const apiKey = document.getElementById('modalApiKeyInput')?.value?.trim();
+
+    if (!window.YijingAIService) return;
+
+    window.YijingAIService.switchProvider(providerId, model);
+    if (apiKey !== undefined) {
+      const cfg = window.YijingAIService.getConfig();
+      cfg.providersState = cfg.providersState || {};
+      cfg.providersState[providerId] = cfg.providersState[providerId] || {};
+      cfg.providersState[providerId].apiKey = apiKey;
+      cfg.apiKey = apiKey;
+      window.YijingAIService.saveConfig(cfg);
+    }
+
+    window.updateAIModelBadge();
+    closeAISettingsModal();
+    alert(`🎉 AI 渠道已切换至：【${providerId === 'zhipu' ? '智谱 GLM' : 'Moonshot Kimi'} - ${model}】！`);
+  };
+
+  // 初始化悬浮窗模型 Badge
+  setTimeout(() => {
+    if (typeof window.updateAIModelBadge === 'function') window.updateAIModelBadge();
+  }, 200);
 
 })();

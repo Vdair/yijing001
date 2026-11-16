@@ -411,31 +411,185 @@ ${studentAnswer}
 
   // ==========================================================================
   // 三、易道 AI 服务引擎客户端 (YijingAIService)
+  // 支持多厂商（智谱 GLM / Moonshot Kimi）动态热切换、Prompt 缓存前缀固化与用量监控
   // ==========================================================================
-  const DEFAULT_CONFIG = {
-    apiUrl: 'https://api.moonshot.cn/v1/chat/completions',
-    apiKey: 'sk-WVlLfffPTdVw55NqUX8hKerIn7juqsk6oaE8f9jyVoDAQR2U',
-    model: 'kimi-k3',
-    reasoning_effort: 'low', // 场景不需要强思考，设置为 low 极速响应并大幅节约推理 token
-    max_tokens: 4096
+  const PROVIDERS = {
+    zhipu: {
+      id: 'zhipu',
+      name: '智谱 AI (GLM)',
+      apiUrl: 'https://open.bigmodel.cn/api/paas/v4/chat/completions',
+      defaultModel: 'glm-5.3-flash',
+      models: [
+        { id: 'glm-5.3-flash', name: 'GLM-5.3-Flash (极速省流·0.23元/M缓存·首选推荐)', desc: '输入 0.8元/M, 缓存命中 0.23元/M, 输出 2.8元/M' },
+        { id: 'glm-5.3', name: 'GLM-5.3 (最新旗舰·深度推理)', desc: '输入 8元/M, 缓存命中 2元/M, 输出 28元/M' }
+      ],
+      apiKey: '',
+      temperature: 0.7,
+      max_tokens: 3000,
+      supportsCache: true
+    },
+    kimi: {
+      id: 'kimi',
+      name: 'Moonshot Kimi',
+      apiUrl: 'https://api.moonshot.cn/v1/chat/completions',
+      defaultModel: 'kimi-k3',
+      models: [
+        { id: 'kimi-k3', name: 'Kimi-k3 (深度思考旗舰)', desc: '输入 20元/M, 缓存命中 2元/M, 输出 100元/M' },
+        { id: 'kimi-k2.6', name: 'Kimi-k2.6 (通用思考)', desc: '支持保留思考链路' }
+      ],
+      apiKey: 'sk-WVlLfffPTdVw55NqUX8hKerIn7juqsk6oaE8f9jyVoDAQR2U',
+      reasoning_effort: 'low',
+      max_tokens: 4096,
+      supportsCache: true
+    }
   };
 
-  const STORAGE_KEY_CONFIG = 'yijing_ai_config_v2';
+  const STORAGE_KEY_CONFIG = 'yijing_ai_config_v3';
 
   const YijingAIService = {
+    PROVIDERS,
+
     getConfig() {
       try {
         const saved = localStorage.getItem(STORAGE_KEY_CONFIG);
-        return saved ? { ...DEFAULT_CONFIG, ...JSON.parse(saved) } : { ...DEFAULT_CONFIG };
+        let parsed = saved ? JSON.parse(saved) : {};
+        
+        // 默认激活提供商：优先智谱 zhipu，Kimi 完整保留
+        const providerId = parsed.activeProvider || 'zhipu';
+        const pDef = PROVIDERS[providerId] || PROVIDERS.zhipu;
+        
+        return {
+          activeProvider: providerId,
+          apiUrl: parsed.apiUrl || pDef.apiUrl,
+          apiKey: parsed.apiKey !== undefined ? parsed.apiKey : (parsed[`apiKey_${providerId}`] || pDef.apiKey || ''),
+          model: parsed.model || pDef.defaultModel,
+          temperature: parsed.temperature !== undefined ? parsed.temperature : pDef.temperature,
+          max_tokens: parsed.max_tokens || pDef.max_tokens,
+          reasoning_effort: parsed.reasoning_effort || pDef.reasoning_effort || 'low',
+          providersState: parsed.providersState || {
+            zhipu: { apiKey: parsed.apiKey_zhipu || '' },
+            kimi: { apiKey: parsed.apiKey_kimi || PROVIDERS.kimi.apiKey }
+          }
+        };
       } catch (e) {
-        return { ...DEFAULT_CONFIG };
+        return {
+          activeProvider: 'zhipu',
+          apiUrl: PROVIDERS.zhipu.apiUrl,
+          apiKey: '',
+          model: PROVIDERS.zhipu.defaultModel,
+          temperature: 0.7,
+          max_tokens: 3000
+        };
       }
     },
 
-    saveConfig(cfg) {
+    saveConfig(patch) {
       try {
-        localStorage.setItem(STORAGE_KEY_CONFIG, JSON.stringify(cfg));
-      } catch (e) {}
+        const cur = this.getConfig();
+        const updated = { ...cur, ...patch };
+        // 同步持久化各 provider 的独立 apiKey
+        if (updated.activeProvider && updated.apiKey) {
+          updated.providersState = updated.providersState || {};
+          updated.providersState[updated.activeProvider] = updated.providersState[updated.activeProvider] || {};
+          updated.providersState[updated.activeProvider].apiKey = updated.apiKey;
+        }
+        localStorage.setItem(STORAGE_KEY_CONFIG, JSON.stringify(updated));
+        console.log(`[YijingAIService] ⚙️ AI 配置已更新: 渠道=${updated.activeProvider}, 模型=${updated.model}`);
+        return updated;
+      } catch (e) {
+        console.error('[YijingAIService] 保存配置失败:', e);
+      }
+    },
+
+    /**
+     * 动态热切换 Provider（'zhipu' 或 'kimi'）
+     */
+    switchProvider(providerId, modelId = null) {
+      const p = PROVIDERS[providerId];
+      if (!p) throw new Error(`未知的 AI 提供商: ${providerId}`);
+
+      const cur = this.getConfig();
+      const pKey = (cur.providersState && cur.providersState[providerId] && cur.providersState[providerId].apiKey) || p.apiKey || '';
+
+      const updated = this.saveConfig({
+        activeProvider: providerId,
+        apiUrl: p.apiUrl,
+        model: modelId || p.defaultModel,
+        apiKey: pKey,
+        temperature: p.temperature,
+        max_tokens: p.max_tokens,
+        reasoning_effort: p.reasoning_effort || 'low'
+      });
+      return updated;
+    },
+
+    /**
+     * 极速连通性与模型可用性测试
+     */
+    async testConnection(testApiKey = null, providerId = null, modelId = null) {
+      const cfg = this.getConfig();
+      const pId = providerId || cfg.activeProvider;
+      const p = PROVIDERS[pId] || PROVIDERS.zhipu;
+      const key = testApiKey || (pId === cfg.activeProvider ? cfg.apiKey : (cfg.providersState?.[pId]?.apiKey || p.apiKey));
+      const model = modelId || (pId === cfg.activeProvider ? cfg.model : p.defaultModel);
+
+      if (!key) {
+        return {
+          success: false,
+          message: `未配置【${p.name}】的 API Key，请先输入密钥。`
+        };
+      }
+
+      try {
+        const reqBody = {
+          model: model,
+          messages: [
+            { role: 'system', content: '你是周易学术助教玄微先生。请简要回应，不超过20字。' },
+            { role: 'user', content: '请说一句乾卦的卦训。' }
+          ],
+          stream: false,
+          max_tokens: 60
+        };
+        if (pId === 'kimi') {
+          reqBody.reasoning_effort = 'low';
+        }
+
+        const res = await fetch(p.apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${key}`
+          },
+          body: JSON.stringify(reqBody)
+        });
+
+        if (!res.ok) {
+          const errText = await res.text();
+          return {
+            success: false,
+            status: res.status,
+            message: `API 连接失败 [${res.status}]: ${errText.slice(0, 200)}`
+          };
+        }
+
+        const data = await res.json();
+        const reply = data.choices?.[0]?.message?.content || '连通正常';
+        const cached = data.usage?.prompt_tokens_details?.cached_tokens || 0;
+
+        return {
+          success: true,
+          provider: pId,
+          model: model,
+          reply: reply.trim(),
+          cachedTokens: cached,
+          message: `🎉 连接成功！模型【${model}】响应正常。`
+        };
+      } catch (err) {
+        return {
+          success: false,
+          message: `网络或跨域异常: ${err.message}`
+        };
+      }
     },
 
     // 暴露知识库提取器与 Prompt 体系
@@ -455,11 +609,21 @@ ${studentAnswer}
       onError
     }) {
       const config = this.getConfig();
+      const isZhipu = config.activeProvider === 'zhipu' || (config.model && config.model.startsWith('glm-'));
+      const isKimi = config.activeProvider === 'kimi' || (config.model && config.model.includes('kimi'));
 
-      // 提取外接知识库上下文
+      if (!config.apiKey) {
+        const pName = isZhipu ? '智谱 AI (GLM)' : 'Kimi';
+        const errMsg = `⚠️ 未配置 ${pName} 的 API Key。请在界面右上角点击【⚙️ 模型】填入您的 Key，或一键切换回 Kimi。`;
+        const err = new Error(errMsg);
+        if (onError) onError(err);
+        throw err;
+      }
+
+      // 提取外接知识库上下文（确保静态前缀，零动态时间注入，最大化缓存命中率）
       const knowledgeContext = YijingKnowledgeRetriever.extractKnowledgeContext(lessonMeta);
 
-      // 构建主 Agent 系统 Prompt
+      // 构建主 Agent 系统 Prompt (静态前缀)
       const systemPrompt = customSystemPrompt || YijingPromptSystem.buildMasterAgentSystemPrompt(knowledgeContext);
 
       const fullMessages = [
@@ -474,10 +638,19 @@ ${studentAnswer}
           stream: true
         };
 
-        // 针对 kimi-k3 思考模型进行精准适配：
-        // 1. 设置推理强度 reasoning_effort: "low"，免去冗长思维链，轻量推理即出回答
-        // 2. 避免传非 1 的 temperature（Kimi 思考模型限制仅允许 temperature=1，不传则使用默认值）
-        if (config.model && (config.model.includes('kimi') || config.model.includes('moonshot'))) {
+        if (isZhipu) {
+          // 智谱 GLM-5.3 规范适配：
+          // 1. 支持采样温度与最大 Token
+          reqBody.temperature = config.temperature !== undefined ? config.temperature : 0.7;
+          reqBody.max_tokens = config.max_tokens || 3000;
+          // 2. 开启逐块/最终 usage 统计，支持读取 cached_tokens
+          reqBody.stream_options = { chunk_include_usage: true };
+          // 3. 若使用 GLM-5.3 旗舰且需要思考模式
+          if (config.model === 'glm-5.3' && config.enable_thinking) {
+            reqBody.thinking = { type: 'enabled', clear_thinking: true };
+          }
+        } else if (isKimi) {
+          // Kimi-k3 规范适配：
           reqBody.reasoning_effort = config.reasoning_effort || 'low';
           reqBody.max_tokens = config.max_tokens || 4096;
         } else {
@@ -504,6 +677,7 @@ ${studentAnswer}
         let fullContent = '';
         let fullReasoning = '';
         let buffer = '';
+        let cacheHitTokens = 0;
 
         while (true) {
           const { done, value } = await reader.read();
@@ -517,15 +691,24 @@ ${studentAnswer}
             const trimmed = line.trim();
             if (!trimmed || trimmed.startsWith(':')) continue;
             if (trimmed === 'data: [DONE]') {
-              if (onDone) onDone({ content: fullContent, reasoning: fullReasoning });
-              return { content: fullContent, reasoning: fullReasoning };
+              if (cacheHitTokens > 0) {
+                console.log(`[AI Cache] 🟢 成功命中 Prompt 缓存: ${cacheHitTokens} Tokens！`);
+              }
+              if (onDone) onDone({ content: fullContent, reasoning: fullReasoning, cachedTokens: cacheHitTokens });
+              return { content: fullContent, reasoning: fullReasoning, cachedTokens: cacheHitTokens };
             }
             if (trimmed.startsWith('data: ')) {
               try {
                 const json = JSON.parse(trimmed.slice(6));
+                
+                // 统计缓存用量
+                if (json.usage && json.usage.prompt_tokens_details && json.usage.prompt_tokens_details.cached_tokens) {
+                  cacheHitTokens = json.usage.prompt_tokens_details.cached_tokens;
+                }
+
                 const choice = json.choices && json.choices[0];
                 if (choice && choice.delta) {
-                  // 1. 深度思考推理流
+                  // 1. 深度思考推理流 (Kimi / GLM 思考块)
                   if (choice.delta.reasoning_content) {
                     fullReasoning += choice.delta.reasoning_content;
                     if (onReasoning) onReasoning(choice.delta.reasoning_content, fullReasoning);
@@ -543,8 +726,11 @@ ${studentAnswer}
           }
         }
 
-        if (onDone) onDone({ content: fullContent, reasoning: fullReasoning });
-        return { content: fullContent, reasoning: fullReasoning };
+        if (cacheHitTokens > 0) {
+          console.log(`[AI Cache] 🟢 成功命中 Prompt 缓存: ${cacheHitTokens} Tokens！`);
+        }
+        if (onDone) onDone({ content: fullContent, reasoning: fullReasoning, cachedTokens: cacheHitTokens });
+        return { content: fullContent, reasoning: fullReasoning, cachedTokens: cacheHitTokens };
       } catch (err) {
         console.error('YijingAIService Error:', err);
         if (onError) onError(err);
