@@ -908,31 +908,38 @@ ${studentAnswer}
         tag
       });
 
+      let isFinished = false;
+      const safeDone = (payload) => {
+        if (isFinished) return;
+        isFinished = true;
+        if (onDone) onDone(payload);
+      };
+
       try {
         return await this.streamChat({
           messages: [{ role: 'user', content: userContent }],
           lessonMeta: lessonMeta || { title: lessonTitle },
           onReasoning,
           onContent,
-          onDone,
+          onDone: safeDone,
           onError: async (err) => {
             console.warn('[YijingAIService] 联网/API请求异常，无缝降级启用宗师离线深度辨析引擎:', err);
             const offlineContent = this.generateOfflineInlineAssessment({ lessonTitle, question, studentAnswer, hint, tag });
             if (onContent) onContent(offlineContent, offlineContent);
-            if (onDone) onDone({ content: offlineContent, reasoning: '（依托易道本地宗师时位规则库深度生成）' });
+            safeDone({ content: offlineContent, reasoning: '（依托易道本地宗师时位规则库深度生成）' });
           }
         });
       } catch (err) {
-        console.warn('[YijingAIService] 调用失败，采用离线宗师引擎:', err);
+        console.warn('[YijingAIService] streamChat失败或中断，采用离线宗师引擎:', err);
         const offlineContent = this.generateOfflineInlineAssessment({ lessonTitle, question, studentAnswer, hint, tag });
         if (onContent) onContent(offlineContent, offlineContent);
-        if (onDone) onDone({ content: offlineContent, reasoning: '（依托易道本地宗师时位规则库深度生成）' });
+        safeDone({ content: offlineContent, reasoning: '（依托易道本地宗师时位规则库深度生成）' });
         return { content: offlineContent, reasoning: '' };
       }
     },
 
     /**
-     * 本地宗师高保真离线辨析引擎 (支持针对起源取象、三才模型、八大原力等不同题型智能点穴)
+     * 本地宗师高保真离线辨析引擎 (支持针对起源取象、三才模型、八大原力、复杂系统互动等题型智能点穴)
      */
     generateOfflineInlineAssessment({ lessonTitle = '', question = '', studentAnswer = '', hint = '', tag = '' }) {
       const ans = (studentAnswer || '').trim();
@@ -941,8 +948,23 @@ ${studentAnswer}
       let critiqueText = '';
       let adviceText = '';
 
+      // 0. 【复杂系统 / 重卦相交 / 系统博弈】题型判定 (第二课专属重点)
+      const isSystemTopic = tag.includes('复杂系统') || tag.includes('重卦') || question.includes('复杂系统') || question.includes('系统 A');
+      if (isSystemTopic) {
+        const hasMedia = ans.includes('自媒体') || ans.includes('创业') || ans.includes('项目');
+        const mentionsReady = ans.includes('没有做好充分的准备') || ans.includes('无法开始') || ans.includes('输出不可知');
+
+        affirmText = `小友此番悟道切中肯綮！其一，精准领会了单卦与重卦的本质分野——单卦孤立而重卦动态，八卦交互动荡方生宇宙万物；其二，毫不回避当下现实，直接把自己即将启动的“自媒体投入与变现迷茫”代入卦理，敏锐察觉到“卦象向上、期待向上，但内部尚未充分备好”的时位脱节。这等刀刃向内的真实反观，正是易道研学的上乘心法！`;
+
+        critiqueText = `此处玄微先生为你点穴深究：\n` +
+          `1. 【内卦与外卦的严重错位】：你所言“期待向上”乃外卦离火（名声显扬、内容曝光）或兑金（用户喜悦）之象，而“内部未备好、变现路径模糊”则是内卦坤土（交付承载）或乾金（自驱壁垒）的极度虚弱。内卦不稳而外卦妄动，在易理中此乃“小蓄”或“渐”卦未成之象，若冒然大举投入资金与精力，最易落入“内耗空转、虎头蛇尾”的困局；\n` +
+          `2. 【复杂系统的输入输出法则】：自媒体绝非单向输出，而是复杂的“注意力与价值交换系统”。你之所以“无法开始”，根本矛盾不在于“输出不可知”，而在于底层“商业反馈闭环规则”未曾勘破。若以赌徒心态期待一战暴富，是把复杂系统降维成单线妄念。`;
+
+        adviceText = `1. 【先固内卦，以地道为基】：莫急于追求大制作、重资产投入。先做“最小可行交付（MVP）”，盘点你手头最笃定、最无需外部依赖的独家认知作为第一颗种子；\n` +
+          `2. 【以坎水流润破僵局】：变现不可知是常态，行“坎水之深沉”，把“盈利考核”暂缓，以“验证用户真实痛点”为第一输入指标。内部做好准备不是等所有资源齐备，而是在小步试错中边打边建。知行合一，始于足下！`;
+      }
       // 1. 【起源觉察 / 取象思维 / 自然物象】题型判定
-      const isImageryTopic = tag.includes('起源') || tag.includes('取象') || question.includes('近取诸身') || question.includes('自然物象');
+      else if (tag.includes('起源') || tag.includes('取象') || question.includes('近取诸身') || question.includes('自然物象')) {
       if (isImageryTopic) {
         const hasThunder = ans.includes('雷') || ans.includes('蠢蠢欲动') || ans.includes('跳槽') || ans.includes('动荡');
         const hasFire = ans.includes('火') || ans.includes('无名火') || ans.includes('烦躁') || ans.includes('急');

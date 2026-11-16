@@ -4744,14 +4744,14 @@
         <div class="yj-inline-think-actions">
           <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
             <button class="yj-btn-outline" style="font-size:12.5px; padding:6px 14px; border-color:var(--gold); color:var(--gold);" onclick="toggleHintDrawer('${hintId}')">☯️ 查看玄微先生点穴启发</button>
-            <button class="yj-btn-gold" id="${assessBtnId}" style="font-size:12.5px; padding:6px 16px; background:linear-gradient(135deg, #a855f7 0%, #7c3aed 100%); color:#ffffff; border:none; font-weight:700; box-shadow:0 2px 8px rgba(124,58,237,0.35); cursor:pointer;" onclick="requestInlineThinkAssessment('${cur.id}', ${qIdx})">✨ 提请老师师承评估</button>
+            <button class="yj-btn-gold" id="${assessBtnId}" style="font-size:12.5px; padding:6px 16px; background:linear-gradient(135deg, #a855f7 0%, #7c3aed 100%); color:#ffffff; border:none; font-weight:700; box-shadow:0 2px 8px rgba(124,58,237,0.35); cursor:pointer;" onclick="requestInlineThinkAssessment('${cur.id}', ${qIdx}, this)">${savedAssessment ? '✨ 重新提请师承评估' : '✨ 提请老师师承评估'}</button>
           </div>
           <button class="yj-btn-outline" style="font-size:12.5px; padding:6px 14px; border-color:var(--gold); color:var(--gold);" onclick="saveInlineThinkNote('${escapeHtml(qItem.tag || '边读边思')}', '${inputId}', '${cur.id}')">📝 存入本课随堂微笔记</button>
         </div>
         <div class="yj-inline-hint-box" id="${hintId}">
           ${qItem.hint || '在易道研学中，每一次驻足反思都是一次认知跃迁。'}
         </div>
-        <div class="yj-inline-assessment-container ${savedAssessment ? 'open' : ''}" id="${assessResultId}">
+        <div class="yj-inline-assessment-container ${savedAssessment ? 'open' : ''}" id="${assessResultId}" style="${savedAssessment ? 'display:block;' : ''}">
           ${savedAssessment ? formatTeacherAssessmentHtml(savedAssessment, historyItem.updated_at, false) : ''}
         </div>
       `;
@@ -4780,7 +4780,9 @@
 
   // 格式化解析玄微先生的三维评估卡片 (肯定之处、不足之处、学习建议)
   window.formatTeacherAssessmentHtml = function(text, timeStr = '', isStreaming = false) {
-    if (!text) return '';
+    if (!text || !text.trim()) {
+      text = '🟢 【明德见智 · 肯定之处】：善哉！能将所学印证自身，心性甚诚。\n\n🟡 【见微知著 · 辨正不足】：切忌脱离现实约束，地道乃生存之本。\n\n🔵 【致知力行 · 研学建议】：笃行实干，静待时变。';
+    }
 
     // 解析三大模块
     let affirmContent = '';
@@ -4871,7 +4873,7 @@
   };
 
   // 提请玄微先生对边读边思回答展开评估并自动落盘
-  window.requestInlineThinkAssessment = async function(guaId, qIdx) {
+  window.requestInlineThinkAssessment = async function(guaId, qIdx, btnTrigger) {
     const cur = getCurrentLesson();
     const targetGuaId = guaId || (cur ? cur.id : 'unknown');
     const questions = INLINE_THINK_BANK[targetGuaId] || [];
@@ -4881,11 +4883,19 @@
     const resultId = `inlineAssessResult_${targetGuaId}_${qIdx}`;
     const assessBtnId = `inlineAssessBtn_${targetGuaId}_${qIdx}`;
 
-    const input = document.getElementById(inputId);
-    const resultEl = document.getElementById(resultId);
-    const assessBtn = document.getElementById(assessBtnId);
+    // 智能寻址：优先使用触发按钮对象，避免多卡片或动态渲染 ID 偏移
+    const assessBtn = btnTrigger || document.getElementById(assessBtnId) || (window.event ? window.event.currentTarget : null);
+    const cardEl = assessBtn ? assessBtn.closest('.yj-inline-think-card') : null;
 
-    if (!input) return;
+    const input = document.getElementById(inputId) || (cardEl ? cardEl.querySelector('.yj-inline-think-input') : null);
+    const resultEl = document.getElementById(resultId) || (cardEl ? cardEl.querySelector('.yj-inline-assessment-container') : null);
+
+    if (!input) {
+      console.error(`[InlineAssessment] 未能定位到当前小节的输入框: ${inputId}`);
+      alert('抱歉，未能定位到当前小节的思考输入框，请刷新页面重试。');
+      return;
+    }
+
     const userAnswer = input.value.trim();
     if (!userAnswer) {
       alert('请先在输入框中敲下你读到此处的真实思考、疑惑或感悟，再提请玄微先生评估。');
@@ -4901,6 +4911,7 @@
 
     // 展开容器并渲染思考骨架
     if (resultEl) {
+      resultEl.style.display = 'block';
       resultEl.classList.add('open');
       resultEl.innerHTML = `
         <div class="yj-assess-loading">
@@ -4909,14 +4920,36 @@
           <div style="font-size:12px; color:var(--text-sub); margin-top:4px;">（正在辨析：明德见智肯定、见微知著解惑、致知力行建议）</div>
         </div>
       `;
+      try {
+        resultEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      } catch (e) {}
     }
 
     let accumulatedContent = '';
+    let isFinished = false;
 
     const finishAssessment = function(finalText) {
+      if (isFinished) return;
+      isFinished = true;
+
+      let validText = (finalText || '').trim();
+      if (!validText) {
+        validText = (window.YijingAIService && window.YijingAIService.generateOfflineInlineAssessment)
+          ? window.YijingAIService.generateOfflineInlineAssessment({
+              lessonTitle: cur ? cur.title : targetGuaId,
+              question: qItem.question,
+              studentAnswer: userAnswer,
+              hint: qItem.hint || '',
+              tag: qItem.tag || '边读边思'
+            })
+          : '🟢 【明德见智 · 肯定之处】：善哉！能将所学印证自身，心性甚诚。\n\n🟡 【见微知著 · 辨正不足】：切忌脱离现实约束，地道乃生存之本。\n\n🔵 【致知力行 · 研学建议】：笃行实干，静待时变。';
+      }
+
       const timeStr = new Date().toLocaleString();
       if (resultEl) {
-        resultEl.innerHTML = formatTeacherAssessmentHtml(finalText, timeStr, false);
+        resultEl.style.display = 'block';
+        resultEl.classList.add('open');
+        resultEl.innerHTML = formatTeacherAssessmentHtml(validText, timeStr, false);
       }
       if (assessBtn) {
         assessBtn.disabled = false;
@@ -4925,19 +4958,21 @@
 
       // 核心：同步进行存储落盘！
       if (window.LearningVault && window.LearningVault.saveInlineAssessment) {
-        window.LearningVault.saveInlineAssessment(
-          targetGuaId,
-          qIdx,
-          qItem.question,
-          qItem.tag || '边读边思',
-          userAnswer,
-          finalText,
-          cur
-        );
-        console.log(`[InlineAssessment] 🟢 学员回答与玄微先生评估已成功同步落盘至 ${targetGuaId}`);
         try {
+          window.LearningVault.saveInlineAssessment(
+            targetGuaId,
+            qIdx,
+            qItem.question,
+            qItem.tag || '边读边思',
+            userAnswer,
+            validText,
+            cur
+          );
+          console.log(`[InlineAssessment] 🟢 学员回答与玄微先生评估已成功同步落盘至 ${targetGuaId}`);
           if (typeof window.renderBottomAssistantStages === 'function') window.renderBottomAssistantStages();
-        } catch (e) {}
+        } catch (vaultErr) {
+          console.warn('[InlineAssessment] 落盘存储异常:', vaultErr);
+        }
       }
     };
 
@@ -4952,12 +4987,16 @@
           lessonMeta: cur || {},
           onReasoning: (chunk, full) => {
             if (resultEl && !resultEl.innerHTML.includes('明德见智')) {
+              resultEl.style.display = 'block';
+              resultEl.classList.add('open');
               resultEl.innerHTML = formatTeacherAssessmentHtml('🧠 宗师正在深察时位与爻变机制...', '正在推演...', true);
             }
           },
           onContent: (chunk, full) => {
             accumulatedContent = full;
             if (resultEl) {
+              resultEl.style.display = 'block';
+              resultEl.classList.add('open');
               resultEl.innerHTML = formatTeacherAssessmentHtml(full, '正在生成...', true);
             }
           },
@@ -4981,12 +5020,28 @@
         });
       } else {
         // 服务未就绪直接使用离线评估
-        const offline = '🟢 【明德见智 · 肯定之处】：善哉！能将所学印证自身，心性甚诚。\n\n🟡 【见微知著 · 辨正不足】：切忌脱离现实约束，地道乃生存之本。\n\n🔵 【致知力行 · 研学建议】：笃行实干，静待时变。';
+        const offline = (window.YijingAIService && window.YijingAIService.generateOfflineInlineAssessment)
+          ? window.YijingAIService.generateOfflineInlineAssessment({
+              lessonTitle: cur ? cur.title : targetGuaId,
+              question: qItem.question,
+              studentAnswer: userAnswer,
+              hint: qItem.hint || '',
+              tag: qItem.tag || '边读边思'
+            })
+          : '🟢 【明德见智 · 肯定之处】：善哉！能将所学印证自身，心性甚诚。\n\n🟡 【见微知著 · 辨正不足】：切忌脱离现实约束，地道乃生存之本。\n\n🔵 【致知力行 · 研学建议】：笃行实干，静待时变。';
         finishAssessment(offline);
       }
     } catch (e) {
-      console.error('Assessment execution failed:', e);
-      const offline = '🟢 【明德见智 · 肯定之处】：善哉！能将所学印证自身，心性甚诚。\n\n🟡 【见微知著 · 辨正不足】：切忌脱离现实约束，地道乃生存之本。\n\n🔵 【致知力行 · 研学建议】：笃行实干，静待时变。';
+      console.error('[InlineAssessment] 评估过程异常，触发保真兜底:', e);
+      const offline = (window.YijingAIService && window.YijingAIService.generateOfflineInlineAssessment)
+        ? window.YijingAIService.generateOfflineInlineAssessment({
+            lessonTitle: cur ? cur.title : targetGuaId,
+            question: qItem.question,
+            studentAnswer: userAnswer,
+            hint: qItem.hint || '',
+            tag: qItem.tag || '边读边思'
+          })
+        : '🟢 【明德见智 · 肯定之处】：善哉！能将所学印证自身，心性甚诚。\n\n🟡 【见微知著 · 辨正不足】：切忌脱离现实约束，地道乃生存之本。\n\n🔵 【致知力行 · 研学建议】：笃行实干，静待时变。';
       finishAssessment(offline);
     }
   };
