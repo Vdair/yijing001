@@ -287,7 +287,7 @@
         <div class="yj-coach-meta">
           <div style="display:flex; align-items:center; gap:6px;">
             <h3 style="margin:0;">玄微先生 · 易道助教</h3>
-            <span id="aiModelBadge" class="yj-model-badge" onclick="openAISettingsModal()" title="点击切换 AI 渠道/模型" style="font-size:10px; padding:1px 6px; border-radius:10px; background:rgba(212,175,55,0.15); color:var(--gold, #d4af37); border:1px solid rgba(212,175,55,0.4); cursor:pointer; font-weight:600;">⚡ GLM-5.3-Flash</span>
+            <span id="aiModelBadge" class="yj-model-badge" onclick="openAISettingsModal()" title="点击切换 AI 渠道/模型" style="font-size:10px; padding:1px 6px; border-radius:10px; background:rgba(212,175,55,0.15); color:var(--gold, #d4af37); border:1px solid rgba(212,175,55,0.4); cursor:pointer; font-weight:600;">⚡ GLM-4-Flash</span>
           </div>
           <p style="margin:2px 0 0 0;">经传宗本 · 四大宗师义理陪练</p>
         </div>
@@ -4780,9 +4780,7 @@
 
   // 格式化解析玄微先生的三维评估卡片 (肯定之处、不足之处、学习建议)
   window.formatTeacherAssessmentHtml = function(text, timeStr = '', isStreaming = false) {
-    if (!text || !text.trim()) {
-      text = '🟢 【明德见智 · 肯定之处】：善哉！能将所学印证自身，心性甚诚。\n\n🟡 【见微知著 · 辨正不足】：切忌脱离现实约束，地道乃生存之本。\n\n🔵 【致知力行 · 研学建议】：笃行实干，静待时变。';
-    }
+    if (!text || !text.trim()) return '';
 
     // 解析三大模块
     let affirmContent = '';
@@ -4797,10 +4795,16 @@
       const trimmed = line.trim();
       if (trimmed.includes('【明德见智') || trimmed.includes('肯定之处')) {
         currentMode = 'affirm';
+        const rest = trimmed.replace(/^.*?【明德见智[^】]*】[：:]*/, '').replace(/^.*?肯定之处[：:]*/, '').trim();
+        if (rest) affirmContent += (affirmContent ? '\n' : '') + rest;
       } else if (trimmed.includes('【见微知著') || trimmed.includes('辨正不足') || trimmed.includes('不足之处')) {
         currentMode = 'critique';
+        const rest = trimmed.replace(/^.*?【见微知著[^】]*】[：:]*/, '').replace(/^.*?(辨正不足|不足之处)[：:]*/, '').trim();
+        if (rest) critiqueContent += (critiqueContent ? '\n' : '') + rest;
       } else if (trimmed.includes('【致知力行') || trimmed.includes('研学建议') || trimmed.includes('学习建议')) {
         currentMode = 'advice';
+        const rest = trimmed.replace(/^.*?【致知力行[^】]*】[：:]*/, '').replace(/^.*?(研学建议|学习建议)[：:]*/, '').trim();
+        if (rest) adviceContent += (adviceContent ? '\n' : '') + rest;
       } else {
         if (currentMode === 'affirm') {
           affirmContent += (affirmContent ? '\n' : '') + line;

@@ -220,7 +220,7 @@ class VaultSyncHandler(http.server.SimpleHTTPRequestHandler):
 
         if active_provider == 'zhipu':
             target_url = "https://open.bigmodel.cn/api/paas/v4/chat/completions"
-            default_model = "glm-5.3-flash"
+            default_model = "glm-4-flash"
         else:
             target_url = "https://api.moonshot.cn/v1/chat/completions"
             default_model = "kimi-k3"
@@ -261,7 +261,7 @@ class VaultSyncHandler(http.server.SimpleHTTPRequestHandler):
                 'User-Agent': 'YijingAIService/3.0'
             })
             ctx = ssl.create_default_context()
-            resp = urllib.request.urlopen(req, context=ctx, timeout=60)
+            resp = urllib.request.urlopen(req, context=ctx, timeout=90)
 
             if stream:
                 self.send_response(200)

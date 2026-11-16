@@ -418,10 +418,11 @@ ${studentAnswer}
       id: 'zhipu',
       name: '智谱 AI (GLM)',
       apiUrl: 'https://open.bigmodel.cn/api/paas/v4/chat/completions',
-      defaultModel: 'glm-5.3-flash',
+      defaultModel: 'glm-4-flash',
       models: [
-        { id: 'glm-5.3-flash', name: 'GLM-5.3-Flash (极速省流·0.23元/M缓存·首选推荐)', desc: '输入 0.8元/M, 缓存命中 0.23元/M, 输出 2.8元/M' },
-        { id: 'glm-5.3', name: 'GLM-5.3 (最新旗舰·深度推理)', desc: '输入 8元/M, 缓存命中 2元/M, 输出 28元/M' }
+        { id: 'glm-4-flash', name: 'GLM-4-Flash (极速秒级直出·免费首选推荐)', desc: '高吞吐秒级直出，零延迟即读即评' },
+        { id: 'glm-4-plus', name: 'GLM-4-Plus (旗舰学术分析)', desc: '超强认知理解与深度学术阐微' },
+        { id: 'glm-5.3-flash', name: 'GLM-5.3-Flash (深度长推理)', desc: '支持长链路深度思考' }
       ],
       apiKey: '',
       temperature: 0.7,
@@ -549,7 +550,7 @@ ${studentAnswer}
         activeProvider: cfg.activeProvider,
         zhipu: {
           apiKey: cfg.providersState?.zhipu?.apiKey || (cfg.activeProvider === 'zhipu' ? cfg.apiKey : ''),
-          model: cfg.activeProvider === 'zhipu' ? cfg.model : 'glm-5.3-flash'
+          model: cfg.activeProvider === 'zhipu' ? cfg.model : 'glm-4-flash'
         },
         kimi: {
           apiKey: cfg.providersState?.kimi?.apiKey || (cfg.activeProvider === 'kimi' ? cfg.apiKey : ''),
@@ -708,14 +709,14 @@ ${studentAnswer}
         };
 
         if (isZhipu) {
-          // 智谱 GLM-5.3 规范适配：
-          // 1. 支持采样温度与最大 Token
+          // 智谱 GLM 规范适配：
           reqBody.temperature = config.temperature !== undefined ? config.temperature : 0.7;
           reqBody.max_tokens = config.max_tokens || 4096;
-          // 2. 开启逐块/最终 usage 统计，支持读取 cached_tokens
           reqBody.stream_options = { chunk_include_usage: true };
-          // 3. 约束思考级别为 low，保障极速省流并杜绝正文被长思考截断
-          reqBody.thinking = { type: 'enabled', level: 'low' };
+          // 仅在明确指定 5.3 长思考模型时启用 thinking
+          if (config.model && config.model.includes('5.3')) {
+            reqBody.thinking = { type: 'enabled', level: 'low' };
+          }
         } else if (isKimi) {
           // Kimi-k3 规范适配：
           reqBody.reasoning_effort = config.reasoning_effort || 'low';

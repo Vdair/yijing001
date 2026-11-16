@@ -2,7 +2,7 @@
   "activeProvider": "zhipu",
   "zhipu": {
     "apiKey": "YOUR_ZHIPU_KEY_HERE",
-    "model": "glm-5.3-flash"
+    "model": "glm-4-flash"
   },
   "kimi": {
     "apiKey": "YOUR_KIMI_KEY_HERE",
