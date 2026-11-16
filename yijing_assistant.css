@@ -1786,27 +1786,31 @@
    📱 玄微先生 AI 助教 · 移动端手机底部抽屉 (Bottom Sheet) 专属适配
    ========================================================================== */
 
-/* 移动端助教半透明模糊遮罩 */
+/* 移动端助教半透明模糊遮罩（仅在手机移动端 ≤768px 生效，桌面端宽屏绝不遮挡左侧正文） */
 .yj-assistant-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  z-index: 1250;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.yj-assistant-backdrop.visible {
-  opacity: 1;
-  pointer-events: auto;
+  display: none !important;
 }
 
 @media (max-width: 768px) {
+  .yj-assistant-backdrop {
+    display: block !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 1250;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .yj-assistant-backdrop.visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
   /* 1. 移动端浮动触发球 */
   .yj-assistant-trigger {
     right: 14px;

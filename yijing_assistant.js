@@ -324,9 +324,10 @@
     const b = document.getElementById('yjAssistantBackdrop');
     if (!p) return;
     const shouldOpen = forceState !== undefined ? forceState : !p.classList.contains('open');
+    const isMobile = window.innerWidth <= 768;
     if (shouldOpen) {
       p.classList.add('open');
-      if (b) b.classList.add('visible');
+      if (b && isMobile) b.classList.add('visible');
       syncCoachCurrentGua();
     } else {
       p.classList.remove('open');
@@ -337,9 +338,10 @@
   window.openAssistantWithQuery = function(q, autoSubmit = false) {
     const p = document.getElementById('yjAssistantPanel');
     const b = document.getElementById('yjAssistantBackdrop');
+    const isMobile = window.innerWidth <= 768;
     if (p && !p.classList.contains('open')) {
       p.classList.add('open');
-      if (b) b.classList.add('visible');
+      if (b && isMobile) b.classList.add('visible');
     }
     syncCoachCurrentGua();
     const input = document.getElementById('coachInput');
