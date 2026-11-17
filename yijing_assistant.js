@@ -421,10 +421,13 @@
 
       rec.dialogues.forEach(item => {
         chatBox.innerHTML += `
-          <div class="yj-msg-bubble yj-msg-user">${item.question}</div>
+          <div class="yj-msg-bubble yj-msg-user">${escapeHtml(item.question)}</div>
           <div class="yj-msg-bubble yj-msg-ai">
-            <div style="font-size:11.5px; font-weight:800; color:var(--gold); margin-bottom:4px;">☯️ 玄微先生 · 易道开示</div>
-            <div>${item.answer.replace(/\n/g, '<br>')}</div>
+            <div style="font-size:11.5px; font-weight:800; color:var(--gold); margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+              <span>☯️</span>
+              <span>玄微先生 · 易道开示</span>
+            </div>
+            <div>${window.renderMarkdown ? window.renderMarkdown(item.answer) : escapeHtml(item.answer).replace(/\n/g, '<br>')}</div>
           </div>
         `;
       });
@@ -537,16 +540,16 @@
             }
           }
           if (contentBox) {
-            contentBox.innerHTML = fullContent.replace(/\n/g, '<br>');
+            contentBox.innerHTML = window.renderMarkdown ? window.renderMarkdown(fullContent) : fullContent.replace(/\n/g, '<br>');
             chatBox.scrollTop = chatBox.scrollHeight;
           }
         },
         onDone: ({ content }) => {
           if (contentBox) {
             contentBox.classList.remove('yj-typing-cursor');
-            const currentText = contentBox.innerText.trim();
-            if ((!currentText || currentText.includes('正在观象推演')) && content) {
-              contentBox.innerHTML = content.replace(/\n/g, '<br>');
+            const finalText = content || contentBox.innerText || '';
+            if (finalText) {
+              contentBox.innerHTML = window.renderMarkdown ? window.renderMarkdown(finalText) : finalText.replace(/\n/g, '<br>');
             }
           }
           if (thinkBox) {
@@ -908,7 +911,7 @@
                 <span style="font-size:16px;">☯️</span>
                 <div style="flex:1;">
                   <div style="font-size:11.5px; font-weight:800; color:var(--gold); margin-bottom:4px;">玄微助教 · 义理点拨</div>
-                  <div>${d.answer.replace(/\n/g, '<br>')}</div>
+                  <div>${window.renderMarkdown ? window.renderMarkdown(d.answer) : escapeHtml(d.answer).replace(/\n/g, '<br>')}</div>
                 </div>
               </div>
             </div>
@@ -1040,12 +1043,18 @@
         },
         onContent: (chunk, fullContent) => {
           if (contentBox) {
-            contentBox.innerHTML = fullContent.replace(/\n/g, '<br>');
+            contentBox.innerHTML = window.renderMarkdown ? window.renderMarkdown(fullContent) : fullContent.replace(/\n/g, '<br>');
             if (dList) dList.scrollTop = dList.scrollHeight;
           }
         },
         onDone: ({ content }) => {
-          if (contentBox) contentBox.classList.remove('yj-typing-cursor');
+          if (contentBox) {
+            contentBox.classList.remove('yj-typing-cursor');
+            const finalText = content || fullContent || '';
+            if (finalText) {
+              contentBox.innerHTML = window.renderMarkdown ? window.renderMarkdown(finalText) : finalText.replace(/\n/g, '<br>');
+            }
+          }
           window.LearningVault.appendDialogue(activeVaultGuaId, q, content, meta);
           renderVaultContent();
         },
@@ -1304,8 +1313,10 @@
     if (!mdText) return '';
     if (window.marked) {
       try {
-        const rawHtml = typeof window.marked.parse === 'function' ? window.marked.parse(mdText) : window.marked(mdText);
-        return rawHtml;
+        if (typeof window.marked.parse === 'function') {
+          return window.marked.parse(mdText, { breaks: true, gfm: true });
+        }
+        return window.marked(mdText, { breaks: true, gfm: true });
       } catch (e) {
         console.warn('[renderMarkdown] marked parse failed:', e);
       }
@@ -1315,7 +1326,7 @@
     html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
     html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
     html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-    html = html.replace(/^[\s]*[-*]\s+([^\n]+)/gm, '<li style="margin-left:20px; list-style-type:disc;">$1</li>');
+    html = html.replace(/^[\s]*[-*]\s+([^\n]+)/gm, '<li style="margin-left:24px; list-style-type:disc;">$1</li>');
     html = html.replace(/^---$/gm, '<hr/>');
     return html.replace(/\n/g, '<br/>');
   };

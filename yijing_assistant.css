@@ -287,6 +287,89 @@
   color: var(--text-m);
   border-bottom-left-radius: 4px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  font-size: 13.5px;
+  line-height: 1.7;
+  word-break: break-word;
+}
+/* 助教回复内 Markdown 元素优雅适配 */
+.yj-msg-ai p {
+  margin: 0 0 8px 0;
+  line-height: 1.7;
+}
+.yj-msg-ai p:last-child {
+  margin-bottom: 0;
+}
+.yj-msg-ai strong {
+  color: var(--gold, #d4a359);
+  font-weight: 700;
+}
+.yj-msg-ai em {
+  font-style: italic;
+  color: var(--text-sub);
+}
+.yj-msg-ai h1,
+.yj-msg-ai h2,
+.yj-msg-ai h3,
+.yj-msg-ai h4 {
+  color: var(--gold, #d4a359);
+  margin: 12px 0 6px 0;
+  font-weight: 800;
+  line-height: 1.4;
+}
+.yj-msg-ai h2 {
+  font-size: 15px;
+  border-bottom: 1px dashed var(--border);
+  padding-bottom: 4px;
+}
+.yj-msg-ai h3 {
+  font-size: 14px;
+}
+.yj-msg-ai h4 {
+  font-size: 13.5px;
+}
+.yj-msg-ai ul,
+.yj-msg-ai ol {
+  margin: 6px 0 8px 0;
+  padding-left: 22px !important;
+  list-style-position: outside;
+}
+.yj-msg-ai li {
+  margin-bottom: 4px;
+  line-height: 1.65;
+}
+.yj-msg-ai blockquote {
+  margin: 8px 0;
+  padding: 8px 12px;
+  background: rgba(212, 163, 89, 0.08);
+  border-left: 3px solid var(--gold, #d4a359);
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--text-m);
+}
+.yj-msg-ai code {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 12px;
+  color: var(--gold, #d4a359);
+}
+.yj-msg-ai pre {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 10px 12px;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 8px 0;
+}
+.yj-msg-ai pre code {
+  background: transparent;
+  padding: 0;
+}
+.yj-msg-ai hr {
+  border: none;
+  border-top: 1px dashed var(--border);
+  margin: 10px 0;
 }
 /* AI 思维链与流式打字光标 */
 .yj-thinking-box {
@@ -1724,17 +1807,38 @@
 }
 
 .yj-assess-block {
-  padding: 10px 12px;
+  padding: 12px 18px;
   border-radius: 6px;
   font-size: 13.5px;
-  line-height: 1.65;
+  line-height: 1.68;
   color: var(--text-m, #c9d1d9);
+  overflow-wrap: break-word;
+}
+
+/* 列表元素强制缩进安全边距，彻底杜绝无序列表圆点与彩色左边框重合 */
+.yj-assess-block ul,
+.yj-assess-block ol {
+  margin: 6px 0 8px 0;
+  padding-left: 24px !important;
+  list-style-position: outside;
+}
+
+.yj-assess-block li {
+  margin-bottom: 6px;
+  line-height: 1.68;
+}
+
+.yj-assess-block p {
+  margin: 0 0 6px 0;
+}
+.yj-assess-block p:last-child {
+  margin-bottom: 0;
 }
 
 .yj-assess-block-title {
   font-size: 13px;
   font-weight: 800;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   display: flex;
   align-items: center;
   gap: 6px;
