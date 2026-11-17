@@ -1,11 +1,11 @@
 {
   "activeProvider": "zhipu",
   "zhipu": {
-    "apiKey": "YOUR_ZHIPU_KEY_HERE",
-    "model": "glm-4-flash"
+    "apiKey": "在此填入您的智谱APIKey",
+    "model": "glm-5.3-flash"
   },
   "kimi": {
-    "apiKey": "YOUR_KIMI_KEY_HERE",
+    "apiKey": "在此填入您的KimiAPIKey",
     "model": "kimi-k3"
   }
 }
