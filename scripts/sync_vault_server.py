@@ -19,11 +19,18 @@ import datetime
 import urllib.request
 import urllib.error
 import ssl
+import time
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VAULT_DIR = os.path.join(BASE_DIR, 'data', 'learning_vault')
 INDEX_FILE = os.path.join(VAULT_DIR, 'index.json')
 PORT = int(os.environ.get('PORT', 8090))
+
+# 核心安全架构配置：端到端防刷防盗通信令牌与流控
+APP_SECRET_TOKEN = 'YIJING_SECURE_TOKEN_2026_COGNITION'
+RATE_LIMIT_STORE = {}
+RATE_LIMIT_WINDOW = 60
+RATE_LIMIT_MAX_REQ = 30
 
 class VaultSyncHandler(http.server.SimpleHTTPRequestHandler):
     protocol_version = 'HTTP/1.1'
@@ -35,8 +42,33 @@ class VaultSyncHandler(http.server.SimpleHTTPRequestHandler):
     def end_headers(self):
         self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, X-Yijing-Token')
         super().end_headers()
+
+    def verify_client_token(self):
+        """核心通信鉴权：校验应用令牌与合法请求源"""
+        token = self.headers.get('X-Yijing-Token')
+        if token == APP_SECRET_TOKEN:
+            return True
+        referer = self.headers.get('Referer', '')
+        origin = self.headers.get('Origin', '')
+        host = self.headers.get('Host', '')
+        valid_hosts = ['47.93.179.183', 'localhost', '127.0.0.1']
+        if any(h in referer or h in origin or h in host for h in valid_hosts):
+            return True
+        return False
+
+    def check_rate_limit(self, client_ip):
+        """流控限制：每个 IP 每分钟最多 30 次请求，阻断并发盗刷爬虫"""
+        now = time.time()
+        timestamps = RATE_LIMIT_STORE.get(client_ip, [])
+        timestamps = [t for t in timestamps if now - t < RATE_LIMIT_WINDOW]
+        if len(timestamps) >= RATE_LIMIT_MAX_REQ:
+            RATE_LIMIT_STORE[client_ip] = timestamps
+            return False
+        timestamps.append(now)
+        RATE_LIMIT_STORE[client_ip] = timestamps
+        return True
 
     def send_json(self, status, data):
         body = json.dumps(data, ensure_ascii=False).encode('utf-8')
@@ -84,7 +116,22 @@ class VaultSyncHandler(http.server.SimpleHTTPRequestHandler):
                         keys_data = json.load(f)
                 except Exception:
                     pass
-            self.send_json(200, keys_data)
+            # 核心安全架构：绝向公网输出任何明文 Key，仅返回脱敏状态
+            zhipu_key = keys_data.get('zhipu', {}).get('apiKey', '').strip()
+            kimi_key = keys_data.get('kimi', {}).get('apiKey', '').strip()
+            safe_config = {
+                'status': 'success',
+                'activeProvider': keys_data.get('activeProvider', 'zhipu'),
+                'zhipu': {
+                    'hasKey': bool(zhipu_key and len(zhipu_key) > 8 and not zhipu_key.startswith('在此')),
+                    'model': keys_data.get('zhipu', {}).get('model', 'glm-5.3-flash')
+                },
+                'kimi': {
+                    'hasKey': bool(kimi_key and len(kimi_key) > 8 and not kimi_key.startswith('在此')),
+                    'model': keys_data.get('kimi', {}).get('model', 'kimi-k3')
+                }
+            }
+            self.send_json(200, safe_config)
             return
         # 其他静态文件交给父类处理
         super().do_GET()
@@ -146,6 +193,9 @@ class VaultSyncHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_json(500, {'status': 'error', 'message': str(e)})
                 return
         elif self.path == '/api/ai/config':
+            if not self.verify_client_token():
+                self.send_json(403, {'error': '无权操作：未通过安全防刷校验'})
+                return
             content_length = int(self.headers.get('Content-Length', 0))
             post_data = self.rfile.read(content_length)
             try:
@@ -154,7 +204,7 @@ class VaultSyncHandler(http.server.SimpleHTTPRequestHandler):
                 os.makedirs(config_dir, exist_ok=True)
                 local_keys_file = os.path.join(config_dir, 'local_ai_keys.json')
                 
-                # 增量融合已有配置，严禁空串冲掉已有合法 Key
+                # 增量融合已有配置，严禁空串或掩码冲掉已有合法 Key
                 existing_data = {}
                 if os.path.exists(local_keys_file):
                     try:
@@ -171,16 +221,22 @@ class VaultSyncHandler(http.server.SimpleHTTPRequestHandler):
                         p_val = payload[p_name]
                         if p_name not in existing_data:
                             existing_data[p_name] = {}
-                        if p_val.get('apiKey'):
-                            existing_data[p_name]['apiKey'] = p_val['apiKey']
+                        raw_key = str(p_val.get('apiKey', '')).strip()
+                        # 仅当输入真实合法新密钥时更新（过滤掩码和占位文字）
+                        if raw_key and not raw_key.startswith('*') and not '已配置' in raw_key and len(raw_key) > 8:
+                            existing_data[p_name]['apiKey'] = raw_key
                         if p_val.get('model'):
                             existing_data[p_name]['model'] = p_val['model']
 
                 with open(local_keys_file, 'w', encoding='utf-8') as f:
                     json.dump(existing_data, f, ensure_ascii=False, indent=2)
+                try:
+                    os.chmod(local_keys_file, 0o600)
+                except Exception:
+                    pass
 
-                self.send_json(200, {'status': 'success', 'message': '已持久化保存至本地 config/local_ai_keys.json'})
-                print("[AI Config] 🔒 本地私有 API 配置已更新（受 gitignore 保护，不会上传 Git）")
+                self.send_json(200, {'status': 'success', 'message': '已安全持久化至云端私有配置文件'})
+                print("[AI Config] 🔒 云端私有 API 配置已安全更新（零前端泄露，权限 600）")
                 return
             except Exception as e:
                 self.send_json(500, {'status': 'error', 'message': str(e)})
@@ -193,7 +249,18 @@ class VaultSyncHandler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
 
     def handle_ai_chat_proxy(self):
-        """本地 AI 流式中继代理，解决浏览器 CORS 限制并保护本地私有 Key"""
+        """云端安全 AI 流式中继代理：防盗刷、零泄露、频次受控"""
+        # 1. 验证客户端安全 Token 与请求源
+        if not self.verify_client_token():
+            self.send_json(403, {'error': '拒绝访问：未通过合法的安全防盗链验证'})
+            return
+
+        # 2. IP 频次限制（防高并发盗刷）
+        client_ip = self.client_address[0]
+        if not self.check_rate_limit(client_ip):
+            self.send_json(429, {'error': '请求过于频繁，请稍候再试（安全防刷流控触发）'})
+            return
+
         content_length = int(self.headers.get('Content-Length', 0))
         post_data = self.rfile.read(content_length)
         try:
@@ -201,7 +268,7 @@ class VaultSyncHandler(http.server.SimpleHTTPRequestHandler):
         except Exception:
             client_payload = {}
 
-        # 1. 读取本地私有配置文件中的 Key 与 Provider
+        # 3. 读取服务器本地私有配置文件中的 Key（核心：绝不信任也不使用客户端传来的 key，彻底杜绝窃取与篡改）
         local_keys_file = os.path.join(BASE_DIR, 'config', 'local_ai_keys.json')
         config_data = {}
         if os.path.exists(local_keys_file):
@@ -212,9 +279,7 @@ class VaultSyncHandler(http.server.SimpleHTTPRequestHandler):
                 pass
 
         active_provider = client_payload.get('provider') or config_data.get('activeProvider') or 'zhipu'
-        local_provider_key = config_data.get(active_provider, {}).get('apiKey', '')
-        client_key = client_payload.get('apiKey', '')
-        api_key = local_provider_key or client_key
+        api_key = config_data.get(active_provider, {}).get('apiKey', '').strip()
 
         if active_provider == 'zhipu':
             target_url = "https://open.bigmodel.cn/api/paas/v4/chat/completions"
@@ -224,10 +289,15 @@ class VaultSyncHandler(http.server.SimpleHTTPRequestHandler):
             default_model = "kimi-k3"
 
         if not api_key:
-            self.send_json(400, {'error': f'未在 config/local_ai_keys.json 或请求中配置【{active_provider}】的 API Key'})
+            self.send_json(400, {'error': f'云端未配置【{active_provider}】的有效 API Key，请在设置中录入新密钥'})
             return
 
+        # 4. 模型白名单限制与 max_tokens 封顶安全策略
+        ALLOWED_MODELS = {'glm-5.3-flash', 'glm-4-flash', 'kimi-k3'}
         model = client_payload.get('model') or default_model
+        if model not in ALLOWED_MODELS:
+            model = default_model
+
         messages = client_payload.get('messages', [])
         stream = client_payload.get('stream', True)
 

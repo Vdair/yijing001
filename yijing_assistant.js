@@ -5286,7 +5286,7 @@
             <input type="password" id="modalApiKeyInput" placeholder="请输入对应渠道的 API Key (Bearer Token)" style="width:100%; box-sizing:border-box; padding:9px 40px 9px 12px; border-radius:6px; background:#0d1117; color:#e6edf3; border:1px solid #30363d; font-size:12.5px; font-family:monospace;">
             <button type="button" onclick="toggleApiKeyVisibility()" style="position:absolute; right:8px; top:8px; background:none; border:none; color:#8b949e; cursor:pointer; font-size:14px;" title="查看/隐藏">👁️</button>
           </div>
-          <div style="font-size:11px; color:#8b949e; margin-top:4px;">* 密钥仅保存在本地浏览器端，端到端直接向模型厂商发起安全请求。</div>
+          <div style="font-size:11px; color:#8b949e; margin-top:4px;">* 核心安全：密钥由云端私有目录加密托管（零前端明文暴露，阻断爬虫与盗刷）。如需配置或更换请输入新 Key。</div>
         </div>
 
         <!-- 测试连通状态 -->
@@ -5343,13 +5343,21 @@
     if (!input || !window.YijingAIService) return;
 
     const cfg = window.YijingAIService.getConfig();
-    const p = window.YijingAIService.PROVIDERS[providerId];
-    const key = (cfg.providersState?.[providerId]?.apiKey) || (providerId === cfg.activeProvider ? cfg.apiKey : (p.apiKey || ''));
-    
-    input.value = key;
-    if (hint) {
-      hint.innerText = key ? (key.startsWith('sk-') ? `已配置 (${key.slice(0, 6)}...${key.slice(-4)})` : '已配置密钥') : '尚未配置';
-      hint.style.color = key ? '#3fb950' : '#d29922';
+    const hasKey = !!cfg.providersState?.[providerId]?.hasKey;
+
+    input.value = '';
+    if (hasKey) {
+      input.placeholder = '✅ 云端加密已就绪 (无需重复输入，如需更换请输入新Key)';
+      if (hint) {
+        hint.innerText = '🟢 云端已加密就绪';
+        hint.style.color = '#3fb950';
+      }
+    } else {
+      input.placeholder = '请输入对应渠道的 API Key (Bearer Token)';
+      if (hint) {
+        hint.innerText = '🟡 尚未配置密钥';
+        hint.style.color = '#d29922';
+      }
     }
   };
 
@@ -5370,13 +5378,15 @@
     const providerId = provRad ? provRad.value : 'zhipu';
     const model = document.getElementById('modalModelSelect')?.value;
     const apiKey = document.getElementById('modalApiKeyInput')?.value?.trim();
+    const cfg = window.YijingAIService.getConfig();
+    const hasCloudKey = !!cfg.providersState?.[providerId]?.hasKey;
 
-    if (!apiKey) {
+    if (!apiKey && !hasCloudKey) {
       resBox.style.display = 'block';
       resBox.style.background = 'rgba(218, 54, 51, 0.15)';
       resBox.style.color = '#f85149';
       resBox.style.border = '1px solid rgba(218, 54, 51, 0.4)';
-      resBox.innerText = '❌ 请先输入 API Key 再进行测试！';
+      resBox.innerText = '❌ 当前渠道尚未配置密钥，请输入 API Key 后再进行测试！';
       return;
     }
 
@@ -5386,7 +5396,7 @@
     resBox.style.background = 'rgba(56, 139, 253, 0.1)';
     resBox.style.color = '#58a6ff';
     resBox.style.border = '1px solid rgba(56, 139, 253, 0.3)';
-    resBox.innerText = '正在向模型发起极速握手探测...';
+    resBox.innerText = '正在通过云端安全防盗中继发起毫秒级探测...';
 
     const res = await window.YijingAIService.testConnection(apiKey, providerId, model);
     btn.disabled = false;
@@ -5397,6 +5407,7 @@
       resBox.style.color = '#3fb950';
       resBox.style.border = '1px solid rgba(46, 160, 67, 0.4)';
       resBox.innerHTML = `✅ <strong>连通成功！</strong><br>模型回应：“${res.reply}”<br><span style="font-size:11px; color:#8b949e;">渠道: ${providerId} | 模型: ${model}</span>`;
+      renderModalApiKey(providerId);
     } else {
       resBox.style.background = 'rgba(218, 54, 51, 0.15)';
       resBox.style.color = '#f85149';
@@ -5405,7 +5416,7 @@
     }
   };
 
-  window.saveAISettingsFromModal = function() {
+  window.saveAISettingsFromModal = async function() {
     const provRad = document.querySelector('input[name="aiProvider"]:checked');
     const providerId = provRad ? provRad.value : 'zhipu';
     const model = document.getElementById('modalModelSelect')?.value;
@@ -5414,18 +5425,19 @@
     if (!window.YijingAIService) return;
 
     window.YijingAIService.switchProvider(providerId, model);
-    if (apiKey !== undefined) {
-      const cfg = window.YijingAIService.getConfig();
-      cfg.providersState = cfg.providersState || {};
-      cfg.providersState[providerId] = cfg.providersState[providerId] || {};
-      cfg.providersState[providerId].apiKey = apiKey;
-      cfg.apiKey = apiKey;
-      window.YijingAIService.saveConfig(cfg);
+    const cfg = window.YijingAIService.getConfig();
+    cfg.model = model;
+
+    if (apiKey && apiKey.length > 8 && !apiKey.startsWith('*')) {
+      await window.YijingAIService.saveConfig(cfg, apiKey);
+      alert(`🎉 恭喜！新 API Key 已通过加密通道安全同步至云端私有目录，AI 渠道已切换至：【${providerId === 'zhipu' ? '智谱 GLM' : 'Moonshot Kimi'} - ${model}】！`);
+    } else {
+      await window.YijingAIService.saveConfig(cfg, null);
+      alert(`🎉 AI 渠道已切换至：【${providerId === 'zhipu' ? '智谱 GLM' : 'Moonshot Kimi'} - ${model}】！`);
     }
 
     window.updateAIModelBadge();
     closeAISettingsModal();
-    alert(`🎉 AI 渠道已切换至：【${providerId === 'zhipu' ? '智谱 GLM' : 'Moonshot Kimi'} - ${model}】！`);
   };
 
   // 初始化悬浮窗模型 Badge

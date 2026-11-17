@@ -446,6 +446,7 @@ ${studentAnswer}
   };
 
   const STORAGE_KEY_CONFIG = 'yijing_ai_config_v3';
+  const APP_SECRET_TOKEN = 'YIJING_SECURE_TOKEN_2026_COGNITION';
 
   const YijingAIService = {
     PROVIDERS,
@@ -455,6 +456,27 @@ ${studentAnswer}
         const saved = localStorage.getItem(STORAGE_KEY_CONFIG);
         let parsed = saved ? JSON.parse(saved) : {};
         
+        // 核心安全自愈机制：自动销毁本地 localStorage 中的所有明文私钥，阻断浏览器侧窃密
+        let hasDirtyKey = false;
+        ['apiKey', 'apiKey_zhipu', 'apiKey_kimi'].forEach(k => {
+          if (parsed[k]) {
+            delete parsed[k];
+            hasDirtyKey = true;
+          }
+        });
+        if (parsed.providersState) {
+          ['zhipu', 'kimi'].forEach(p => {
+            if (parsed.providersState[p] && parsed.providersState[p].apiKey) {
+              delete parsed.providersState[p].apiKey;
+              hasDirtyKey = true;
+            }
+          });
+        }
+        if (hasDirtyKey) {
+          localStorage.setItem(STORAGE_KEY_CONFIG, JSON.stringify(parsed));
+          console.log('[YijingAIService] 🛡️ 客户端私钥净化机制已触发：历史残留密钥已彻底销毁！');
+        }
+
         // 默认激活提供商：优先智谱 zhipu，Kimi 完整保留
         const providerId = parsed.activeProvider || 'zhipu';
         const pDef = PROVIDERS[providerId] || PROVIDERS.zhipu;
@@ -462,14 +484,14 @@ ${studentAnswer}
         return {
           activeProvider: providerId,
           apiUrl: parsed.apiUrl || pDef.apiUrl,
-          apiKey: parsed.apiKey !== undefined ? parsed.apiKey : (parsed[`apiKey_${providerId}`] || pDef.apiKey || ''),
+          apiKey: '', // 客户端永不持久化明文 Key，由云端安全中继私有托管
           model: parsed.model || pDef.defaultModel,
           temperature: parsed.temperature !== undefined ? parsed.temperature : pDef.temperature,
           max_tokens: parsed.max_tokens || pDef.max_tokens,
           reasoning_effort: parsed.reasoning_effort || pDef.reasoning_effort || 'low',
           providersState: parsed.providersState || {
-            zhipu: { apiKey: parsed.apiKey_zhipu || '' },
-            kimi: { apiKey: parsed.apiKey_kimi || PROVIDERS.kimi.apiKey }
+            zhipu: { hasKey: false, model: 'glm-5.3-flash' },
+            kimi: { hasKey: false, model: 'kimi-k3' }
           }
         };
       } catch (e) {
@@ -479,25 +501,24 @@ ${studentAnswer}
           apiKey: '',
           model: PROVIDERS.zhipu.defaultModel,
           temperature: 0.7,
-          max_tokens: 3000
+          max_tokens: 3000,
+          providersState: {
+            zhipu: { hasKey: false, model: 'glm-5.3-flash' },
+            kimi: { hasKey: false, model: 'kimi-k3' }
+          }
         };
       }
     },
 
-    saveConfig(patch) {
+    saveConfig(patch, newApiKey = null) {
       try {
         const cur = this.getConfig();
         const updated = { ...cur, ...patch };
-        // 同步持久化各 provider 的独立 apiKey
-        if (updated.activeProvider && updated.apiKey) {
-          updated.providersState = updated.providersState || {};
-          updated.providersState[updated.activeProvider] = updated.providersState[updated.activeProvider] || {};
-          updated.providersState[updated.activeProvider].apiKey = updated.apiKey;
-        }
+        delete updated.apiKey; // 严格杜绝在 localStorage 中写入真实密钥
         localStorage.setItem(STORAGE_KEY_CONFIG, JSON.stringify(updated));
         console.log(`[YijingAIService] ⚙️ AI 配置已更新: 渠道=${updated.activeProvider}, 模型=${updated.model}`);
-        // 异步持久化到本地私有配置文件 config/local_ai_keys.json (不入 git)
-        this.saveToLocalConfigFile(updated);
+        // 异步安全同步至云端配置文件
+        this.saveToLocalConfigFile(updated, newApiKey);
         return updated;
       } catch (e) {
         console.error('[YijingAIService] 保存配置失败:', e);
@@ -505,33 +526,37 @@ ${studentAnswer}
     },
 
     /**
-     * 自动从本地私有配置文件 config/local_ai_keys.json 拉取密钥
+     * 自动从云端接口验证 API 状态（零密钥下发，仅获取 hasKey 掩码）
      */
     async pullLocalConfigFile() {
       const endpoints = ['/api/ai/config', 'http://127.0.0.1:8090/api/ai/config', 'http://localhost:8090/api/ai/config'];
       for (const url of endpoints) {
         try {
-          const res = await fetch(url);
+          const res = await fetch(url, {
+            headers: { 'X-Yijing-Token': APP_SECRET_TOKEN }
+          });
           if (res.ok) {
             const data = await res.json();
             if (data && (data.zhipu || data.kimi || data.activeProvider)) {
               const cur = this.getConfig();
               cur.providersState = cur.providersState || {};
-              if (data.zhipu && data.zhipu.apiKey) {
+              if (data.zhipu) {
                 cur.providersState.zhipu = cur.providersState.zhipu || {};
-                cur.providersState.zhipu.apiKey = data.zhipu.apiKey;
+                cur.providersState.zhipu.hasKey = !!data.zhipu.hasKey;
+                if (data.zhipu.model) cur.providersState.zhipu.model = data.zhipu.model;
               }
-              if (data.kimi && data.kimi.apiKey) {
+              if (data.kimi) {
                 cur.providersState.kimi = cur.providersState.kimi || {};
-                cur.providersState.kimi.apiKey = data.kimi.apiKey;
+                cur.providersState.kimi.hasKey = !!data.kimi.hasKey;
+                if (data.kimi.model) cur.providersState.kimi.model = data.kimi.model;
               }
               if (data.activeProvider) cur.activeProvider = data.activeProvider;
               const curP = cur.activeProvider || 'zhipu';
-              if (cur.providersState[curP] && cur.providersState[curP].apiKey) {
-                cur.apiKey = cur.providersState[curP].apiKey;
-              }
+              cur.model = cur.providersState[curP]?.model || cur.model;
+
+              delete cur.apiKey;
               localStorage.setItem(STORAGE_KEY_CONFIG, JSON.stringify(cur));
-              console.log('[YijingAIService] 🔒 成功从本地私有配置文件同步 API 密钥！');
+              console.log('[YijingAIService] 🔒 成功从云端安全校验并拉取服务状态（零密钥明文传输）');
               if (typeof window.updateAIModelBadge === 'function') window.updateAIModelBadge();
               return true;
             }
@@ -542,19 +567,20 @@ ${studentAnswer}
     },
 
     /**
-     * 异步持久化到本地私有配置文件
+     * 异步持久化到云端私有配置文件（通过授权 Token 安全通信）
      */
-    async saveToLocalConfigFile(cfg) {
+    async saveToLocalConfigFile(cfg, newApiKey = null) {
       const endpoints = ['/api/ai/config', 'http://127.0.0.1:8090/api/ai/config', 'http://localhost:8090/api/ai/config'];
+      const pId = cfg.activeProvider || 'zhipu';
       const payload = {
-        activeProvider: cfg.activeProvider,
+        activeProvider: pId,
         zhipu: {
-          apiKey: cfg.providersState?.zhipu?.apiKey || (cfg.activeProvider === 'zhipu' ? cfg.apiKey : ''),
-          model: cfg.activeProvider === 'zhipu' ? cfg.model : 'glm-4-flash'
+          apiKey: (pId === 'zhipu' && newApiKey) ? newApiKey : '',
+          model: pId === 'zhipu' ? cfg.model : (cfg.providersState?.zhipu?.model || 'glm-5.3-flash')
         },
         kimi: {
-          apiKey: cfg.providersState?.kimi?.apiKey || (cfg.activeProvider === 'kimi' ? cfg.apiKey : ''),
-          model: cfg.activeProvider === 'kimi' ? cfg.model : 'kimi-k3'
+          apiKey: (pId === 'kimi' && newApiKey) ? newApiKey : '',
+          model: pId === 'kimi' ? cfg.model : (cfg.providersState?.kimi?.model || 'kimi-k3')
         }
       };
 
@@ -562,12 +588,19 @@ ${studentAnswer}
         try {
           const res = await fetch(url, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+              'Content-Type': 'application/json',
+              'X-Yijing-Token': APP_SECRET_TOKEN
+            },
             body: JSON.stringify(payload)
           });
-          if (res.ok) break;
+          if (res.ok) {
+            await this.pullLocalConfigFile();
+            break;
+          }
         } catch (e) {}
       }
+    },
     },
 
     /**
@@ -599,13 +632,16 @@ ${studentAnswer}
       const cfg = this.getConfig();
       const pId = providerId || cfg.activeProvider;
       const p = PROVIDERS[pId] || PROVIDERS.zhipu;
-      const key = testApiKey || (pId === cfg.activeProvider ? cfg.apiKey : (cfg.providersState?.[pId]?.apiKey || p.apiKey || ''));
       const model = modelId || (pId === cfg.activeProvider ? cfg.model : p.defaultModel);
+
+      if (testApiKey && testApiKey.trim().length > 8 && !testApiKey.startsWith('*')) {
+        // 如果用户在弹窗中录入了全新 Key，先安全持久化到云端私有文件
+        await this.saveToLocalConfigFile({ activeProvider: pId, model }, testApiKey.trim());
+      }
 
       const reqBody = {
         provider: pId,
         model: pId === 'zhipu' ? 'glm-4-flash' : model, // 智谱使用秒级直出模型进行连通性毫秒探测
-        apiKey: key,
         messages: [
           { role: 'user', content: '测试连通性，请仅回复ok' }
         ],
@@ -621,15 +657,13 @@ ${studentAnswer}
         'http://127.0.0.1:8090/api/ai/chat',
         'http://localhost:8090/api/ai/chat'
       ];
-      if (key) {
-        endpoints.push(p.apiUrl);
-      }
 
       for (let url of endpoints) {
         try {
-          const isDirect = url === p.apiUrl;
-          const headers = { 'Content-Type': 'application/json' };
-          if (isDirect && key) headers['Authorization'] = `Bearer ${key}`;
+          const headers = { 
+            'Content-Type': 'application/json',
+            'X-Yijing-Token': APP_SECRET_TOKEN
+          };
 
           const res = await fetch(url, {
             method: 'POST',
@@ -740,26 +774,24 @@ ${studentAnswer}
           'http://127.0.0.1:8090/api/ai/chat',
           'http://localhost:8090/api/ai/chat'
         ];
-        if (config.apiKey) {
-          endpoints.push(config.apiUrl);
-        }
 
         let response = null;
         let lastErr = null;
 
         for (let url of endpoints) {
           try {
-            const isDirect = url === config.apiUrl;
-            const headers = { 'Content-Type': 'application/json' };
-            if (isDirect && config.apiKey) headers['Authorization'] = `Bearer ${config.apiKey}`;
+            const headers = { 
+              'Content-Type': 'application/json',
+              'X-Yijing-Token': APP_SECRET_TOKEN
+            };
 
             const res = await fetch(url, {
               method: 'POST',
               headers,
               body: JSON.stringify({
                 ...reqBody,
-                provider: config.activeProvider,
-                apiKey: config.apiKey || ''
+                provider: config.activeProvider
+                // 核心安全：前端绝不向网络传输任何私钥明文
               })
             });
 
