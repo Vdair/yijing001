@@ -212,15 +212,13 @@ class VaultSyncHandler(http.server.SimpleHTTPRequestHandler):
                 pass
 
         active_provider = client_payload.get('provider') or config_data.get('activeProvider') or 'zhipu'
-
-        # 2. 确定目标地址与 Key（优先信任本地私有配置文件 config/local_ai_keys.json，严防前端脏数据覆盖）
         local_provider_key = config_data.get(active_provider, {}).get('apiKey', '')
         client_key = client_payload.get('apiKey', '')
         api_key = local_provider_key or client_key
 
         if active_provider == 'zhipu':
             target_url = "https://open.bigmodel.cn/api/paas/v4/chat/completions"
-            default_model = "glm-4-flash"
+            default_model = "glm-5.3-flash"
         else:
             target_url = "https://api.moonshot.cn/v1/chat/completions"
             default_model = "kimi-k3"
@@ -233,36 +231,59 @@ class VaultSyncHandler(http.server.SimpleHTTPRequestHandler):
         messages = client_payload.get('messages', [])
         stream = client_payload.get('stream', True)
 
-        req_body = {
-            'model': model,
-            'messages': messages,
-            'stream': stream
-        }
-        if active_provider == 'zhipu':
-            if 'temperature' in client_payload:
-                req_body['temperature'] = client_payload['temperature']
-            req_body['max_tokens'] = client_payload.get('max_tokens') or 4096
-            req_body['stream_options'] = {'chunk_include_usage': True}
-            
-            # 智谱 GLM 思考等级适配：默认启用极速省流 low 思考，避免思考耗尽 tokens 导致正文截断
-            if client_payload.get('thinking'):
-                req_body['thinking'] = client_payload['thinking']
+        def build_req_body(target_model):
+            body = {
+                'model': target_model,
+                'messages': messages,
+                'stream': stream
+            }
+            if active_provider == 'zhipu':
+                if 'temperature' in client_payload:
+                    body['temperature'] = client_payload['temperature']
+                body['max_tokens'] = client_payload.get('max_tokens') or 8192
+                body['stream_options'] = {'chunk_include_usage': True}
+                if '5.3' in target_model:
+                    if client_payload.get('thinking'):
+                        body['thinking'] = client_payload['thinking']
+                    else:
+                        body['thinking'] = {'type': 'enabled', 'clear_thinking': False}
+                    # 智谱官方规范：根级 reasoning_effort 控制思考预算 (low, high, max)
+                    body['reasoning_effort'] = client_payload.get('reasoning_effort', 'low')
             else:
-                req_body['thinking'] = {'type': 'enabled', 'level': 'low'}
-        else:
-            req_body['reasoning_effort'] = client_payload.get('reasoning_effort', 'low')
-            req_body['max_tokens'] = client_payload.get('max_tokens', 4096)
+                body['reasoning_effort'] = client_payload.get('reasoning_effort', 'low')
+                body['max_tokens'] = client_payload.get('max_tokens', 8192)
+            return body
 
-        try:
+        def try_forward(req_body):
             req_bytes = json.dumps(req_body).encode('utf-8')
             req = urllib.request.Request(target_url, data=req_bytes, headers={
                 'Content-Type': 'application/json',
                 'Authorization': f'Bearer {api_key}',
-                'User-Agent': 'YijingAIService/3.0'
+                'User-Agent': 'YijingAIService/3.2'
             })
             ctx = ssl.create_default_context()
-            resp = urllib.request.urlopen(req, context=ctx, timeout=90)
+            return urllib.request.urlopen(req, context=ctx, timeout=90)
 
+        resp = None
+        current_model = model
+        try:
+            resp = try_forward(build_req_body(current_model))
+        except Exception as first_err:
+            if active_provider == 'zhipu' and '5.3' in current_model:
+                print(f"[AI Cascade] ⚠️ 主模型 {current_model} 响应异常 ({first_err})，自动级联降级至备用真模型 glm-4-flash...")
+                current_model = "glm-4-flash"
+                try:
+                    resp = try_forward(build_req_body(current_model))
+                except Exception as second_err:
+                    print(f"[AI Proxy Error] 级联备用模型调用亦失败: {second_err}")
+                    self.send_json(502, {'error': f'智谱模型调用失败 (主模型与备用模型均异常): {second_err}'})
+                    return
+            else:
+                print(f"[AI Proxy Error] 模型 {current_model} 调用异常: {first_err}")
+                self.send_json(502, {'error': f'模型服务调用失败: {first_err}'})
+                return
+
+        try:
             if stream:
                 self.send_response(200)
                 self.send_header('Content-Type', 'text/event-stream; charset=utf-8')
@@ -284,7 +305,6 @@ class VaultSyncHandler(http.server.SimpleHTTPRequestHandler):
                     self.wfile.flush()
                     self.close_connection = True
                 except (BrokenPipeError, ConnectionResetError):
-                    # 客户端主动断开连接，优雅退出
                     pass
             else:
                 resp_data = resp.read()

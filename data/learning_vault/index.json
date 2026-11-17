@@ -14,10 +14,25 @@
       "updated_at": "2026/11/16 16:50:07",
       "json_file": "p0-01.json",
       "md_file": "p0-01.md"
+    },
+    "p0-02": {
+      "gua_id": "p0-02",
+      "gua_title": "第二课 · 重卦之变 —— 六十四卦错综复杂与时空全息图谱",
+      "gua_symbol": "☯️",
+      "dialogues_count": 3,
+      "notes_count": 1,
+      "has_review": false,
+      "has_feynman": false,
+      "has_ai_analysis": false,
+      "is_completed": false,
+      "mastered_at": null,
+      "updated_at": "2026/11/17 09:31:33",
+      "json_file": "p0-02.json",
+      "md_file": "p0-02.md"
     }
   },
-  "total_saved_guas": 1,
-  "last_sync_time": "2026-11-16 16:50:07",
+  "total_saved_guas": 2,
+  "last_sync_time": "2026-11-17 09:31:33",
   "completed_count": 1,
   "completed_lessons": [
     "p0-01"

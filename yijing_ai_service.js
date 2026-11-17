@@ -418,15 +418,15 @@ ${studentAnswer}
       id: 'zhipu',
       name: '智谱 AI (GLM)',
       apiUrl: 'https://open.bigmodel.cn/api/paas/v4/chat/completions',
-      defaultModel: 'glm-4-flash',
+      defaultModel: 'glm-5.3-flash',
       models: [
-        { id: 'glm-4-flash', name: 'GLM-4-Flash (极速秒级直出·免费首选推荐)', desc: '高吞吐秒级直出，零延迟即读即评' },
-        { id: 'glm-4-plus', name: 'GLM-4-Plus (旗舰学术分析)', desc: '超强认知理解与深度学术阐微' },
-        { id: 'glm-5.3-flash', name: 'GLM-5.3-Flash (深度长推理)', desc: '支持长链路深度思考' }
+        { id: 'glm-5.3-flash', name: 'GLM-5.3-Flash (最新旗舰·极速深度推理·推荐)', desc: '输入 0.8元/M, 缓存命中 0.23元/M, 深度思考' },
+        { id: 'glm-4-flash', name: 'GLM-4-Flash (秒级直出·极速备用)', desc: '高吞吐秒级直出，零延迟即读即评' },
+        { id: 'glm-5.3', name: 'GLM-5.3 (最新旗舰学术推理)', desc: '超强认知理解与深度长思考' }
       ],
       apiKey: '',
       temperature: 0.7,
-      max_tokens: 4096,
+      max_tokens: 8192,
       supportsCache: true
     },
     kimi: {
@@ -440,7 +440,7 @@ ${studentAnswer}
       ],
       apiKey: '', // 密钥已解耦！统一由本地私有配置文件 config/local_ai_keys.json 或浏览器端维护，严防泄露至 Git
       reasoning_effort: 'low',
-      max_tokens: 4096,
+      max_tokens: 8192,
       supportsCache: true
     }
   };
@@ -604,14 +604,13 @@ ${studentAnswer}
 
       const reqBody = {
         provider: pId,
-        model: model,
+        model: pId === 'zhipu' ? 'glm-4-flash' : model, // 智谱使用秒级直出模型进行连通性毫秒探测
         apiKey: key,
         messages: [
-          { role: 'system', content: '你是周易学术助教玄微先生。请简要回应，不超过20字。' },
-          { role: 'user', content: '请说一句乾卦的卦训。' }
+          { role: 'user', content: '测试连通性，请仅回复ok' }
         ],
         stream: false,
-        max_tokens: 60
+        max_tokens: 30
       };
       if (pId === 'kimi') {
         reqBody.reasoning_effort = 'low';
@@ -675,17 +674,24 @@ ${studentAnswer}
     prompts: YijingPromptSystem,
 
     /**
-     * 发起 SSE 流式对话请求
+     * 发起 SSE 流式对话请求（Universal AI Adapter 防腐层）
+     * 抹平所有模型（GLM-5.3/GLM-4/Kimi/DeepSeek/开源模型等）的思考链与正文字段异构
+     * 统一派发 onThought (思考) 与 onText (正文) 标准事件
      */
     async streamChat({
       messages,
       lessonMeta = {},
       customSystemPrompt = null,
-      onReasoning,
-      onContent,
+      onThought,
+      onText,
+      onReasoning, // 向下兼容别名
+      onContent,   // 向下兼容别名
       onDone,
       onError
     }) {
+      const handleThought = onThought || onReasoning;
+      const handleText = onText || onContent;
+
       const config = this.getConfig();
       const isZhipu = config.activeProvider === 'zhipu' || (config.model && config.model.startsWith('glm-'));
       const isKimi = config.activeProvider === 'kimi' || (config.model && config.model.includes('kimi'));
@@ -711,16 +717,19 @@ ${studentAnswer}
         if (isZhipu) {
           // 智谱 GLM 规范适配：
           reqBody.temperature = config.temperature !== undefined ? config.temperature : 0.7;
-          reqBody.max_tokens = config.max_tokens || 4096;
+          reqBody.max_tokens = config.max_tokens || 8192;
           reqBody.stream_options = { chunk_include_usage: true };
-          // 仅在明确指定 5.3 长思考模型时启用 thinking
+          // 智谱官方 GLM-5.3 规范：
+          // 1. thinking: { type: 'enabled', clear_thinking: false }
+          // 2. 根级 reasoning_effort: 'low' 严控思考预算，保证毫秒级衔接正文输出
           if (config.model && config.model.includes('5.3')) {
-            reqBody.thinking = { type: 'enabled', level: 'low' };
+            reqBody.thinking = { type: 'enabled', clear_thinking: false };
+            reqBody.reasoning_effort = 'low';
           }
         } else if (isKimi) {
           // Kimi-k3 规范适配：
           reqBody.reasoning_effort = config.reasoning_effort || 'low';
-          reqBody.max_tokens = config.max_tokens || 4096;
+          reqBody.max_tokens = config.max_tokens || 8192;
         } else {
           if (config.temperature !== undefined) reqBody.temperature = config.temperature;
           if (config.max_tokens !== undefined) reqBody.max_tokens = config.max_tokens;
@@ -779,6 +788,7 @@ ${studentAnswer}
         let fullReasoning = '';
         let buffer = '';
         let cacheHitTokens = 0;
+        let insideThinkTag = false;
 
         while (true) {
           const { done, value } = await reader.read();
@@ -809,21 +819,92 @@ ${studentAnswer}
 
                 const choice = json.choices && json.choices[0];
                 if (choice && choice.delta) {
-                  // 1. 深度思考推理流 (Kimi / GLM 思考块)
+                  // 通道 A：原生 reasoning_content (智谱 GLM-5.3 / Moonshot Kimi-k3 / DeepSeek 原生)
                   if (choice.delta.reasoning_content) {
-                    fullReasoning += choice.delta.reasoning_content;
-                    if (onReasoning) onReasoning(choice.delta.reasoning_content, fullReasoning);
+                    const rChunk = choice.delta.reasoning_content;
+                    fullReasoning += rChunk;
+                    if (handleThought) handleThought(rChunk, fullReasoning);
                   }
-                  // 2. 正式回答内容流
+
+                  // 通道 B：content 流式处理（含通用 <think> 标签状态机与普通正文分流）
                   if (choice.delta.content) {
-                    fullContent += choice.delta.content;
-                    if (onContent) onContent(choice.delta.content, fullContent);
+                    let cChunk = choice.delta.content;
+
+                    if (cChunk.includes('<think>') || insideThinkTag) {
+                      // 包含或处于 think 标签内，做流式标签状态解析
+                      while (cChunk.length > 0) {
+                        if (!insideThinkTag) {
+                          const openIdx = cChunk.indexOf('<think>');
+                          if (openIdx !== -1) {
+                            const preText = cChunk.slice(0, openIdx);
+                            if (preText) {
+                              fullContent += preText;
+                              if (handleText) handleText(preText, fullContent);
+                            }
+                            insideThinkTag = true;
+                            cChunk = cChunk.slice(openIdx + 7);
+                          } else {
+                            fullContent += cChunk;
+                            if (handleText) handleText(cChunk, fullContent);
+                            break;
+                          }
+                        } else {
+                          const closeIdx = cChunk.indexOf('</think>');
+                          if (closeIdx !== -1) {
+                            const thinkPart = cChunk.slice(0, closeIdx);
+                            if (thinkPart) {
+                              fullReasoning += thinkPart;
+                              if (handleThought) handleThought(thinkPart, fullReasoning);
+                            }
+                            insideThinkTag = false;
+                            cChunk = cChunk.slice(closeIdx + 8);
+                          } else {
+                            fullReasoning += cChunk;
+                            if (handleThought) handleThought(cChunk, fullReasoning);
+                            break;
+                          }
+                        }
+                      }
+                    } else {
+                      // 普通纯正文 chunk
+                      fullContent += cChunk;
+                      if (handleText) handleText(cChunk, fullContent);
+                    }
                   }
                 }
               } catch (e) {
                 // 忽略非完整 JSON 片段
               }
             }
+          }
+        }
+
+        // 极端异常防御：如果由于网络截断或 token 耗尽导致 fullContent 依然为空，
+        // 且 fullReasoning 存在，说明模型发生了思考截断，尝试使用秒级备用模型兜底一次纯正文
+        if (!fullContent.trim() && fullReasoning.trim() && isZhipu && config.model && config.model.includes('5.3')) {
+          console.warn('[AI Adapter] ⚠️ GLM-5.3-Flash 发生思考截断正文为空，自动发起备用真模型 glm-4-flash 补救生成...');
+          try {
+            const fallbackRes = await fetch('/api/ai/chat', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                model: 'glm-4-flash',
+                messages: fullMessages,
+                stream: false,
+                max_tokens: 4096,
+                provider: 'zhipu'
+              })
+            });
+            if (fallbackRes.ok) {
+              const fbJson = await fallbackRes.json();
+              const fbContent = (fbJson.choices && fbJson.choices[0] && fbJson.choices[0].message && fbJson.choices[0].message.content) || '';
+              if (fbContent) {
+                fullContent = fbContent;
+                if (handleText) handleText(fullContent, fullContent);
+              }
+            }
+          } catch (fbErr) {
+            console.error('[AI Adapter] 备用模型补救失败:', fbErr);
           }
         }
 
@@ -898,7 +979,7 @@ ${studentAnswer}
     },
 
     /**
-     * 职能四：边读边思 · 师承三维点穴评估 (支持流式打字与离线智能保真引擎)
+     * 职能四：边读边思 · 师承三维点穴评估 (纯真模型输出，严禁任何假数据兜底)
      */
     async evaluateInlineThink({ lessonTitle, question, studentAnswer, hint, tag, lessonMeta, onReasoning, onContent, onDone, onError }) {
       const userContent = YijingPromptSystem.buildInlineAssessmentPrompt({
@@ -923,116 +1004,16 @@ ${studentAnswer}
           onReasoning,
           onContent,
           onDone: safeDone,
-          onError: async (err) => {
-            console.warn('[YijingAIService] 联网/API请求异常，无缝降级启用宗师离线深度辨析引擎:', err);
-            const offlineContent = this.generateOfflineInlineAssessment({ lessonTitle, question, studentAnswer, hint, tag });
-            if (onContent) onContent(offlineContent, offlineContent);
-            safeDone({ content: offlineContent, reasoning: '（依托易道本地宗师时位规则库深度生成）' });
+          onError: (err) => {
+            console.error('[YijingAIService] 边读边思师承评估调用失败:', err);
+            if (onError) onError(err);
           }
         });
       } catch (err) {
-        console.warn('[YijingAIService] streamChat失败或中断，采用离线宗师引擎:', err);
-        const offlineContent = this.generateOfflineInlineAssessment({ lessonTitle, question, studentAnswer, hint, tag });
-        if (onContent) onContent(offlineContent, offlineContent);
-        safeDone({ content: offlineContent, reasoning: '（依托易道本地宗师时位规则库深度生成）' });
-        return { content: offlineContent, reasoning: '' };
+        console.error('[YijingAIService] evaluateInlineThink 执行异常:', err);
+        if (onError) onError(err);
+        throw err;
       }
-    },
-
-    /**
-     * 本地宗师高保真离线辨析引擎 (支持针对起源取象、三才模型、八大原力、复杂系统互动等题型智能点穴)
-     */
-    generateOfflineInlineAssessment({ lessonTitle = '', question = '', studentAnswer = '', hint = '', tag = '' }) {
-      const ans = (studentAnswer || '').trim();
-
-      let affirmText = '';
-      let critiqueText = '';
-      let adviceText = '';
-
-      // 0. 【复杂系统 / 重卦相交 / 系统博弈】题型判定 (第二课专属重点)
-      const isSystemTopic = tag.includes('复杂系统') || tag.includes('重卦') || question.includes('复杂系统') || question.includes('系统 A');
-      if (isSystemTopic) {
-        const hasMedia = ans.includes('自媒体') || ans.includes('创业') || ans.includes('项目');
-        const mentionsReady = ans.includes('没有做好充分的准备') || ans.includes('无法开始') || ans.includes('输出不可知');
-
-        affirmText = `小友此番悟道切中肯綮！其一，精准领会了单卦与重卦的本质分野——单卦孤立而重卦动态，八卦交互动荡方生宇宙万物；其二，毫不回避当下现实，直接把自己即将启动的“自媒体投入与变现迷茫”代入卦理，敏锐察觉到“卦象向上、期待向上，但内部尚未充分备好”的时位脱节。这等刀刃向内的真实反观，正是易道研学的上乘心法！`;
-
-        critiqueText = `此处玄微先生为你点穴深究：\n` +
-          `1. 【内卦与外卦的严重错位】：你所言“期待向上”乃外卦离火（名声显扬、内容曝光）或兑金（用户喜悦）之象，而“内部未备好、变现路径模糊”则是内卦坤土（交付承载）或乾金（自驱壁垒）的极度虚弱。内卦不稳而外卦妄动，在易理中此乃“小蓄”或“渐”卦未成之象，若冒然大举投入资金与精力，最易落入“内耗空转、虎头蛇尾”的困局；\n` +
-          `2. 【复杂系统的输入输出法则】：自媒体绝非单向输出，而是复杂的“注意力与价值交换系统”。你之所以“无法开始”，根本矛盾不在于“输出不可知”，而在于底层“商业反馈闭环规则”未曾勘破。若以赌徒心态期待一战暴富，是把复杂系统降维成单线妄念。`;
-
-        adviceText = `1. 【先固内卦，以地道为基】：莫急于追求大制作、重资产投入。先做“最小可行交付（MVP）”，盘点你手头最笃定、最无需外部依赖的独家认知作为第一颗种子；\n` +
-          `2. 【以坎水流润破僵局】：变现不可知是常态，行“坎水之深沉”，把“盈利考核”暂缓，以“验证用户真实痛点”为第一输入指标。内部做好准备不是等所有资源齐备，而是在小步试错中边打边建。知行合一，始于足下！`;
-      }
-      // 1. 【起源觉察 / 取象思维 / 自然物象】题型判定
-      else if (tag.includes('起源') || tag.includes('取象') || question.includes('近取诸身') || question.includes('自然物象')) {
-      if (isImageryTopic) {
-        const hasThunder = ans.includes('雷') || ans.includes('蠢蠢欲动') || ans.includes('跳槽') || ans.includes('动荡');
-        const hasFire = ans.includes('火') || ans.includes('无名火') || ans.includes('烦躁') || ans.includes('急');
-        const hasLake = ans.includes('兑') || ans.includes('自娱自乐') || ans.includes('乐');
-
-        affirmText = `小友深得伏羲“远取诸物、近取诸身”之真义！在当下处境中，不仅能敏锐捕捉到工作大环境的动荡，更能诚实照见自己身心的生理情绪信号${hasFire ? '（如无名火浮越、内心焦躁）' : ''}${hasThunder ? '与行动冲动（雷动欲变）' : ''}。研易之要，首在“观物即是观心”，能以卦象物象映照自心，绝非死读文句之徒！`;
-
-        critiqueText = `此处玄微先生须为你点穴辨正：\n${hasThunder ? '1. 【雷动之险】：雷（震卦）主生发萌动，外部萧条而内部裁员时，你心生“蠢蠢欲动、想要跳槽”之念，正是震雷破土之象。然冬末春初，地气尚寒，若无坤土厚德托底，盲目“雷动”最易碰壁折损。\n' : ''}${hasFire ? '2. 【虚火之患】：坐地铁起“无名火”，此乃离火上炎之表征。外部环境压抑（坤阴闭塞），内部生发欲动而不得出，便化为心肝郁火。无名火起，最耗元神，若被无名火驱使做重大决策，往往一叶障目。\n' : ''}${hasLake ? '3. 【兑悦之度】：以“兑泽”自娱自乐调节心境固然是自我疗愈之法，但若只沉溺于偏安自娱，则易失却进取之刚健。' : ''}`;
-
-        adviceText = `1. 【以艮山止火，以静制动】：当下第一要务并非盲目跳槽（雷动），而是先以内观定力平息坐地铁时的无名火气。遇急事、浮躁时，行“艮山之止”，调匀呼吸，莫让虚火烧垮心神。\n2. 【冬藏待春，蓄积雷力】：外部大环境萧条之时，正是修内功、固基本盘之良机。将“蠢蠢欲动”化为暗中积攒业务壁垒的“潜龙之力”，待天时阳气回暖、雷声真正发动时，方能顺势破局！`;
-      }
-      // 2. 【三才模型 / 天地人配称】题型判定
-      else if (tag.includes('三才') || question.includes('三才之道')) {
-        const mentionsEarthRelation = ans.includes('地没关系') || ans.includes('没感受到地') || ans.includes('开源节流');
-
-        if (mentionsEarthRelation) {
-          affirmText = `小友此番悟道作答，最可贵者有二：其一，能将古老的三才模型敏锐对焦到当下的生存职场，将“大环境、公司、自我”映射入局，已然跳出死读书之泥潭；其二，极其坦诚地指出“感觉开源节流和地没关系，没感受到地的因素”，知之为知之、不知为不知，反求诸己、毫不饰伪，此乃研习易道最正的大心量与诚意！`;
-
-          critiqueText = `此处小友恰恰踩中了常人理解“地道”的隐秘误区！地道者，坤顺之德，非指山川泥土，而是你在世间立足的“承载依托与现实约束”。\n你言“公司开源节流和地没关系”，大谬不然！公司的现金流状况、部门编制考核、手头的业务资源、赖以领薪的饭碗，正是你在职场中脚踩的“地皮”。\n当外部大环境（天道）入冬，大地（公司）必然降温收缩、封冻开源。若只顾在人道上“独善其身、暗自苦学”，却视脚下正在崩解或重组的“地道配称”于不顾，便容易陷入“悬空修道”的虚妄。双脚脱离地皮，再渊博的学识也无处安放。`;
-
-          adviceText = `1. 【履地为基】：不仅要暗自蓄力，更要睁眼看清组织当前最核心的“生存基本盘”。弄明白公司开源节流后，哪些是真正保命的底层资产与现金牛业务，主动靠拢能为“地皮”稳固提供交付价值的关键点。\n2. 【知天应人】：在外部大环境冰封时，不盲目冒进逆天行事，守住地道底线，于人道修养内功、蓄积潜龙之力。唯有“通天、接地、正人”，方能立于不败之地。`;
-        } else {
-          affirmText = `小友能够将三才之道（天、地、人）落实到具体的工作目标中，以宏观大势为天、现实资源与组织约束为地、自身主观能动为人，认知架构清晰明朗。`;
-
-          critiqueText = `在三才博弈中，常人最易忽略的是“人道”与“地道”的协同。天道往往是客观不可逆的大周期（如行业冷暖），不可强抗；人道是自己的主观修为；而地道则是资源支撑与边界约束。若地基不稳而妄图在人道上高歌猛进，常会陷入后劲不足之险。`;
-
-          adviceText = `1. 审视脚下“地道”之厚度：先盘点手头业务的确定性资源、核心信任资产与交付基本盘；\n2. 顺天应人：在天道低谷期修养身心，在人道上做到中正不偏，步步为营。`;
-        }
-      }
-      // 3. 【八大原力 / 动力学偏性】题型判定
-      else if (tag.includes('原力') || tag.includes('动力学') || question.includes('八大原力')) {
-        const hasQian = ans.includes('乾') || ans.includes('自主') || ans.includes('刚健');
-        const hasDui = ans.includes('兑') || ans.includes('协调') || ans.includes('沟通');
-        const hasLackKanGen = ans.includes('缺少坎') || ans.includes('缺少艮') || ans.includes('坎') || ans.includes('艮');
-        const hasZhen = ans.includes('震') || ans.includes('开拓') || ans.includes('冲锋');
-
-        affirmText = `小友能将团队中各角色的职能风格敏锐对应至八卦原力（如管理者之兑和悦调和、开拓者之震动执行、自我追求之乾阳自强），更直面团队缺乏“坎（履险深谋）”与“艮（风控止步）”之痛点，这等洞察已然跳出一般管理学皮毛，深得取象比类之妙！`;
-
-        critiqueText = `此处玄微先生必须为你点穴直指：\n` +
-          (hasLackKanGen ? `1. 【缺坎少艮之系统性风险】：团队若无“坎水”之深沉求通与风险预判，又无“艮山”之止步风控与原则守持，便如同战车无刹车且盲目冲锋，遇急弯必然倾覆！\n` : `1. 【原力失衡之险】：任何单一维度的强势或过剩，若无相生相克之制化，往往成为日后组织崩溃的暗礁。\n`) +
-          (hasQian ? `2. 【乾阳孤亢之隐患】：你倾向于乾（自强探索、研习AI），CEO亦为乾，但若乾阳之刚受制于周遭琐屑，容易在内心郁结为“潜龙勿用”的暗火。需谨防“亢龙有悔”，不可因沉迷自研而割裂组织现实。` : `2. 【和悦泛滥之弊】：兑悦过度则易流于和稀泥，缺乏决断魄力。`);
-
-        adviceText = `1. 【补坎固艮】：在业务推进与技术探索中，主动建立“风控止损清单（艮山）”与“深度推演复盘机制（坎水）”，莫让和悦遮蔽了暗礁；\n2. 【乾坤配称】：以乾阳之志探索前沿AI，同时以坤德承载日常业务交付，借事炼心，方能潜龙出渊。`;
-      }
-      // 4. 【节气时序 / 后天八卦时位运转】题型判定
-      else if (tag.includes('节气') || tag.includes('时序') || question.includes('节气') || question.includes('文王后天八卦')) {
-        const isStartup = ans.includes('起步') || ans.includes('发端') || ans.includes('惰性') || ans.includes('拖延');
-        const asksSystemRelation = ans.includes('八卦学习系统') || ans.includes('时节的关系') || ans.includes('项目维度');
-
-        affirmText = `小友此番自省格外真切深邃！不仅坦诚道破自身处于“起步发端期的拖延与惰性”，更能进一步直击本质，敏锐发问——“八卦学习系统与时节运转的关系究竟为何？与项目维度又有何关联？”这绝非浮光掠影之思，而是真正叩响了后天八卦“以时统事、知时顺势”的奥义大门！`;
-
-        critiqueText = `此处玄微先生为你拨开迷雾，点透“八卦系统与项目时序”之玄机：\n` +
-          `1. 【起步即震木，拖延乃萌发之阻】：万物发端于震东（春生破土）。种子破土那一刻往往最艰险、最耗元气，你感知到的“惰性与拖延”，本质是心理在面对“震雷爆发所需巨大破局动能”时的本能退缩与混沌。拖延并非单纯意志薄弱，而是尚未在“冬藏坎水”中聚足破土的笃定！\n` +
-          (asksSystemRelation ? `2. 【系统与时节的映射解密】：所谓“八卦系统与时节的关系”，即任何项目生命周期皆合于后天时序！\n   - **坎北（冬藏）**：底层架构调研、知识库冷启动与技术打磨（此时宜潜伏闭关，急于上线必夭折）；\n   - **震东（春生）**：你当前所处阶段——最小可行原型（MVP）破土发端；\n   - **离南（夏长）**：产品公测、功能盛放与大范围传播；\n   - **兑西（秋收）**：用户正向反馈回流、商业收割与总结沉淀。\n   若系统尚在“冬春之交”，你却用“秋收之果”来苛责自身，便是拔苗助长；反之若春雷已至却迟迟不起，则是坐失天时！` : `2. 【合拍顺时】：顺应节气并非听天由命，而是明辨当前是该“冬藏蓄力”还是“春生破土”，动作与时位相配，方为大顺。`);
-
-        adviceText = `1. 【破土无需全备】：顺应震卦春生之律，不要等所有内容尽善尽美才行动。定一个最小破局切口（如今天先交付一个微模块），以小动破大滞；\n2. 【以时视事】：把你的八卦学习系统项目各模块排入“春夏秋冬”四时看板，分清哪些是当前必须生发的“春木”，哪些是后续方需成熟的“秋实”，心境自然泰然清明！`;
-      }
-      // 4. 【通用自适应托底】
-      else {
-        affirmText = `小友对《${lessonTitle}》本处的驻足思考见解真切，能结合切身经历反求诸己，言辞务实求真，未曾堆砌晦涩虚华辞藻，殊为可嘉。`;
-
-        critiqueText = `在时位与阴阳辨证上仍需进一步穿透表象。易道贵在“变易与对立统一”，观察局势不仅要看顺境之吉，更要体察暗流涌动的隐患与临界拐点，避免凭单一主观直觉做出片面定论。`;
-
-        adviceText = `建议紧扣本章节的核心卦爻法则，将眼前的困局与爻位变化反复参验，做到“内敛其志、外顺其势、谨言笃行”。`;
-      }
-
-      return `🟢 【明德见智 · 肯定之处】：\n${affirmText}\n\n🟡 【见微知著 · 辨正不足与点穴】：\n${critiqueText}\n\n🔵 【致知力行 · 研学与发力建议】：\n${adviceText}`;
     }
   };
 
