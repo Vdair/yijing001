@@ -922,14 +922,19 @@ ${studentAnswer}
 
     /**
      * 职能一：常规问答与划词释义
+     * 同时支持标准规范 onThought/onText 与向后兼容别名 onReasoning/onContent
      */
-    async answerQuestion({ question, quoteText = '', lessonMeta = {}, onReasoning, onContent, onDone, onError }) {
+    async answerQuestion({ question, quoteText = '', lessonMeta = {}, onThought, onText, onReasoning, onContent, onDone, onError }) {
+      const handleThought = onThought || onReasoning;
+      const handleText = onText || onContent;
       const userContent = YijingPromptSystem.buildQAPrompt({ question, quoteText, lessonMeta });
       return this.streamChat({
         messages: [{ role: 'user', content: userContent }],
         lessonMeta,
-        onReasoning,
-        onContent,
+        onThought: handleThought,
+        onText: handleText,
+        onReasoning: handleThought,
+        onContent: handleText,
         onDone,
         onError
       });
@@ -938,7 +943,9 @@ ${studentAnswer}
     /**
      * 职能二：承载学员悟道复盘与费曼输出的高保真深度剖析
      */
-    async analyzeReviewAndFeynman({ lessonMeta, reviewData, feynmanData, onReasoning, onContent, onDone, onError }) {
+    async analyzeReviewAndFeynman({ lessonMeta, reviewData, feynmanData, onThought, onText, onReasoning, onContent, onDone, onError }) {
+      const handleThought = onThought || onReasoning;
+      const handleText = onText || onContent;
       const userContent = YijingPromptSystem.buildReviewAnalysisPrompt({
         reviewData,
         feynmanData,
@@ -948,8 +955,10 @@ ${studentAnswer}
       return this.streamChat({
         messages: [{ role: 'user', content: userContent }],
         lessonMeta,
-        onReasoning,
-        onContent,
+        onThought: handleThought,
+        onText: handleText,
+        onReasoning: handleThought,
+        onContent: handleText,
         onDone,
         onError
       });
@@ -981,7 +990,9 @@ ${studentAnswer}
     /**
      * 职能四：边读边思 · 师承三维点穴评估 (纯真模型输出，严禁任何假数据兜底)
      */
-    async evaluateInlineThink({ lessonTitle, question, studentAnswer, hint, tag, lessonMeta, onReasoning, onContent, onDone, onError }) {
+    async evaluateInlineThink({ lessonTitle, question, studentAnswer, hint, tag, lessonMeta, onThought, onText, onReasoning, onContent, onDone, onError }) {
+      const handleThought = onThought || onReasoning;
+      const handleText = onText || onContent;
       const userContent = YijingPromptSystem.buildInlineAssessmentPrompt({
         lessonTitle,
         question,
@@ -1001,8 +1012,10 @@ ${studentAnswer}
         return await this.streamChat({
           messages: [{ role: 'user', content: userContent }],
           lessonMeta: lessonMeta || { title: lessonTitle },
-          onReasoning,
-          onContent,
+          onThought: handleThought,
+          onText: handleText,
+          onReasoning: handleThought,
+          onContent: handleText,
           onDone: safeDone,
           onError: (err) => {
             console.error('[YijingAIService] 边读边思师承评估调用失败:', err);

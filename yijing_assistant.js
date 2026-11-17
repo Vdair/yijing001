@@ -505,7 +505,7 @@
           </div>
           <div class="yj-thinking-content"></div>
         </div>
-        <div id="${contentId}" class="yj-typing-cursor"></div>
+        <div id="${contentId}" class="yj-typing-cursor" style="min-height:22px; font-size:13.5px; line-height:1.7; color:var(--text);"><span style="color:var(--text-sub); font-size:12px;">☯️ 玄微先生正在观象推演，稍候即出开示...</span></div>
       </div>
     `;
     chatBox.scrollTop = chatBox.scrollHeight;
@@ -542,7 +542,13 @@
           }
         },
         onDone: ({ content }) => {
-          if (contentBox) contentBox.classList.remove('yj-typing-cursor');
+          if (contentBox) {
+            contentBox.classList.remove('yj-typing-cursor');
+            const currentText = contentBox.innerText.trim();
+            if ((!currentText || currentText.includes('正在观象推演')) && content) {
+              contentBox.innerHTML = content.replace(/\n/g, '<br>');
+            }
+          }
           if (thinkBox) {
             const toggle = thinkBox.querySelector('.yj-thinking-toggle span');
             if (toggle) toggle.innerText = '🧠 易道推演完成 (点击展开)';
