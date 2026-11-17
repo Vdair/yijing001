@@ -601,7 +601,6 @@ ${studentAnswer}
         } catch (e) {}
       }
     },
-    },
 
     /**
      * 动态热切换 Provider（'zhipu' 或 'kimi'）
