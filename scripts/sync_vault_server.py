@@ -84,6 +84,12 @@ class VaultSyncHandler(http.server.SimpleHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
+        # 核心安全防御：严禁任何公网客户端直接读取 config/ 私有目录、环境配置或隐藏文件
+        clean_path = self.path.split('?')[0]
+        if clean_path.startswith('/config/') or clean_path.endswith('.key') or clean_path.endswith('.env') or '/.' in clean_path:
+            self.send_json(403, {'error': '403 Forbidden: 核心配置文件受安全策略保护，严禁公网直接访问'})
+            return
+
         if self.path == '/api/vault/status':
             status_data = {
                 'status': 'online',
