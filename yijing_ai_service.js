@@ -140,6 +140,69 @@ ${timeSpaceText || '（初爻潜伏蓄势，二爻见龙得中，三爻惕厉防
 ${modernText || '（物极必反、反常识克制、生克制化、吉凶悔吝自心生）'}
   </modern_praxis_and_anti_common>
 </yijing_knowledge_base>`;
+    },
+
+    /**
+     * 针对费曼自述深度剖析：提取高保真、权威的【本章核心义理基准 (Ground Truth)】
+     * 确保第三方评审者对当前章节具备极其深刻、透彻的把握作为评判尺度
+     */
+    extractFeynmanGroundTruth(lesson) {
+      if (!lesson) return '（通用易道演化与时位生克法则）';
+      const title = lesson.title || '周易经典章节';
+      const symbol = lesson.symbol || '☯️';
+      const motto = lesson.motto || '洁静精微，极深研几';
+      const upper = lesson.upper || '';
+      const lower = lesson.lower || '';
+      const html = lesson.full_rich_html || '';
+
+      let canonKey = '';
+      let mastersKey = '';
+      let timeSpaceKey = '';
+      let modernKey = '';
+
+      if (html) {
+        const regex = /<h3 class="step-title">([壹贰叁肆伍陆柒][^<]+)<\/h3>([\s\S]*?)(?=<h3 class="step-title">|$)/g;
+        let match;
+        while ((match = regex.exec(html)) !== null) {
+          const header = match[1].trim();
+          const body = this.stripHtml(match[2]);
+          if (header.includes('壹')) {
+            canonKey = body.slice(0, 1000);
+          } else if (header.includes('贰')) {
+            mastersKey = body.slice(0, 800);
+          } else if (header.includes('陆')) {
+            timeSpaceKey = body.slice(0, 600);
+          } else if (header.includes('柒')) {
+            modernKey = body.slice(0, 600);
+          }
+        }
+      }
+
+      // 如果未解析到分块 HTML（如通识课），则直接提取正文纯文本核心
+      if (!canonKey && html) {
+        const cleanAll = this.stripHtml(html);
+        canonKey = cleanAll.slice(0, 1500);
+      }
+
+      let natureDesc = '';
+      if (window.YijingNaturalSystem && lesson.id) {
+        const nData = window.YijingNaturalSystem.getGuaNatureMeta(lesson.id, lesson);
+        if (nData) {
+          natureDesc = `【自然成象与命名探源】：${nData.natureScene || ''}；大象法则：“${nData.daxiangQuote || ''}”；演进天梯：${nData.ladderEvolution || ''}`;
+        }
+      }
+
+      return `【本章核心义理基准（Ground Truth 权威参照系）】：
+- 课时主题：《${title}》 ${symbol} ${upper && lower ? `（上${upper}下${lower}）` : ''}
+- 核心卦训/宗旨：${motto}
+${natureDesc ? `- ${natureDesc}\n` : ''}- 【经传原典与核心爻辞脉络】：
+${canonKey || '（卦爻辞与彖、象传所揭示的演变主线）'}
+- 【四大宗师义理解构】：
+${mastersKey || '（天理人事合一，正固前置条件，吉凶转化枢纽）'}
+- 【时位辩证与得中得位法则】：
+${timeSpaceKey || '（由潜伏、见著、警惕、跃升、当位至亢极的时位节奏）'}
+- 【现代决策攻防与反常识底牌】：
+${modernKey || '（颠覆直觉常态的一条深层心法与红线戒律）'}`;
     }
   };
 
@@ -275,6 +338,56 @@ ${studentAnswer}
 - 告诉学员身处当前局势，下一步最该把心力落在哪一个着力点上，实现“顺天、应人、履地”。
 
 全篇儒雅威严、沉稳温润、字字见血、直击命门。严禁空洞套话，严禁简单复读题目。字数在 300~500 字之间。`;
+    },
+
+    /**
+     * 3.2 职能二核心强化：费曼大白话自述专属「第三方深度把关检视」Prompt
+     * 核心铁律：
+     * 1. 评判者必须【极度通透本章核心义理基准 (Ground Truth)】，以权威知识为像素级比对标尺；
+     * 2. 纯粹聚焦学员提交的【3 分钟费曼大白话自述全稿】，彻底剔除正文无关琐碎问答；
+     * 3. 扮演坐在台下的冷峻客观【第三方专业听众与知识交付把关人】；
+     * 4. 严格输出四大靶向维度：核心讲透度 / 关键缺失 / 生硬模糊处 / 后续复盘建议(选择性输出)。
+     */
+    buildFeynmanDeepAuditPrompt({ lessonTitle = '', scenarioTitle = '', scenarioPrompt = '', feynmanFullText = '', groundTruth = '' }) {
+      return `【学员提交《${lessonTitle}》费曼大白话自述全稿，提请第三方专业听众与交付把关人进行深度检视】：
+
+====================
+【权威基准确立 · 本章核心义理底牌 (Ground Truth)】：
+你作为深谙《${lessonTitle}》全部经传原典、四大宗师（程颐/朱熹/孔颖达/邵雍）阐微、时位演化机制与现代反常识底牌的权威第三方把关人。你对该章节的掌握程度已达宗师级水准，以下为你本次审视的唯一法定学术参照系：
+${groundTruth || `（课时《${lessonTitle}》之原典经传、卦爻辞时位演化与反常识底层心智模型）`}
+
+====================
+【本次费曼讲解的任务情境与目标】：
+🎯 费曼任务目标：${scenarioTitle || '向外行朋友讲透本课核心精髓'}
+📋 任务设定情境：${scenarioPrompt || '用最通俗易懂的大白话、生动的生活/工作比喻，讲给完全不懂周易的外行听'}
+
+====================
+【学员提交的 3 分钟费曼大白话自述全稿】：
+“${feynmanFullText}”
+====================
+
+【第三方把关人检视职责与输出规范】：
+请你彻底摆脱客套夸赞的温和面具，化身为**坐在台下听讲的第三方专业听众与严苛的知识交付把关人**。
+你的唯一职责，是对照上方【本章核心义理底牌】，对学员的这篇自述进行**像素级对照审视**：检验他是否真的具备“把复杂高深哲理化为极简大白话交付给外行”的真本事！
+
+请严格按以下四大结构输出（保留 emoji 标题）：
+
+👁️ 【第三方视角 · 核心讲透度评估】：
+- 【定性判断】：学员是否真的把《${lessonTitle}》最核心的本质规律（如大势判断、阴阳转化、关键爻变）讲清楚了？还是只是表面流于口水话、东拉西扯、或是把原本简单的道理重新讲复杂了？
+- 【穿透点评】：明确指出他自述中哪一句或哪一个比喻真正触及了底层逻辑；如果他只是机械背诵概念术语而非真正内化交付，一针见血地指出来！
+
+⚠️ 【关键要义与时位脉络之缺失】：
+- 对照本章完整的义理与时位演变体系，敏锐排查：学员漏掉了哪些**最关键、最致命的要义或核心逻辑**？（例如：是否只讲了高光飞跃，却遗漏了前置的潜伏蓄势或惕厉防险？是否忽略了“得中”的前置约束条件？是否缺失了反常识的克制底线？）。明确列出 1~2 个关键缺失。
+
+🧩 【生硬模糊与逻辑断裂处指出】：
+- 从一个毫无易经基础的外行听众真实理解角度，精准挑刺：自述中是否有“自己都没想明白就含混带过”的词句？
+- 是否有比喻穿帮、因果颠倒，或者概念之间没有推导关系的逻辑硬伤？明确引用其原话并指明为何没说清楚。
+
+🌱 【后续复盘精进建议（选择性输出）】：
+- （⚠️ 极为重要：只有在自述存在明显硬伤、逻辑断裂或关键要义缺失时才输出改进建议！若学员已经讲得极其透彻完备，请直接单列一行写：“✨ 本篇自述核心已讲透，逻辑闭环，已达高质量交付标准”，严禁为了凑结构而硬写假大空的套话）。
+- 若输出建议，必须给出 1 条最具实操性的修改示范（例如：“建议把‘XXX’换成‘像汽车在结冰路面换挡……’，这样外行瞬间就能听懂”）。
+
+语言风格：客观冷峻、字字见血、逻辑严密、直击命门。总字数控制在 350~500 字。`;
     },
 
     /**
@@ -1055,6 +1168,51 @@ ${studentAnswer}
         });
       } catch (err) {
         console.error('[YijingAIService] evaluateInlineThink 执行异常:', err);
+        if (onError) onError(err);
+        throw err;
+      }
+    },
+
+    /**
+     * 职能五：费曼大白话自述专属「第三方深度把关检视」
+     * 极度熟悉本章节核心基准，聚焦学员自述全稿，冷峻输出四维诊断
+     */
+    async auditFeynmanSpeech({ lessonMeta, scenarioTitle, scenarioPrompt, feynmanFullText, onThought, onText, onReasoning, onContent, onDone, onError }) {
+      const handleThought = onThought || onReasoning;
+      const handleText = onText || onContent;
+
+      const groundTruth = YijingKnowledgeRetriever.extractFeynmanGroundTruth(lessonMeta);
+      const userContent = YijingPromptSystem.buildFeynmanDeepAuditPrompt({
+        lessonTitle: lessonMeta ? (lessonMeta.title || '周易经典章节') : '本课精研',
+        scenarioTitle,
+        scenarioPrompt,
+        feynmanFullText,
+        groundTruth
+      });
+
+      let isFinished = false;
+      const safeDone = (payload) => {
+        if (isFinished) return;
+        isFinished = true;
+        if (onDone) onDone(payload);
+      };
+
+      try {
+        return await this.streamChat({
+          messages: [{ role: 'user', content: userContent }],
+          lessonMeta,
+          onThought: handleThought,
+          onText: handleText,
+          onReasoning: handleThought,
+          onContent: handleText,
+          onDone: safeDone,
+          onError: (err) => {
+            console.error('[YijingAIService] 费曼深度把关检视调用失败:', err);
+            if (onError) onError(err);
+          }
+        });
+      } catch (err) {
+        console.error('[YijingAIService] auditFeynmanSpeech 执行异常:', err);
         if (onError) onError(err);
         throw err;
       }

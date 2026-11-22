@@ -331,6 +331,17 @@
       return this.saveSingleGua(guaId, rec);
     },
 
+    // 4.1 专属费曼自述第三方深度剖析保存与落盘
+    saveFeynmanAudit(guaId, auditContent, meta = {}) {
+      const rec = this.getGuaRecord(guaId, meta);
+      if (!rec.feynman) rec.feynman = {};
+      rec.feynman.audit = {
+        content: (auditContent || '').trim(),
+        updated_at: new Date().toLocaleString()
+      };
+      return this.saveSingleGua(guaId, rec);
+    },
+
     // 5. 边读边思 · 师承评估保存与同步落盘
     saveInlineAssessment(guaId, qIndex, question, tag, userAnswer, teacherAssessment, meta = {}) {
       const rec = this.getGuaRecord(guaId, meta);

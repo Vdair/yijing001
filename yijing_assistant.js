@@ -775,10 +775,22 @@
             <textarea id="vFeyFullText" rows="4" placeholder="在此用大白话向朋友通俗讲透这一卦的精髓与现代启示..."></textarea>
           </div>
 
+          <!-- 弹窗专属第三方把关检视卡片 -->
+          <div class="yj-review-analysis-card yj-feynman-audit-card" id="vFeyAuditCard" style="display:none; margin-top:12px; border-left: 4px solid var(--purple, #a855f7);">
+            <div class="yj-analysis-header">
+              <div class="yj-analysis-title">
+                <span>🎙️</span>
+                <span style="color:var(--purple, #a855f7);">第三方专业听众 · 费曼交付深度把关检视</span>
+              </div>
+              <span id="vFeyAuditTime" style="font-size:12px; color:var(--text-faint);"></span>
+            </div>
+            <div class="yj-analysis-body" id="vFeyAuditContent"></div>
+          </div>
+
           <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; flex-wrap:wrap; gap:8px;">
             <span id="vFeySaveStatus" style="font-size:12.5px; color:var(--text-faint);">尚未修改保存</span>
             <div style="display:flex; gap:10px;">
-              <button class="yj-btn-outline" style="border-color:var(--gold); color:var(--gold); font-weight:700;" onclick="requestMasterAgentReviewAnalysis()">✨ 提请玄微先生 · 结合费曼深入剖析</button>
+              <button class="yj-btn-outline" style="border-color:var(--purple, #a855f7); color:var(--purple, #a855f7); font-weight:700;" onclick="requestDedicatedFeynmanAudit()">🎙️ 提请第三方深度把关检视</button>
               <button class="yj-btn-gold" onclick="saveVaultFeynman()">🏆 提交保存费曼通关笔记</button>
             </div>
           </div>
@@ -989,6 +1001,20 @@
     document.getElementById('vFeyAntiCommon').value = fw.anti_common_rule || '';
     document.getElementById('vFeyFullText').value = fey.full_text || '';
     document.getElementById('vFeySaveStatus').innerText = fey.updated_at ? `上次保存：${fey.updated_at}` : '尚未通关';
+
+    const vAuditCard = document.getElementById('vFeyAuditCard');
+    const vAuditBody = document.getElementById('vFeyAuditContent');
+    const vAuditTime = document.getElementById('vFeyAuditTime');
+    if (vAuditCard && vAuditBody) {
+      if (fey.audit && fey.audit.content) {
+        vAuditCard.style.display = 'flex';
+        vAuditBody.innerHTML = window.formatFeynmanAuditHtml ? window.formatFeynmanAuditHtml(fey.audit.content) : fey.audit.content.replace(/\n/g, '<br>');
+        if (vAuditTime) vAuditTime.innerText = fey.audit.updated_at ? `检视于 ${fey.audit.updated_at}` : '';
+      } else {
+        vAuditCard.style.display = 'none';
+        vAuditBody.innerHTML = '';
+      }
+    }
 
     // 同步底部状态
     document.getElementById('vaultFooterStatus').innerText = `☯️ 《${meta.title}》档案库：${dCount} 轮对话 · ${nCount} 条笔记 · 复盘与费曼双向持久化中`;
@@ -1407,6 +1433,172 @@
     }
 
     return parsedHtml;
+  };
+
+  // ==========================================================================
+  // 阶段四专属：第三方专业听众 · 费曼深度把关检视格式化渲染器
+  // ==========================================================================
+  window.formatFeynmanAuditHtml = function(content) {
+    if (!content) return '';
+    let text = content.trim();
+
+    // 检查是否有交付达标徽章
+    let passBadgeHtml = '';
+    if (text.includes('已达高质量交付标准') || text.includes('核心已讲透，逻辑闭环') || text.includes('通关达成')) {
+      passBadgeHtml = `
+        <div style="background:rgba(46,160,67,0.12); border:1px solid rgba(46,160,67,0.3); border-radius:8px; padding:10px 14px; margin-bottom:12px; display:flex; align-items:center; gap:10px;">
+          <span style="font-size:20px;">🏆</span>
+          <div>
+            <div style="font-size:13.5px; font-weight:800; color:var(--success, #2ea043);">知识交付把关审核：高质达标</div>
+            <div style="font-size:12px; color:var(--text-sub);">自述通俗透彻，经传核心要义无明显缺失，逻辑自洽，已具备高质量对外讲授水准。</div>
+          </div>
+        </div>
+      `;
+    }
+
+    let formatted = escapeHtml(text);
+
+    // 格式化四大段落标题
+    formatted = formatted.replace(
+      /(?:👁️|👁)\s*【?(?:第三方视角[·\s]*)?核心讲透度评估】?/g,
+      '<div class="yj-audit-sec-title" style="color:var(--gold); font-size:14.5px; font-weight:800; margin:10px 0 4px 0; display:flex; align-items:center; gap:6px;"><span>👁️</span><span>【第三方视角 · 核心讲透度评估】</span></div>'
+    );
+
+    formatted = formatted.replace(
+      /(?:⚠️)\s*【?(?:关键要义与时位脉络之缺失|关键缺失)】?/g,
+      '<div class="yj-audit-sec-title" style="color:var(--danger, #f85149); font-size:14.5px; font-weight:800; margin:14px 0 4px 0; display:flex; align-items:center; gap:6px;"><span>⚠️</span><span>【关键要义与时位脉络之缺失】</span></div>'
+    );
+
+    formatted = formatted.replace(
+      /(?:🧩)\s*【?(?:生硬模糊与逻辑断裂处指出|生硬模糊处)】?/g,
+      '<div class="yj-audit-sec-title" style="color:var(--purple, #a855f7); font-size:14.5px; font-weight:800; margin:14px 0 4px 0; display:flex; align-items:center; gap:6px;"><span>🧩</span><span>【生硬模糊与逻辑断裂处指出】</span></div>'
+    );
+
+    formatted = formatted.replace(
+      /(?:🌱)\s*【?(?:后续复盘精进建议|后续建议)】?(?:（选择性输出）)?/g,
+      '<div class="yj-audit-sec-title" style="color:var(--success, #2ea043); font-size:14.5px; font-weight:800; margin:14px 0 4px 0; display:flex; align-items:center; gap:6px;"><span>🌱</span><span>【后续复盘精进建议】</span></div>'
+    );
+
+    // 核心子标签与小标题加粗高亮
+    formatted = formatted.replace(/【(定性判断|穿透点评|核心判定|示范建议|把关建议)】/g, '<strong style="color:var(--text-m); font-weight:700;">【$1】</strong>');
+
+    // 换行替换
+    formatted = formatted.replace(/\n\n+/g, '<div style="margin:8px 0;"></div>').replace(/\n/g, '<br>');
+
+    return passBadgeHtml + `<div class="yj-audit-content" style="line-height:1.8; font-size:13.5px; color:var(--text-main);">${formatted}</div>`;
+  };
+
+  window.copyBottomFeynmanAuditContent = function() {
+    const body = document.getElementById('bottomFeynmanAuditContent');
+    if (!body || !body.innerText) return;
+    navigator.clipboard.writeText(body.innerText).then(() => {
+      alert('📋 第三方深度把关检视报告已复制到剪贴板！');
+    }).catch(() => {
+      alert('复制失败，请手动划选复制。');
+    });
+  };
+
+  window.openCoachFromFeynmanAudit = function() {
+    const cur = getCurrentLesson();
+    if (!cur) return;
+    const title = cur.title || '当前课时';
+    activeVaultGuaId = cur.id;
+    openVaultModal('dialogue');
+    const input = document.getElementById('vaultQuickQInput');
+    if (input) {
+      input.value = `先生，关于我在《${title}》费曼自述中第三方听众指出的缺失与逻辑硬伤，我想进一步向您请教：`;
+      input.focus();
+    }
+  };
+
+  // 专属触发：第三方专业听众对费曼自述全稿的深度交付把关检视
+  window.requestDedicatedFeynmanAudit = async function() {
+    const cur = getCurrentLesson();
+    if (!cur || !window.LearningVault) return;
+
+    const cfg = getLessonAdaptiveConfig(cur.id, cur);
+    let full_text = '';
+
+    const elFull = document.getElementById('feyFullText');
+    if (elFull) {
+      full_text = elFull.value.trim();
+    }
+    if (!full_text) {
+      const vEl = document.getElementById('vFeyFullText');
+      if (vEl) full_text = vEl.value.trim();
+    }
+
+    if (!full_text) {
+      alert(`请先在全稿框中写下你的 3 分钟费曼大白话自述，第三方把关人方可对照《${cur.title}》核心经传与时位义理为您深度检视！`);
+      const targetInput = document.getElementById('feyFullText') || document.getElementById('vFeyFullText');
+      if (targetInput) {
+        targetInput.focus();
+        targetInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      return;
+    }
+
+    const card = document.getElementById('bottomFeynmanAuditCard');
+    const body = document.getElementById('bottomFeynmanAuditContent');
+    const timeEl = document.getElementById('bottomFeynmanAuditTime');
+
+    if (card && body) {
+      card.style.display = 'flex';
+      body.classList.add('yj-typing-cursor');
+      body.innerHTML = '正在调取当前课时经传原典、四大宗师阐微与时位基准，第三方把关人像素级比对检视中...';
+      if (timeEl) timeEl.innerText = '正在生成深度检视...';
+      card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    if (window.YijingAIService && window.YijingAIService.auditFeynmanSpeech) {
+      try {
+        await window.YijingAIService.auditFeynmanSpeech({
+          lessonMeta: cur,
+          scenarioTitle: cfg.scenarioTitle || '向外行朋友讲透本课核心精髓',
+          scenarioPrompt: cfg.scenarioPrompt || '用最通俗易懂的大白话、生动的生活/工作比喻，讲给完全不懂周易的外行听',
+          feynmanFullText: full_text,
+          onReasoning: (chunk, full) => {
+            if (body && !body.innerHTML.includes('第三方视角')) {
+              body.innerHTML = `<span style="color:#8b949e; font-size:13px;">🧠 第三方把关人正在对照《${escapeHtml(cur.title)}》核心时位与原典义理，严格审视你的表达...</span>`;
+            }
+          },
+          onContent: (chunk, fullContent) => {
+            if (body) {
+              body.innerHTML = window.formatFeynmanAuditHtml ? window.formatFeynmanAuditHtml(fullContent) : fullContent.replace(/\n/g, '<br>');
+            }
+          },
+          onDone: ({ content }) => {
+            if (body) {
+              body.classList.remove('yj-typing-cursor');
+              body.innerHTML = window.formatFeynmanAuditHtml ? window.formatFeynmanAuditHtml(content) : content.replace(/\n/g, '<br>');
+            }
+            const nowTime = new Date().toLocaleString();
+            if (timeEl) timeEl.innerText = `检视于 ${nowTime}`;
+
+            // 保存到档案
+            if (window.LearningVault && window.LearningVault.saveFeynmanAudit) {
+              window.LearningVault.saveFeynmanAudit(cur.id, content, cur);
+            }
+            // 同时在对话流记录一条互动
+            window.LearningVault.appendDialogue(
+              cur.id,
+              `【费曼大白话自述 · 第三方交付把关深度检视】`,
+              content,
+              cur
+            );
+          },
+          onError: (err) => {
+            if (body) {
+              body.classList.remove('yj-typing-cursor');
+              body.innerHTML = `<span style="color:var(--danger, #f85149);">⚠️ 把关人连线微恙，请检查网络或配置：${err.message || err}</span>`;
+            }
+          }
+        });
+      } catch (e) {
+        if (body) body.classList.remove('yj-typing-cursor');
+        console.error('[requestDedicatedFeynmanAudit] 执行异常:', e);
+      }
+    }
   };
 
   // 持久化写入项目文件 (双轨保障：优先无感落盘 + 离线另存兜底)
@@ -4147,6 +4339,7 @@
     const fey = record.feynman || {};
     const fw = fey.framework || {};
     const hasAnalysis = rev.ai_analysis && rev.ai_analysis.content;
+    const hasFeynmanAudit = !!(fey.audit && fey.audit.content);
 
     const assessments = (window.LearningVault && window.LearningVault.getInlineAssessments)
       ? window.LearningVault.getInlineAssessments(cur.id)
@@ -4255,7 +4448,7 @@
           </div>
           <div class="yj-stage-actions">
             <button class="yj-btn-outline" onclick="openVaultModal('feynman')" style="padding:6px 14px; font-size:13px;">📜 展开修学档案</button>
-            <button class="yj-btn-outline" onclick="requestBottomMasterAgentReview()" style="padding:6px 14px; font-size:13px; border-color:var(--purple, #a855f7); color:var(--purple, #a855f7); font-weight:700;">✨ 提请玄微先生 · 费曼剖析</button>
+            <button class="yj-btn-outline" onclick="requestDedicatedFeynmanAudit()" style="padding:6px 14px; font-size:13px; border-color:var(--purple, #a855f7); color:var(--purple, #a855f7); font-weight:700;">🎙️ 提请第三方深度把关检视</button>
             <button class="yj-btn-gold" onclick="saveBottomFeynman()" style="padding:6px 16px; font-size:13px;">🏆 提交保存费曼笔记</button>
           </div>
         </div>
@@ -4315,6 +4508,22 @@
             <span style="font-size:12px; font-weight:400; color:var(--text-faint);">用生活比喻向外行朋友讲透本课精髓</span>
           </label>
           <textarea id="feyFullText" class="mentor-textarea yj-feynman-textarea" rows="5" placeholder="假想你的外行朋友正坐在你对面，试着用生活大白话讲给他听：\n比如：“你知道吗？《${cur.title}》其实讲的是……”">${escapeHtml(fey.full_text || '')}</textarea>
+        </div>
+
+        <!-- 阶段四专属：第三方专业听众费曼自述深度把关检视卡片 -->
+        <div class="yj-review-analysis-card yj-feynman-audit-card" id="bottomFeynmanAuditCard" style="display:${hasFeynmanAudit ? 'flex' : 'none'}; margin-top:16px; border-left: 4px solid var(--purple, #a855f7);">
+          <div class="yj-analysis-header">
+            <div class="yj-analysis-title">
+              <span>🎙️</span>
+              <span style="color:var(--purple, #a855f7);">第三方专业听众 · 费曼自述交付深度把关检视</span>
+            </div>
+            <span id="bottomFeynmanAuditTime" style="font-size:12px; color:var(--text-faint);">${fey.audit && fey.audit.updated_at ? '检视于 ' + fey.audit.updated_at : ''}</span>
+          </div>
+          <div class="yj-analysis-body" id="bottomFeynmanAuditContent">${fey.audit && fey.audit.content ? (window.formatFeynmanAuditHtml ? window.formatFeynmanAuditHtml(fey.audit.content) : fey.audit.content.replace(/\n/g, '<br>')) : ''}</div>
+          <div class="yj-analysis-actions">
+            <button class="yj-tool-btn" onclick="copyBottomFeynmanAuditContent()">📋 复制检视报告</button>
+            <button class="yj-tool-btn" style="color:var(--purple, #a855f7); border-color:var(--purple, #a855f7);" onclick="openCoachFromFeynmanAudit()">💬 针对检视向助教深入探讨</button>
+          </div>
         </div>
       </section>
     `;

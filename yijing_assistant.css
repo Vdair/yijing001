@@ -2067,4 +2067,24 @@
   }
 }
 
+/* 阶段四：第三方专业听众费曼交付把关检视专属卡片样式 */
+.yj-feynman-audit-card {
+  border-color: rgba(168, 85, 247, 0.45) !important;
+  box-shadow: 0 4px 20px rgba(168, 85, 247, 0.1) !important;
+}
+.yj-feynman-audit-card::before {
+  background: linear-gradient(180deg, var(--purple, #a855f7), transparent) !important;
+}
+.yj-audit-sec-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-serif, serif);
+  letter-spacing: 0.5px;
+}
+.yj-audit-content strong {
+  color: var(--text-m);
+}
+
+
 
